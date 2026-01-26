@@ -1,0 +1,27 @@
+debug: false
+server:
+  port: 12003
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:12001/postgres
+    username: postgres
+    password: 123456
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 5
+      connection-timeout: 30000
+      idle-timeout: 600000
+      max-lifetime: 1800000
+      pool-name: FoxDenHikariPool
+
+jimmer:
+  database-validation-mode: error
+  show-sql: true
+  pretty-sql: true
+  dialect: org.babyfish.jimmer.sql.dialect.PostgresDialect
+
+logging:
+  level:
+    root: INFO
+    com.github.alphafoxz.foxden: DEBUG

@@ -1,0 +1,1 @@
+curl -L -o jimmer-code-gen.jar https://github.com/pot-mot/jimmer-code-gen-kotlin/releases/download/0.3.0/jimmer-code-gen-0.3.0.jar

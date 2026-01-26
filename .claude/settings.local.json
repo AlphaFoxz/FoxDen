@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(cmd:*)",
+      "Bash(./gradlew:*)",
+      "Bash(tree:*)",
+      "Bash(set:*)",
+      "WebSearch",
+      "Bash(jar:*)",
+      "Bash(curl:*)"
+    ]
+  }
+}

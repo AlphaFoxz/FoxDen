@@ -1,0 +1,1 @@
+java -jar ./jimmer-code-gen.jar

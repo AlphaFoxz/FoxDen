@@ -1,0 +1,21 @@
+spring:
+  application:
+    name: foxden-admin
+    admin:
+      enabled: false
+  jmx:
+    enabled: false
+  profiles:
+    active: dev
+  web:
+    resources:
+      static-locations: classpath:/static/
+  mvc:
+    static-path-pattern: /static/**
+  threads:
+    virtual:
+      enabled: true
+
+jimmer:
+  language: kotlin
+  dialect: org.babyfish.jimmer.sql.dialect.PostgresDialect
