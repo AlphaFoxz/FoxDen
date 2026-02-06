@@ -152,7 +152,7 @@
 
 <script setup lang="ts">
 import { pageByAllTaskWait, pageByAllTaskFinish, updateAssignee, urgeTask } from '@/api/workflow/task';
-import UserSelect from '@/components/UserSelect.vue';
+import UserSelect from '@/components/UserSelect/index.vue';
 import type { TaskQuery } from '@/api/workflow/task/types';
 import workflowCommon from '@/api/workflow/workflowCommon';
 import type { RouterJumpVo } from '@/api/workflow/workflowCommon/types';

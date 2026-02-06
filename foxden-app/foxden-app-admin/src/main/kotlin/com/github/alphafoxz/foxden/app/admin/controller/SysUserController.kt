@@ -23,7 +23,7 @@ class SysUserController(
 
     @GetMapping("/userName/{userName}")
     fun getUserName(@PathVariable userName: String): ResponseEntity<SysUser?> {
-        val user = sysUserRepository.findByUserName(
+        val user = sysUserRepository.findByUserNameEqualsIgnoreCase(
             userName, ALL_FIELDS_FETCHER
         )
         return ResponseEntity.ok(user)

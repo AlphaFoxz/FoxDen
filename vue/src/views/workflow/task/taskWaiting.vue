@@ -111,7 +111,7 @@ import type { RouterJumpVo } from '@/api/workflow/workflowCommon/types';
 
 const { proxy } = getCurrentInstance() as ComponentInternalInstance;
 const { wf_business_status } = toRefs<any>(proxy?.useDict('wf_business_status'));
-import UserSelect from '@/components/UserSelect.vue';
+import UserSelect from '@/components/UserSelect/index.vue';
 import { ref } from 'vue';
 import type { UserVO } from '@/api/system/user/types';
 

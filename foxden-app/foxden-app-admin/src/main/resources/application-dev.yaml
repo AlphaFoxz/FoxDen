@@ -1,6 +1,6 @@
 debug: false
 server:
-  port: 12003
+  port: 21003
 spring:
   datasource:
     url: jdbc:postgresql://localhost:12001/postgres
@@ -23,5 +23,5 @@ jimmer:
 
 logging:
   level:
-    root: INFO
+    root: DEBUG
     com.github.alphafoxz.foxden: DEBUG

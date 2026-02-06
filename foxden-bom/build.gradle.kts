@@ -36,6 +36,7 @@ dependencies {
         api("org.springframework.boot:spring-boot-starter-web:${property("version.springBoot")}")
         api("org.springframework.boot:spring-boot-starter-validation:${property("version.springBoot")}")
         api("org.springframework.boot:spring-boot-starter-security:${property("version.springBoot")}")
+        api("org.springframework.boot:spring-boot-starter-cache:${property("version.springBoot")}")
         api("org.springframework.boot:spring-boot-starter-test:${property("version.springBoot")}")
         api("org.springframework.boot:spring-boot-devtools:${property("version.springBoot")}")
 

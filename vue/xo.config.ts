@@ -1,3 +1,4 @@
+// @ts-ignore
 import {type FlatXoConfig} from 'xo';
 
 /**
@@ -6,7 +7,6 @@ import {type FlatXoConfig} from 'xo';
 const expose: FlatXoConfig = {
   ignores: [
     'node_modules/**',
-    'designs/**',
     '**/*.test.ts',
   ],
   rules: {
