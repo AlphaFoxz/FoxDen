@@ -1,13 +1,9 @@
-const TOKEN_KEY = 'Admin-Token';
+const TokenKey = 'Admin-Token';
 
-export function getToken() {
-  return localStorage.getItem(TOKEN_KEY);
-}
+const tokenStorage = useStorage<null | string>(TokenKey, null);
 
-export function setToken(token: string) {
-  localStorage.setItem(TOKEN_KEY, token);
-}
+export const getToken = () => tokenStorage.value;
 
-export function removeToken() {
-  localStorage.removeItem(TOKEN_KEY);
-}
+export const setToken = (access_token: string) => (tokenStorage.value = access_token);
+
+export const removeToken = () => (tokenStorage.value = null);

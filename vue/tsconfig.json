@@ -1,4 +1,6 @@
 {
+  "$schema": "https://json.schemastore.org/tsconfig",
+  "extends": "@vue/tsconfig/tsconfig.json",
   "files": [],
   "references": [
     {
@@ -10,8 +12,5 @@
     {
       "path": "./tsconfig.vitest.json"
     }
-  ],
-  "compilerOptions": {
-    "module": "NodeNext"
-  }
+  ]
 }

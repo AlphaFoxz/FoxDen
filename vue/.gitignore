@@ -1,18 +1,11 @@
-# Logs
-logs
-*.log
+.DS_Store
+.history
+node_modules/
+dist/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
-pnpm-debug.log*
-lerna-debug.log*
-
-node_modules
-.DS_Store
-dist
-dist-ssr
-coverage
-*.local
+**/*.log
 
 # Editor directories and files
 .vscode/*
@@ -23,10 +16,13 @@ coverage
 *.njsproj
 *.sln
 *.sw?
+*.local
 
 *.tsbuildinfo
 
-.eslintcache
+# 编译生成的文件
+auto-imports.d.ts
+components.d.ts
 
 # Cypress
 /cypress/videos/
@@ -34,3 +30,7 @@ coverage
 
 # Vitest
 __screenshots__/
+tests/**/coverage/
+tests/e2e/reports
+*.try.ts
+selenium-debug.log

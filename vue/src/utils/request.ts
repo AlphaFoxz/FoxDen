@@ -1,19 +1,25 @@
 import axios, {type AxiosResponse, type InternalAxiosRequestConfig} from 'axios';
-import {decrypt, encrypt} from './jsencrypt';
+import {type LoadingInstance} from 'element-plus/es/components/loading/src/loading';
+import FileSaver from 'file-saver';
+import {useUserStore} from '@/store/modules/user';
+import {getToken} from '@/utils/auth';
+import {tansParams, blobValidate} from '@/utils/ruoyi';
+import cache from '@/plugins/cache';
+import {HttpStatus} from '@/enums/RespEnum';
+import {errorCode} from '@/utils/errorCode';
+import {getLanguage} from '@/lang';
 import {
-  decryptBase64, decryptWithAes, encryptBase64, encryptWithAes, generateAesKey,
-} from './crypto';
-import {getToken} from './auth';
-import {transParameters} from './framework';
-import {useLanguageAgg} from '@/domain/language';
-
-const languageAgg = useLanguageAgg();
+  encryptBase64, encryptWithAes, generateAesKey, decryptWithAes, decryptBase64,
+} from '@/utils/crypto';
+import {encrypt, decrypt} from '@/utils/jsencrypt';
+import router from '@/router';
 
 const encryptHeader = 'encrypt-key';
+let downloadLoadingInstance: LoadingInstance;
 // 是否显示重新登录
 export const isRelogin = {show: false};
 export const globalHeaders = () => ({
-  Authorization: 'Bearer ' + (getToken() ?? ''),
+  Authorization: 'Bearer ' + getToken(),
   clientid: import.meta.env.VITE_APP_CLIENT_ID,
 });
 
@@ -22,14 +28,18 @@ axios.defaults.headers.clientid = import.meta.env.VITE_APP_CLIENT_ID;
 // 创建 axios 实例
 const service = axios.create({
   baseURL: import.meta.env.VITE_APP_BASE_API,
-  timeout: 120_000,
+  timeout: 50_000,
+  transitional: {
+    // 超时错误更明确
+    clarifyTimeoutError: true,
+  },
 });
 
 // 请求拦截器
 service.interceptors.request.use(
   async (config: InternalAxiosRequestConfig) => {
     // 对应国际化资源文件后缀
-    config.headers['Content-Language'] = languageAgg.states.currentLanguage.value;
+    config.headers['Content-Language'] = getLanguage();
 
     const isToken = config.headers?.isToken === false;
     // 是否需要防止数据重复提交
@@ -42,8 +52,8 @@ service.interceptors.request.use(
     }
 
     // Get请求映射params参数
-    if (config.method === 'get' && typeof config.params === 'object') {
-      let url = config.url + '?' + transParameters(config.params as Record<string, unknown>);
+    if (config.method === 'get' && config.params) {
+      let url = config.url + '?' + tansParams(config.params);
       url = url.slice(0, -1);
       config.params = {};
       config.url = url;
@@ -73,7 +83,8 @@ service.interceptors.request.use(
       }
     }
 
-    if (import.meta.env.VITE_APP_ENCRYPT === 'true' /* 当开启参数加密 */&& isEncrypt && (config.method === 'post' || config.method === 'put')) {
+    if (import.meta.env.VITE_APP_ENCRYPT === 'true' // 当开启参数加密
+    	&& isEncrypt && (config.method === 'post' || config.method === 'put')) {
       // 生成一个 AES 密钥
       const aesKey = generateAesKey();
       config.headers[encryptHeader] = encrypt(encryptBase64(aesKey));
@@ -94,13 +105,13 @@ service.interceptors.request.use(
 
 // 响应拦截器
 service.interceptors.response.use(
-  (response: AxiosResponse) => {
+  (res: AxiosResponse) => {
     if (import.meta.env.VITE_APP_ENCRYPT === 'true') {
       // 加密后的 AES 秘钥
-      const keyString = response.headers[encryptHeader] as (string | undefined | null);
+      const keyString = res.headers[encryptHeader];
       // 加密
-      if (keyString) {
-        const data = response.data as string;
+      if (keyString != null && keyString != '') {
+        const {data} = res;
         // 请求体 AES 解密
         const base64String = decrypt(keyString);
         // Base64 解码 得到请求头的 AES 秘钥
@@ -108,17 +119,17 @@ service.interceptors.response.use(
         // AesKey 解码 data
         const decryptData = decryptWithAes(data, aesKey);
         // 将结果 (得到的是 JSON 字符串) 转为 JSON
-        response.data = JSON.parse(decryptData) as Record<string, unknown>;
+        res.data = JSON.parse(decryptData);
       }
     }
 
     // 未设置状态码则默认成功状态
-    const code = response.data.code ?? HttpStatus.SUCCESS;
+    const code = res.data.code || HttpStatus.SUCCESS;
     // 获取错误信息
-    const message = errorCode[code] || response.data.msg || errorCode.default;
+    const message = errorCode[code] || res.data.msg || errorCode.default;
     // 二进制数据则直接返回
-    if (response.request.responseType === 'blob' || response.request.responseType === 'arraybuffer') {
-      return response.data;
+    if (res.request.responseType === 'blob' || res.request.responseType === 'arraybuffer') {
+      return res.data;
     }
 
     if (code === 401) {
@@ -162,9 +173,9 @@ service.interceptors.response.use(
       return Promise.reject('error');
     }
 
-    return Promise.resolve(response.data);
+    return Promise.resolve(res.data);
   },
-  async (error: unknown) => {
+  async (error: any) => {
     let {message} = error;
     if (message == 'Network Error') {
       message = '后端接口连接异常';
@@ -178,98 +189,36 @@ service.interceptors.response.use(
     throw error;
   },
 );
+// 通用下载方法
+export async function download(url: string, parameters: any, fileName: string) {
+  downloadLoadingInstance = ElLoading.service({text: '正在下载数据，请稍候', background: 'rgba(0, 0, 0, 0.7)'});
+  // prettier-ignore
+  return service.post(url, parameters, {
+    transformRequest: [
+      (parameters: any) => tansParams(parameters),
+    ],
+    headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+    responseType: 'blob',
+  }).then(async (resp: any) => {
+    const isLogin = blobValidate(resp);
+    if (isLogin) {
+      const blob = new Blob([resp]);
+      FileSaver.saveAs(blob, fileName);
+    } else {
+      const blob = new Blob([resp]);
+      const resText = await blob.text();
+      const rspObject = JSON.parse(resText);
+      const errorMessage = errorCode[rspObject.code] || rspObject.msg || errorCode.default;
+      ElMessage.error(errorMessage);
+    }
 
+    downloadLoadingInstance.close();
+  }).catch((error: any) => {
+    console.error(error);
+    ElMessage.error('下载文件出现错误，请联系管理员！');
+    downloadLoadingInstance.close();
+  });
+}
+
+// 导出 axios 实例
 export default service;
-
-export const HttpStatus = {
-  /**
-   * 操作成功
-   */
-  SUCCESS: 200,
-  /**
-   * 对象创建成功
-   */
-  CREATED: 201,
-  /**
-   * 请求已经被接受
-   */
-  ACCEPTED: 202,
-  /**
-   * 操作已经执行成功，但是没有返回数据
-   */
-  NO_CONTENT: 204,
-  /**
-   * 资源已经被移除
-   */
-  MOVED_PERM: 301,
-  /**
-   * 重定向
-   */
-  SEE_OTHER: 303,
-  /**
-   * 资源没有被修改
-   */
-  NOT_MODIFIED: 304,
-  /**
-   * 参数列表错误（缺少，格式不匹配）
-   */
-  PARAM_ERROR: 400,
-  /**
-   * 未授权
-   */
-  UNAUTHORIZED: 401,
-  /**
-   * 访问受限，授权过期
-   */
-  FORBIDDEN: 403,
-  /**
-   * 资源，服务未找到
-   */
-  NOT_FOUND: 404,
-  /**
-   * 不允许的http方法
-   */
-  BAD_METHOD: 405,
-  /**
-   * 资源冲突，或者资源被锁
-   */
-  CONFLICT: 409,
-  /**
-   * 不支持的数据，媒体类型
-   */
-  UNSUPPORTED_TYPE: 415,
-  /**
-   * 系统内部错误
-   */
-  SERVER_ERROR: 500,
-  /**
-   * 接口未实现
-   */
-  NOT_IMPLEMENTED: 501,
-  /**
-   * 服务不可用，过载或者维护
-   */
-  BAD_GATEWAY: 502,
-  /**
-   * 网关超时
-   */
-  GATEWAY_TIMEOUT: 504,
-  /**
-   * 未知错误
-   */
-  UNKNOWN_ERROR: 520,
-  /**
-   * 服务未知错误
-   */
-  SERVICE_ERROR: 521,
-  /**
-   * 数据库未知错误
-   */
-  DATABASE_ERROR: 522,
-  /**
-   * 系统警告消息
-   */
-  WARN: 601,
-} as const;
-
-export type HttpStatus = Enum<typeof HttpStatus>;

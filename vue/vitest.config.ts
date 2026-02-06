@@ -1,6 +1,9 @@
 import {fileURLToPath} from 'node:url';
 import {mergeConfig, defineConfig, configDefaults} from 'vitest/config';
-import viteConfig from './vite.config';
+import viteConfigFn from './vite.config';
+
+// Vite.config.ts exports a function, need to call it first
+const viteConfig = viteConfigFn({mode: 'test', command: 'serve'});
 
 export default mergeConfig(
   viteConfig,

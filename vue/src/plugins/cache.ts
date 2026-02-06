@@ -1,65 +1,73 @@
 const sessionCache = {
-  set(key: string, value: string) {
+  set(key: string, value: any) {
     if (!sessionStorage) {
       return;
     }
-
-    sessionStorage.setItem(key, value);
+    if (key != null && value != null) {
+      sessionStorage.setItem(key, value);
+    }
   },
   get(key: string) {
     if (!sessionStorage) {
       return null;
     }
-
+    if (key == null) {
+      return null;
+    }
     return sessionStorage.getItem(key);
   },
-  setJSON(key: string, jsonValue: Record<string, unknown> | any[]) {
-    this.set(key, JSON.stringify(jsonValue));
+  setJSON(key: string, jsonValue: any) {
+    if (jsonValue != null) {
+      this.set(key, JSON.stringify(jsonValue));
+    }
   },
   getJSON(key: string) {
     const value = this.get(key);
-    if (value !== null) {
-      return JSON.parse(value) as Record<string, unknown> | any[];
+    if (value != null) {
+      return JSON.parse(value);
     }
-
     return null;
   },
   remove(key: string) {
     sessionStorage.removeItem(key);
-  },
+  }
 };
 const localCache = {
-  set(key: string, value: string) {
+  set(key: string, value: any) {
     if (!localStorage) {
       return;
     }
-
-    localStorage.setItem(key, value);
+    if (key != null && value != null) {
+      localStorage.setItem(key, value);
+    }
   },
   get(key: string) {
     if (!localStorage) {
       return null;
     }
-
+    if (key == null) {
+      return null;
+    }
     return localStorage.getItem(key);
   },
-  setJSON(key: string, jsonValue: Record<string, unknown>) {
-    this.set(key, JSON.stringify(jsonValue));
+  setJSON(key: string, jsonValue: any) {
+    if (jsonValue != null) {
+      this.set(key, JSON.stringify(jsonValue));
+    }
   },
   getJSON(key: string) {
     const value = this.get(key);
-    if (value !== null) {
-      return JSON.parse(value) as Record<string, unknown>;
+    if (value != null) {
+      return JSON.parse(value);
     }
-
     return null;
   },
   remove(key: string) {
     localStorage.removeItem(key);
-  },
+  }
 };
 
-const expose = {
+export default {
   /**
    * 会话级缓存
    */
@@ -67,7 +75,5 @@ const expose = {
   /**
    * 本地缓存
    */
-  local: localCache,
+  local: localCache
 };
-
-export default expose;
