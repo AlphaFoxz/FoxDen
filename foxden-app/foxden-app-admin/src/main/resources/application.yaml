@@ -1,21 +1,53 @@
+foxden:
+  profile:
+    name: FoxDen
+  version: 0.0.1-SNAPSHOT
+  copyrightYear: 2025
+  demoEnabled: true
+  captchaEnabled: true
+  addressEnabled: false
+
 spring:
-  application:
-    name: foxden-admin
-    admin:
-      enabled: false
-  jmx:
-    enabled: false
   profiles:
     active: dev
-  web:
-    resources:
-      static-locations: classpath:/static/
+  application:
+    name: foxden-app-admin
+  main:
+    allow-circular-references: true
+    allow-bean-definition-overriding: true
+  autoconfigure:
+    exclude:
+      - org.springframework.boot.autoconfigure.data.redis.RedisRepositoriesAutoConfiguration
+      - com.baomidou.lock.spring.boot.autoconfigure.LockAutoConfiguration
+      - com.baomidou.lock.spring.boot.autoconfigure.RedissonLockAutoConfiguration
+      - org.redisson.spring.starter.RedissonAutoConfigurationV2
   mvc:
-    static-path-pattern: /static/**
-  threads:
-    virtual:
-      enabled: true
+    pathmatch:
+      matching-strategy: ant_path_matcher
+  jackson:
+    date-format: yyyy-MM-dd HH:mm:ss
+    time-zone: GMT+8
+    serialization:
+      write-dates-as-timestamps: false
 
-jimmer:
-  language: kotlin
-  dialect: org.babyfish.jimmer.sql.dialect.PostgresDialect
+  servlet:
+    multipart:
+      max-file-size: 100MB
+      max-request-size: 100MB
+
+server:
+  port: 21003
+  servlet:
+    context-path: /
+  tomcat:
+    uri-encoding: UTF-8
+    threads:
+      max: 800
+      accept-count: 1000
+
+logging:
+  level:
+    root: INFO
+    com.github.alphafoxz: DEBUG
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{50} - %msg%n"

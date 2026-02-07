@@ -1,27 +1,33 @@
-debug: false
-server:
-  port: 21003
+foxden:
+  profile:
+    name: FoxDen
+
+# 用户密码相关配置
+user:
+  password:
+    maxRetryCount: 5              # 密码最大重试次数
+    lockTime: 10                  # 锁定时间（分钟）
+
 spring:
   datasource:
-    url: jdbc:postgresql://localhost:12001/postgres
-    username: postgres
-    password: 123456
-    driver-class-name: org.postgresql.Driver
-    hikari:
-      maximum-pool-size: 10
-      minimum-idle: 5
-      connection-timeout: 30000
-      idle-timeout: 600000
-      max-lifetime: 1800000
-      pool-name: FoxDenHikariPool
+    type: com.zaxxer.hikari.HikariDataSource
+    driver-class-name: org.h2.Driver
+    url: jdbc:h2:mem:foxden;DB_CLOSE_DELAY=-1;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE
+    username: sa
+    password:
+
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
 
 jimmer:
-  database-validation-mode: error
+  dialect: org.babyfish.jimmer.sql.dialect.H2Dialect
   show-sql: true
   pretty-sql: true
-  dialect: org.babyfish.jimmer.sql.dialect.PostgresDialect
-
-logging:
-  level:
-    root: DEBUG
-    com.github.alphafoxz.foxden: DEBUG
+  executor-context-level: DISABLED
+  client:
+    path: /jimmer
+  database:
+    initialization:
+      mode: always

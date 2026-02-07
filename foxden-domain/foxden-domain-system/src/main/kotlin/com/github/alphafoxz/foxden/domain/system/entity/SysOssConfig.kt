@@ -1,109 +1,70 @@
 package com.github.alphafoxz.foxden.domain.system.entity
 
-import com.github.alphafoxz.foxden.common.jimmer.entity.comm.CommDelFlag
-import com.github.alphafoxz.foxden.common.jimmer.entity.comm.CommId
-import com.github.alphafoxz.foxden.common.jimmer.entity.comm.CommInfo
-import com.github.alphafoxz.foxden.common.jimmer.entity.comm.CommTenant
-import org.babyfish.jimmer.sql.Column
-import org.babyfish.jimmer.sql.Entity
-import org.babyfish.jimmer.sql.Table
-import org.hibernate.validator.constraints.Length
+import com.github.alphafoxz.foxden.common.jimmer.entity.comm.*
+import org.babyfish.jimmer.sql.*
 
 /**
- * 对象存储配置
- * 
- * @author wong
+ * 对象存储配置对象 sys_oss_config
  */
 @Entity
-@Table(name = "sys_oss_config")
-interface SysOssConfig : CommDelFlag, CommId, CommInfo, CommTenant {
+interface SysOssConfig : CommId, CommInfo {
     /**
      * 配置key
      */
-    @Column(name = "config_key")
-    @get:Length(max = 2147483647)
     val configKey: String
 
     /**
      * accessKey
      */
-    @Column(name = "access_key")
-    @get:Length(max = 2147483647)
-    val accessKey: String
+    val accessKey: String?
 
     /**
      * 秘钥
      */
-    @Column(name = "secret_key")
-    @get:Length(max = 2147483647)
-    val secretKey: String
+    val secretKey: String?
 
     /**
      * 桶名称
      */
-    @Column(name = "bucket_name")
-    @get:Length(max = 2147483647)
-    val bucketName: String
+    val bucketName: String?
 
     /**
      * 前缀
      */
-    @Column(name = "prefix")
-    @get:Length(max = 2147483647)
     val prefix: String?
 
     /**
      * 访问站点
      */
-    @Column(name = "endpoint")
-    @get:Length(max = 2147483647)
-    val endpoint: String
+    val endpoint: String?
 
     /**
      * 自定义域名
      */
-    @Column(name = "domain")
-    @get:Length(max = 2147483647)
     val domain: String?
 
     /**
-     * 是否https
+     * 是否https（0否 1是）
      */
-    @Column(name = "https")
-    val https: Boolean?
+    val isHttps: String?
 
     /**
      * 域
      */
-    @Column(name = "region")
-    @get:Length(max = 2147483647)
     val region: String?
-
-    /**
-     * 桶权限类型(0=private 1=public 2=custom)
-     */
-    @Column(name = "access_policy")
-    @get:Length(max = 1)
-    val accessPolicy: String
 
     /**
      * 是否默认（0=是,1=否）
      */
-    @Column(name = "status")
-    @get:Length(max = 1)
-    val status: String
+    val status: String?
 
     /**
      * 扩展字段
      */
-    @Column(name = "ext1")
-    @get:Length(max = 2147483647)
     val ext1: String?
 
     /**
-     * 备注
+     * 桶权限类型(0private 1public 2custom)
      */
-    @Column(name = "remark")
-    @get:Length(max = 2147483647)
-    val remark: String?
+    val accessPolicy: String?
 }

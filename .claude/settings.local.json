@@ -1,14 +1,22 @@
 {
   "permissions": {
     "allow": [
-      "Bash(cmd:*)",
-      "Bash(./gradlew:*)",
+      "Bash(ls:*)",
       "Bash(tree:*)",
-      "Bash(set:*)",
-      "WebSearch",
+      "Bash(mkdir:*)",
+      "Bash(./gradlew:*)",
+      "Bash(gradlew.bat:*)",
+      "Bash(git add:*)",
+      "Bash(git status)",
+      "Bash(git diff)",
       "Bash(jar:*)",
-      "Bash(curl:*)",
-      "Bash(gradlew.bat:*)"
+      "Bash(set:*)",
+      "Bash(then basename \"$dir\")",
+      "Bash(fi:*)",
+      "Bash(find:*)",
+      "Bash(java:*)",
+      "Bash(python3:*)",
+      "WebSearch"
     ]
   }
 }

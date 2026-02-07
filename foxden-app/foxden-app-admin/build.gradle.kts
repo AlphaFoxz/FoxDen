@@ -3,51 +3,77 @@ plugins {
     kotlin("plugin.spring")
     id("org.springframework.boot")
     id("io.spring.dependency-management")
-    id("com.google.devtools.ksp")
 }
 
 dependencies {
-    // BOM for version management
     implementation(platform(project(":foxden-bom")))
 
     // Common modules
     implementation(project(":foxden-common:foxden-common-core"))
-    implementation(project(":foxden-common:foxden-common-jimmer"))
     implementation(project(":foxden-common:foxden-common-web"))
     implementation(project(":foxden-common:foxden-common-security"))
+    implementation(project(":foxden-common:foxden-common-redis"))
+    implementation(project(":foxden-common:foxden-common-log"))
+    implementation(project(":foxden-common:foxden-common-mail"))
+    implementation(project(":foxden-common:foxden-common-ratelimiter"))
+    implementation(project(":foxden-common:foxden-common-excel"))
+    implementation(project(":foxden-common:foxden-common-doc"))
+    implementation(project(":foxden-common:foxden-common-sms"))
+    implementation(project(":foxden-common:foxden-common-idempotent"))
+    implementation(project(":foxden-common:foxden-common-jimmer"))
+    implementation(project(":foxden-common:foxden-common-json"))
+    implementation(project(":foxden-common:foxden-common-social"))
 
     // Domain modules
     implementation(project(":foxden-domain:foxden-domain-system"))
     implementation(project(":foxden-domain:foxden-domain-tenant"))
 
-    // Spring Boot Starters
-    implementation("org.springframework.boot:spring-boot-starter-security")
-    implementation("org.springframework.boot:spring-boot-starter-web")
-    implementation("org.springframework.boot:spring-boot-starter-validation")
-    implementation("org.springframework.boot:spring-boot-starter-cache")
-
-    // Development tools (disabled due to KSP compatibility issues)
-    // developmentOnly("org.springframework.boot:spring-boot-devtools")
-
-    // Database
+    // Runtime database dependencies
     runtimeOnly("org.postgresql:postgresql")
     runtimeOnly("com.h2database:h2")
 
-    // Jimmer
-    ksp("org.babyfish.jimmer:jimmer-ksp:${property("version.jimmer")}")
-    runtimeOnly("org.babyfish.jimmer:jimmer-client-swagger")
+    // Spring Boot starters
+    implementation("org.springframework.boot:spring-boot-starter-web")
+    implementation("org.springframework.boot:spring-boot-starter-validation")
+    implementation("org.springframework.boot:spring-boot-starter-security")
+    implementation("org.springframework.boot:spring-boot-starter-cache")
+    implementation("org.springframework.boot:spring-boot-devtools")
+
+    // Documentation
+    implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui")
 
     // Test
     testImplementation("org.springframework.boot:spring-boot-starter-test")
-    testImplementation("org.springframework.security:spring-security-test")
-    testImplementation("org.jetbrains.kotlin:kotlin-test-junit5")
-    testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
 
+// Java toolchain
+configure<JavaPluginExtension> {
+    toolchain {
+        languageVersion.set(JavaLanguageVersion.of(21))
+    }
+}
+
+// Kotlin compiler options
+tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
+    compilerOptions {
+        freeCompilerArgs.addAll("-Xjsr305=strict")
+    }
+}
+
+// JUnit 5
+tasks.withType<Test> {
+    useJUnitPlatform()
+}
+
+// Headless mode
+tasks.withType<JavaExec> {
+    systemProperty("java.awt.headless", "true")
+}
+
+// Spring Boot configuration
 tasks.withType<org.springframework.boot.gradle.tasks.bundling.BootJar> {
-    mainClass.set("com.github.alphafoxz.foxden.app.admin.FoxdenAdminApplicationKt")
-}
-
-tasks.withType<Jar> {
-    enabled = false
+    archiveFileName.set("foxden-app-admin.jar")
+    layered {
+        enabled.set(true)
+    }
 }

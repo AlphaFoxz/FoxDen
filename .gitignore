@@ -3,8 +3,11 @@ HELP.md
 build/
 !gradle/wrapper/gradle-wrapper.jar
 *.jar
+**/target/**
 !**/src/main/**/build/
 !**/src/test/**/build/
+
+/ruoyi-*/**
 
 ### STS ###
 .apt_generated

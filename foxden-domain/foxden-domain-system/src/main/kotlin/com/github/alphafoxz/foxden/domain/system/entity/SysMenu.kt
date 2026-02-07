@@ -1,119 +1,88 @@
 package com.github.alphafoxz.foxden.domain.system.entity
 
-import com.github.alphafoxz.foxden.common.jimmer.entity.comm.CommDelFlag
-import com.github.alphafoxz.foxden.common.jimmer.entity.comm.CommId
-import com.github.alphafoxz.foxden.common.jimmer.entity.comm.CommInfo
-import com.github.alphafoxz.foxden.common.jimmer.entity.comm.CommTenant
-import jakarta.validation.constraints.Max
-import jakarta.validation.constraints.Min
-import org.babyfish.jimmer.sql.Column
-import org.babyfish.jimmer.sql.Entity
-import org.babyfish.jimmer.sql.Table
-import org.hibernate.validator.constraints.Length
+import com.github.alphafoxz.foxden.common.jimmer.entity.comm.*
+import org.babyfish.jimmer.sql.*
 
 /**
- * 菜单权限
- * 
- * @author wong
+ * 菜单权限表 sys_menu
  */
 @Entity
-@Table(name = "sys_menu")
-interface SysMenu : CommDelFlag, CommId, CommInfo, CommTenant {
-    /**
-     * 菜单名称
-     */
-    @Column(name = "menu_name")
-    @get:Length(max = 2147483647)
-    val menuName: String
-
+interface SysMenu : CommId, CommInfo {
     /**
      * 父菜单ID
      */
-    @Column(name = "parent_id")
-    @get:Max(value = 9223372036854775807, message = "父菜单ID不可大于9223372036854775807")
-    @get:Min(value = 0, message = "父菜单ID不可小于0")
     val parentId: Long?
+
+    /**
+     * 菜单名称
+     */
+    val menuName: String
 
     /**
      * 显示顺序
      */
-    @Column(name = "order_num")
-    @get:Max(value = 2147483647, message = "显示顺序不可大于2147483647")
-    @get:Min(value = 0, message = "显示顺序不可小于0")
     val orderNum: Int?
 
     /**
      * 路由地址
      */
-    @Column(name = "path")
-    @get:Length(max = 2147483647)
     val path: String?
 
     /**
      * 组件路径
      */
-    @Column(name = "component")
-    @get:Length(max = 2147483647)
     val component: String?
 
     /**
      * 路由参数
      */
-    @Column(name = "query_param")
-    @get:Length(max = 2147483647)
     val queryParam: String?
 
     /**
-     * 是否为外链
+     * 是否为外链（0是 1否）
      */
-    @Column(name = "frame")
-    val frame: Boolean?
+    val isFrame: String?
 
     /**
-     * 是否缓存
+     * 是否缓存（0缓存 1不缓存）
      */
-    @Column(name = "cache")
-    val cache: Boolean?
+    val isCache: String?
 
     /**
-     * 菜单类型（M目录 C菜单 F按钮）
+     * 类型（M目录 C菜单 F按钮）
      */
-    @Column(name = "menu_type")
-    @get:Length(max = 1)
-    val menuType: String
+    val menuType: String?
 
     /**
      * 显示状态（0显示 1隐藏）
      */
-    @Column(name = "visible")
-    @get:Length(max = 1)
     val visible: String?
 
     /**
      * 菜单状态（0正常 1停用）
      */
-    @Column(name = "status")
-    @get:Length(max = 1)
-    val status: String
+    val status: String?
 
     /**
-     * 权限标识
+     * 权限字符串
      */
-    @Column(name = "perms")
-    @get:Length(max = 2147483647)
     val perms: String?
 
     /**
      * 菜单图标
      */
-    @Column(name = "icon")
-    @get:Length(max = 2147483647)
     val icon: String?
 
     /**
-     * 备注
+     * 父菜单
      */
-    @Column(name = "remark")
-    @get:Length(max = 2147483647)
-    val remark: String?
+    @ManyToOne
+    @JoinColumn(name = "parent_id")
+    val parent: SysMenu?
+
+    /**
+     * 子菜单
+     */
+    @OneToMany(mappedBy = "parent")
+    val children: List<SysMenu>
 }

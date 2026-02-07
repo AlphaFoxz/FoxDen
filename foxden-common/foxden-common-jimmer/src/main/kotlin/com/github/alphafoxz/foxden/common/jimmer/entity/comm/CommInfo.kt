@@ -1,47 +1,41 @@
 package com.github.alphafoxz.foxden.common.jimmer.entity.comm
 
-import jakarta.validation.constraints.Max
-import java.time.ZonedDateTime
-import org.babyfish.jimmer.sql.Column
 import org.babyfish.jimmer.sql.MappedSuperclass
+import java.time.LocalDateTime
 
 /**
- * 通用数据字段
- * 
- * @author wong
+ * 审计字段Trait
+ * 包含创建和更新相关字段
  */
 @MappedSuperclass
 interface CommInfo {
     /**
-     * 创建部门
+     * 创建部门ID
      */
-    @Column(name = "create_dept")
-    @get:Max(value = 9223372036854775807, message = "创建部门不可大于9223372036854775807")
-    val createDept: Long
+    val createDept: Long?
 
     /**
-     * 创建者
+     * 创建者ID
      */
-    @Column(name = "create_by")
-    @get:Max(value = 9223372036854775807, message = "创建者不可大于9223372036854775807")
-    val createBy: Long
+    val createBy: Long?
 
     /**
      * 创建时间
      */
-    @Column(name = "create_time")
-    val createTime: ZonedDateTime
+    val createTime: LocalDateTime?
 
     /**
-     * 更新者
+     * 更新者ID
      */
-    @Column(name = "update_by")
-    @get:Max(value = 9223372036854775807, message = "更新者不可大于9223372036854775807")
-    val updateBy: Long
+    val updateBy: Long?
 
     /**
      * 更新时间
      */
-    @Column(name = "update_time")
-    val updateTime: ZonedDateTime
+    val updateTime: LocalDateTime?
+
+    /**
+     * 备注
+     */
+    val remark: String?
 }

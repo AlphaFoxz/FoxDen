@@ -1,16 +1,12 @@
 plugins {
     kotlin("jvm")
-    kotlin("plugin.spring")
-    `java-library`
 }
 
 dependencies {
-    // BOM for version management
     api(platform(project(":foxden-bom")))
-
-    // Common core
     api(project(":foxden-common:foxden-common-core"))
-
-    // Spring Security
-    api("org.springframework.boot:spring-boot-starter-security")
+    api("cn.dev33:sa-token-spring-boot3-starter")
+    api("cn.dev33:sa-token-jwt")
+    api("cn.dev33:sa-token-core")
+    api("com.github.ben-manes.caffeine:caffeine")
 }

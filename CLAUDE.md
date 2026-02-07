@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-FoxDen is a multi-tenant SaaS system built with Spring Boot, Kotlin, and Jimmer ORM. It features user management, role-based access control (RBAC), and social login integration.
+FoxDen is a multi-tenant SaaS system built with Spring Boot, Kotlin, and Jimmer ORM. It features user management, role-based access control (RBAC), social login integration, and data permission filtering. The system supports multiple authentication strategies (password, SMS, email, social, WeChat mini-program).
 
 ## Module Structure
 
@@ -14,19 +14,35 @@ This is a multi-module Gradle project with the following structure:
 foxden/
 ├── foxden-bom/                      # Dependency management (Bill of Materials)
 ├── foxden-common/                   # Common modules parent
-│   ├── foxden-common-core/         # Core utilities, constants, exceptions
-│   ├── foxden-common-jimmer/       # Jimmer ORM common utilities and base classes
-│   ├── foxden-common-web/          # Web common utilities (base controllers, etc.)
-│   ├── foxden-common-security/     # Security utilities and configurations
-│   └── foxden-common-email/        # Email functionality (future)
+│   ├── foxden-common-core/         # Core utilities, constants, exceptions, DTOs
+│   ├── foxden-common-jimmer/       # Jimmer ORM common utilities, traits, data permissions
+│   ├── foxden-common-web/          # Web common (base controllers, captcha, XSS filter)
+│   ├── foxden-common-security/     # Sa-Token security configuration and utilities
+│   ├── foxden-common-redis/        # Redis caching with Redisson
+│   ├── foxden-common-log/          # Logging annotations and event publishing
+│   ├── foxden-common-oss/          # Object Storage Service (MinIO, Aliyun, QCloud)
+│   ├── foxden-common-excel/        # Excel import/export with EasyExcel
+│   ├── foxden-common-mail/         # Email functionality
+│   ├── foxden-common-sms/          # SMS functionality
+│   ├── foxden-common-social/       # Social login (JustAuth)
+│   ├── foxden-common-doc/          # SpringDoc OpenAPI documentation
+│   ├── foxden-common-idempotent/   # Idempotent request handling
+│   ├── foxden-common-ratelimiter/  # Rate limiting
+│   └── foxden-common-json/         # JSON configuration
 ├── foxden-domain/                   # Domain layer parent
 │   ├── foxden-domain-system/       # System domain (user, role, menu, dept, etc.)
 │   ├── foxden-domain-tenant/       # Tenant domain
 │   └── foxden-domain-infrastructure/ # Infrastructure services (repositories base)
 ├── foxden-app/                      # Application modules parent
-│   └── foxden-app-admin/           # Admin application (main entry point)
+│   ├── foxden-app-admin/           # Admin application (auth, login, registration)
+│   └── foxden-app-system/          # System management controllers
 └── gradle/
 ```
+
+## Applications
+
+- **foxden-app-admin**: Main admin application running on port 8080. Handles authentication, registration, and tenant selection. Entry point: `FoxdenAdminApplication.kt`
+- **foxden-app-system**: System management controllers (user, role, menu, dept, etc.)
 
 ## Build and Development Commands
 
@@ -60,19 +76,32 @@ foxden/
 ./gradlew --stop
 ```
 
+### Run a single test
+```bash
+./gradlew :foxden-app:foxden-app-admin:test --tests FoxdenAdminApplicationTests
+```
+
 ## Technology Stack
 
 - **Language**: Kotlin 2.3.0
-- **Framework**: Spring Boot 3.5.10
+- **Framework**: Spring Boot 3.4.1
 - **Build Tool**: Gradle (Kotlin DSL) with KSP
 - **Java Version**: 21
-- **ORM**: Jimmer 0.9.120 (Kotlin-first ORM with compiled validation)
+- **ORM**: Jimmer 0.10.6 (Kotlin-first ORM with compiled validation)
 - **Database**: PostgreSQL (production), H2 (development/testing)
+- **Security**: Sa-Token 1.44.0 with JWT (simple mode)
 - **Key Dependencies**:
   - Spring Security, Spring WebMVC, Spring Validation
   - Jimmer Spring Boot Starter with KSP code generation
   - Jackson Kotlin Module
   - Spring DevTools
+  - Redisson (Redis/distributed locking)
+  - Lock4j (distributed locking)
+  - JustAuth (social login)
+  - Hutool (Chinese utility library)
+  - MapStruct Plus (object mapping)
+  - SpringDoc OpenAPI (documentation)
+  - EasyExcel (Excel import/export)
 
 ## Architecture
 
@@ -82,9 +111,9 @@ The project uses Jimmer ORM with a **trait-based entity design**. All entities a
 
 | Trait | Purpose |
 |-------|---------|
-| `CommId` | Primary key (`id: Long`) with IDENTITY generation |
+| `CommId` | Primary key (`id: Long`) with auto-generated ID |
 | `CommTenant` | Multi-tenancy support (`tenantId: String`) |
-| `CommInfo` | Audit fields (createDept, createBy, createTime, updateBy, updateTime) |
+| `CommInfo` | Audit fields (createDept, createBy, createTime, updateBy, updateTime, remark) |
 | `CommDelFlag` | Soft delete (`delFlag: Boolean` with `@LogicalDeleted("true")`) |
 
 Example entity composition:
@@ -94,18 +123,54 @@ Example entity composition:
 interface SysUser : CommDelFlag, CommId, CommInfo, CommTenant {
     val userName: String
     val nickName: String
+    @OnDissociate(DissociateAction.DELETE)
+    val password: String?
+    @ManyToMany
+    @JoinTable(name = "sys_user_role")
+    val roles: List<SysRole>
     // ... other fields
 }
 ```
 
+### Authentication Strategy Pattern
+
+The system uses a strategy pattern for multiple authentication methods. Each strategy implements `AuthStrategy`:
+- `PasswordAuthStrategy`: Username/password with BCrypt
+- `SmsAuthStrategy`: SMS verification code
+- `EmailAuthStrategy`: Email verification code
+- `SocialAuthStrategy`: OAuth social login (JustAuth)
+- `XcxAuthStrategy`: WeChat mini-program
+
+Strategies are auto-registered with Spring using naming convention: `{type}AuthStrategy` where `{type}` is the auth type.
+
+### Data Permission Filtering
+
+Data permissions are implemented via AOP using `@DataPermission` and `@DataColumn` annotations:
+- `@DataPermission`: Class or method-level annotation for data filtering
+- `@DataColumn`: Defines placeholder keys (e.g., "deptName") and column mappings (e.g., "dept_id")
+- `DataPermissionAdvice`: Intercepts repository methods to inject SQL filters
+- `DataPermissionHelper.ignore { }`: Bypass data permission filtering when needed
+
+### Multi-Tenancy
+
+- Tenant ID is passed via HTTP header or parameter (`TenantConstants.TENANT_ID`)
+- `TenantHelper.getTenantId()`: Retrieves current tenant from request
+- `TenantHelper.dynamic(tenantId) { }`: Execute code block with specific tenant context
+- Entities implementing `CommTenant` are automatically filtered by tenant ID
+- Super admin can switch tenants dynamically
+
 ### Repository Pattern
 
-Repositories extend `KRepository<Entity, ID>` and support Jimmer's `Fetcher` API for optimized partial object loading:
+The project does NOT use traditional repository interfaces. Instead, domain services use:
+- JImmer's `KDbContext` for direct SQL execution (injected into services)
+- Extension functions in `ServiceExtensions.kt` for common CRUD operations
+- Fetcher-based partial loading for performance
 
+Example service usage:
 ```kotlin
-interface SysUserRepository : KRepository<SysUser, Long> {
-    fun findByUserName(username: String, fetcher: Fetcher<SysUser>): SysUser?
-}
+// Using extension functions
+val user = sqlClient.findById(SysUser::class, userId)
+val users = sqlClient.query(SysUser::class).where(table -> table.userName.eq(username)).execute()
 ```
 
 ### Package Structure
@@ -148,6 +213,41 @@ com.github.alphafoxz.foxden
 - **Storage**: `sys_oss`, `sys_oss_config` (foxden-domain-system)
 - **Client Management**: `sys_client` (foxden-domain-system)
 
+### Detailed Package Structure
+
+```
+com.github.alphafoxz.foxden
+├── common/
+│   ├── core/                        # Core utilities, constants, exceptions, DTOs
+│   ├── jimmer/                      # Jimmer traits (CommId, CommTenant, etc.)
+│   │   ├── annotation/              # Data permission annotations
+│   │   ├── aspect/                  # AOP advice for data permissions
+│   │   ├── entity/comm/             # Common entity traits
+│   │   ├── helper/                  # TenantHelper, DataPermissionHelper
+│   │   └── config/                  # Jimmer configuration
+│   ├── web/                         # Web common (captcha, XSS, i18n)
+│   ├── security/                    # Sa-Token configuration
+│   └── [other common modules]       # mail, sms, oss, excel, etc.
+├── domain/
+│   ├── system/                      # System domain
+│   │   ├── entity/                  # SysUser, SysRole, SysMenu, etc.
+│   │   ├── service/                 # Business logic interfaces
+│   │   │   └── impl/                # Service implementations
+│   │   ├── service/extensions/      # Kotlin extension functions for CRUD
+│   │   ├── bo/                      # Business Objects (input)
+│   │   └── vo/                      # View Objects (output)
+│   ├── tenant/                      # Tenant domain entities/services
+│   └── infrastructure/              # Base infrastructure
+└── app/
+    ├── admin/                       # Admin application
+    │   ├── FoxdenAdminApplication.kt # Main entry point
+    │   ├── controller/              # Auth, captcha, index controllers
+    │   ├── service/                 # Login, register, auth strategies
+    │   └── domain/vo/               # App-specific VOs (LoginVo, etc.)
+    └── system/                      # System management controllers
+        └── controller/              # User, role, menu, dept, etc.
+```
+
 ## Code Generation
 
 The project includes `code-gen/` directory with Jimmer code generator tool:
@@ -160,21 +260,61 @@ Run `code-gen/run.bat` to regenerate DTOs and fetchers based on entity definitio
 ## Configuration
 
 ### Active Profile
-Default profile is `dev` (see `foxden-app-admin/src/main/resources/application.yaml`). Configure database and Jimmer settings in `application-dev.yaml`:
+Default profile is `dev` (see `foxden-app-admin/src/main/resources/application.yaml`). The dev profile uses H2 database with in-memory storage.
+
+### Database Configuration
+For H2 (development):
+```yaml
+jimmer:
+  dialect: org.babyfish.jimmer.sql.dialect.H2Dialect
+```
+
+For PostgreSQL (production):
 ```yaml
 jimmer:
   dialect: org.babyfish.jimmer.sql.dialect.PostgresDialect
-  show-sql: true
-  pretty-sql: true
 ```
 
-For H2 compatibility, use `org.babyfish.jimmer.sql.dialect.H2Dialect`.
+### Key Configuration Properties
+- `user.password.maxRetryCount`: Maximum login retry attempts (default: 5)
+- `user.password.lockTime`: Account lock duration in minutes (default: 10)
+- `foxden.captchaEnabled`: Enable/disable captcha verification
+- `foxden.addressEnabled`: Enable/disable IP address resolution
 
 ### Known Issues
 - JMX warnings on startup are harmless (JMX is disabled in config)
 - Jimmer's `@LogicalDeleted` on Boolean properties requires explicit `value` parameter
+- KSP generates code to `build/generated/ksp/main/kotlin` (automatically included)
+- H2 console is available at `/h2-console` in dev mode
 
 ## Kotlin Compiler Options
 
 - `-Xjsr305=strict`: Strict nullability annotations
 - KSP generates code to `build/generated/ksp/main/kotlin` (included in source set)
+- KSP2 is enabled via `ksp.useKSP2=true` in gradle.properties
+
+## Development Notes
+
+### Adding a New Entity
+1. Define entity interface in appropriate domain module, extending relevant traits
+2. Add KSP annotations (`@Entity`, `@Table`, relationships)
+3. Create corresponding BO (input), VO (output), and Fetcher
+4. Run `code-gen/run.bat` to regenerate DTOs if using the code generator
+5. Implement service interface and implementation
+
+### Adding a New Authentication Strategy
+1. Create class in `foxden-app-admin/service/impl/` named `{Type}AuthStrategy`
+2. Implement `AuthStrategy` interface
+3. Register as Spring bean with name: `{type}AuthStrategy` where `{type}` is the auth type
+4. Strategy will be automatically discovered and used
+
+### Using Data Permissions
+1. Add `@DataPermission` annotation to service method or class
+2. Specify `@DataColumn` mappings for placeholder replacement
+3. Use `DataPermissionHelper.ignore { }` to bypass filtering when needed
+
+### Testing with H2
+- H2 runs in-memory with PostgreSQL compatibility mode
+- Schema initialization is set to `always` in dev profile
+- Access H2 console at http://localhost:8080/h2-console
+- JDBC URL: `jdbc:h2:mem:foxden`
