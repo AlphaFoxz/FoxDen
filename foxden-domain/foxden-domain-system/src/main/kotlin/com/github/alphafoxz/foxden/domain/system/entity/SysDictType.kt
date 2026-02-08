@@ -7,7 +7,16 @@ import org.babyfish.jimmer.sql.*
  * 字典类型表 sys_dict_type
  */
 @Entity
-interface SysDictType : CommId, CommInfo, CommTenant {
+@Table(name = "sys_dict_type")
+interface SysDictType : CommInfo, CommTenant {
+    /**
+     * 主键ID
+     */
+    @org.babyfish.jimmer.sql.Column(name = "dict_id")
+    @Id
+    @GeneratedValue
+    val id: Long
+
     /**
      * 字典名称
      */
@@ -21,7 +30,6 @@ interface SysDictType : CommId, CommInfo, CommTenant {
     /**
      * 字典数据
      */
-    @OnDissociate(DissociateAction.DELETE)
-    @OneToMany(mappedBy = "dictType")
+    @OneToMany(mappedBy = "dictTypeObj")
     val dictData: List<SysDictData>
 }

@@ -7,10 +7,20 @@ import org.babyfish.jimmer.sql.*
  * 岗位表 sys_post
  */
 @Entity
-interface SysPost : CommId, CommInfo, CommTenant {
+@Table(name = "sys_post")
+interface SysPost : CommInfo, CommTenant {
+    /**
+     * 主键ID
+     */
+    @org.babyfish.jimmer.sql.Column(name = "post_id")
+    @Id
+    @GeneratedValue
+    val id: Long
+
     /**
      * 部门id
      */
+    @IdView
     val deptId: Long?
 
     /**
@@ -48,8 +58,6 @@ interface SysPost : CommId, CommInfo, CommTenant {
     /**
      * 用户
      */
-    @OnDissociate(DissociateAction.DELETE)
-    @ManyToMany
-    @JoinTable(name = "sys_user_post")
+    @ManyToMany(mappedBy = "posts")
     val users: List<SysUser>
 }

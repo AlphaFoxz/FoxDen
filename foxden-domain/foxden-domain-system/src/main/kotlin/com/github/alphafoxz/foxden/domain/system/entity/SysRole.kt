@@ -7,7 +7,16 @@ import org.babyfish.jimmer.sql.*
  * 角色表 sys_role
  */
 @Entity
-interface SysRole : CommDelFlag, CommId, CommInfo, CommTenant {
+@Table(name = "sys_role")
+interface SysRole : CommDelFlag, CommInfo, CommTenant {
+    /**
+     * 主键ID
+     */
+    @org.babyfish.jimmer.sql.Column(name = "role_id")
+    @Id
+    @GeneratedValue
+    val id: Long
+
     /**
      * 角色名称
      */
@@ -31,11 +40,13 @@ interface SysRole : CommDelFlag, CommId, CommInfo, CommTenant {
     /**
      * 菜单树选择项是否关联显示（ 0：父子不互相关联显示 1：父子互相关联显示）
      */
+    @Column(name = "menu_check_strictly")
     val menuCheckStrictly: Boolean?
 
     /**
      * 部门树选择项是否关联显示（0：父子不互相关联显示 1：父子互相关联显示）
      */
+    @Column(name = "dept_check_strictly")
     val deptCheckStrictly: Boolean?
 
     /**
@@ -46,7 +57,6 @@ interface SysRole : CommDelFlag, CommId, CommInfo, CommTenant {
     /**
      * 菜单
      */
-    @OnDissociate(DissociateAction.DELETE)
     @ManyToMany
     @JoinTable(name = "sys_role_menu")
     val menus: List<SysMenu>
@@ -54,7 +64,6 @@ interface SysRole : CommDelFlag, CommId, CommInfo, CommTenant {
     /**
      * 部门
      */
-    @OnDissociate(DissociateAction.DELETE)
     @ManyToMany
     @JoinTable(name = "sys_role_dept")
     val depts: List<SysDept>

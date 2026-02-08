@@ -4,19 +4,21 @@
       "Bash(ls:*)",
       "Bash(tree:*)",
       "Bash(mkdir:*)",
+      "Bash(find:*)",
+      "Bash(set:*)",
+      "Bash(grep:*)",
+      "Bash(curl:http://localhost:*)",
       "Bash(./gradlew:*)",
       "Bash(gradlew.bat:*)",
       "Bash(git add:*)",
       "Bash(git status)",
       "Bash(git diff)",
-      "Bash(jar:*)",
-      "Bash(set:*)",
-      "Bash(then basename \"$dir\")",
-      "Bash(fi:*)",
-      "Bash(find:*)",
-      "Bash(java:*)",
-      "Bash(python3:*)",
-      "WebSearch"
+      "mcp__zread__read_file",
+      "mcp__zread__search_doc",
+      "mcp__zread__get_repo_structure",
+      "WebSearch",
+      "mcp__web-reader__webReader",
+      "mcp__web-search-prime__webSearchPrime"
     ]
   }
 }

@@ -22,15 +22,18 @@ dependencies {
     implementation(project(":foxden-common:foxden-common-idempotent"))
     implementation(project(":foxden-common:foxden-common-jimmer"))
     implementation(project(":foxden-common:foxden-common-json"))
+    implementation(project(":foxden-common:foxden-common-encrypt"))
     implementation(project(":foxden-common:foxden-common-social"))
 
     // Domain modules
     implementation(project(":foxden-domain:foxden-domain-system"))
     implementation(project(":foxden-domain:foxden-domain-tenant"))
 
+    // System app modules (for controllers)
+    implementation(project(":foxden-app:foxden-app-system"))
+
     // Runtime database dependencies
     runtimeOnly("org.postgresql:postgresql")
-    runtimeOnly("com.h2database:h2")
 
     // Spring Boot starters
     implementation("org.springframework.boot:spring-boot-starter-web")
@@ -76,4 +79,5 @@ tasks.withType<org.springframework.boot.gradle.tasks.bundling.BootJar> {
     layered {
         enabled.set(true)
     }
+    duplicatesStrategy = org.gradle.api.file.DuplicatesStrategy.EXCLUDE
 }

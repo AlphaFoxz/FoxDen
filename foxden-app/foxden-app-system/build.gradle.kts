@@ -64,6 +64,10 @@ tasks.withType<JavaExec> {
 }
 
 // Spring Boot configuration
+springBoot {
+    mainClass.set(null as String?)
+}
+
 tasks.withType<org.springframework.boot.gradle.tasks.bundling.BootJar> {
     enabled = false
 }

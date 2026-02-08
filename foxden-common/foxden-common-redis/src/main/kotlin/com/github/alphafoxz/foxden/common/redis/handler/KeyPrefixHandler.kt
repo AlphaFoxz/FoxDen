@@ -16,10 +16,11 @@ class KeyPrefixHandler(keyPrefix: String) : NameMapper {
         if (StringUtils.isBlank(name)) {
             return null
         }
-        return if (StringUtils.isNotBlank(keyPrefix) && !name!!.startsWith(keyPrefix)) {
-            keyPrefix + name
+        val nameValue = name!!
+        return if (StringUtils.isNotBlank(keyPrefix) && !nameValue.startsWith(keyPrefix)) {
+            keyPrefix + nameValue
         } else {
-            name
+            nameValue
         }
     }
 
@@ -30,10 +31,11 @@ class KeyPrefixHandler(keyPrefix: String) : NameMapper {
         if (StringUtils.isBlank(name)) {
             return null
         }
-        return if (StringUtils.isNotBlank(keyPrefix) && name!!.startsWith(keyPrefix)) {
-            name!!.substring(keyPrefix.length)
+        val nameValue = name!!
+        return if (StringUtils.isNotBlank(keyPrefix) && nameValue.startsWith(keyPrefix)) {
+            nameValue.substring(keyPrefix.length)
         } else {
-            name
+            nameValue
         }
     }
 }

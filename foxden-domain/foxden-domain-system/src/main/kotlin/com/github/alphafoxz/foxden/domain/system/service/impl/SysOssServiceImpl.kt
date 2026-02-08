@@ -1,55 +1,97 @@
 package com.github.alphafoxz.foxden.domain.system.service.impl
 
 import com.github.alphafoxz.foxden.domain.system.service.SysOssService
-import org.springframework.stereotype.Service
+import com.github.alphafoxz.foxden.domain.system.entity.*
 import com.github.alphafoxz.foxden.domain.system.bo.SysOssBo
 import com.github.alphafoxz.foxden.domain.system.vo.SysOssVo
+import com.github.alphafoxz.foxden.common.jimmer.core.page.PageQuery
+import com.github.alphafoxz.foxden.common.jimmer.core.page.TableDataInfo
+import com.github.alphafoxz.foxden.common.core.exception.ServiceException
+import org.babyfish.jimmer.sql.kt.ast.expression.*
+import org.babyfish.jimmer.sql.kt.*
+import org.springframework.stereotype.Service
+import org.springframework.web.multipart.MultipartFile
+import java.io.InputStream
 
 /**
  * Oss 业务层处理
  */
-import org.springframework.web.multipart.MultipartFile
-import java.io.InputStream
 @Service
-class SysOssServiceImpl(): SysOssService {
+class SysOssServiceImpl(
+    private val sqlClient: KSqlClient
+) : SysOssService {
 
-    override fun queryPageList(bo: SysOssBo, pageQuery: com.github.alphafoxz.foxden.common.jimmer.core.page.PageQuery): com.github.alphafoxz.foxden.common.jimmer.core.page.TableDataInfo<SysOssVo> {
-        // TODO: 实现业务逻辑
-        return com.github.alphafoxz.foxden.common.jimmer.core.page.TableDataInfo.build(emptyList())
+    override fun queryPageList(bo: SysOssBo, pageQuery: PageQuery): TableDataInfo<SysOssVo> {
+        // TODO: Implement proper pagination when needed
+        val ossList = sqlClient.createQuery(SysOss::class) {
+            bo.ossId?.let { where(table.id eq it) }
+            bo.fileName?.takeIf { it.isNotBlank() }?.let { where(table.fileName like "%${it}%") }
+            bo.originalName?.takeIf { it.isNotBlank() }?.let { where(table.originalName like "%${it}%") }
+            bo.service?.takeIf { it.isNotBlank() }?.let { where(table.service eq it) }
+            orderBy(table.id.desc())
+            select(table)
+        }.execute()
+
+        return TableDataInfo.build(ossList.map { entityToVo(it) })
     }
 
     override fun queryById(ossId: Long): SysOssVo? {
-        // TODO: 实现业务逻辑
-        return null
+        val oss = sqlClient.findById(SysOss::class, ossId) ?: return null
+        return entityToVo(oss)
     }
 
     override fun upload(file: MultipartFile): SysOssVo? {
-        // TODO: 实现业务逻辑
+        // TODO: Implement file upload when OSS client is available
+        // This requires integration with OSS service providers (MinIO, Aliyun OSS, etc.)
         return null
     }
 
     override fun upload(fileName: String, content: InputStream): SysOssVo? {
-        // TODO: 实现业务逻辑
+        // TODO: Implement file upload when OSS client is available
+        // This requires integration with OSS service providers (MinIO, Aliyun OSS, etc.)
         return null
     }
 
     override fun upload(fileName: String, content: ByteArray): SysOssVo? {
-        // TODO: 实现业务逻辑
+        // TODO: Implement file upload when OSS client is available
+        // This requires integration with OSS service providers (MinIO, Aliyun OSS, etc.)
         return null
     }
 
     override fun selectByIds(ossId: Long): SysOssVo? {
-        // TODO: 实现业务逻辑
-        return null
+        return queryById(ossId)
     }
 
     override fun deleteWithValidByIds(ossIds: Array<Long>): Int {
-        // TODO: 实现业务逻辑
-        return 0
+        var deletedCount = 0
+        ossIds.forEach { ossId ->
+            val result = sqlClient.deleteById(SysOss::class, ossId)
+            deletedCount += result.totalAffectedRowCount.toInt()
+        }
+        return deletedCount
     }
 
     override fun getPresignedObjectUrl(ossId: Long): String? {
-        // TODO: 实现业务逻辑
-        return null
+        val oss = sqlClient.findById(SysOss::class, ossId) ?: return null
+        // TODO: Generate presigned URL when OSS client is available
+        return oss.url
+    }
+
+    /**
+     * 实体转 VO
+     */
+    private fun entityToVo(oss: SysOss): SysOssVo {
+        return SysOssVo(
+            ossId = oss.id,
+            fileName = oss.fileName,
+            originalName = oss.originalName,
+            fileSuffix = oss.fileSuffix,
+            url = oss.url,
+            service = oss.service,
+            remark = oss.remark,
+            createTime = oss.createTime
+            // Note: createBy in entity is Long (user ID), but VO expects String (username)
+            // For now, skip setting this field
+        )
     }
 }

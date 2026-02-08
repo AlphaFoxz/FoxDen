@@ -7,7 +7,16 @@ import org.babyfish.jimmer.sql.*
  * 参数配置表 sys_config
  */
 @Entity
-interface SysConfig : CommId, CommInfo, CommTenant {
+@Table(name = "sys_config")
+interface SysConfig : CommInfo, CommTenant {
+    /**
+     * 主键ID
+     */
+    @org.babyfish.jimmer.sql.Column(name = "config_id")
+    @Id
+    @GeneratedValue
+    val id: Long
+
     /**
      * 参数名称
      */

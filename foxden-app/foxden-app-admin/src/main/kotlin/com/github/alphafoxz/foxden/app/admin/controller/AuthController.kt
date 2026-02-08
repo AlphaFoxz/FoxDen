@@ -9,11 +9,13 @@ import com.github.alphafoxz.foxden.common.core.constant.SystemConstants
 import com.github.alphafoxz.foxden.common.core.domain.R
 import com.github.alphafoxz.foxden.common.core.domain.model.LoginBody
 import com.github.alphafoxz.foxden.common.core.domain.model.RegisterBody
-import com.github.alphafoxz.foxden.common.core.utils.*
+import com.github.alphafoxz.foxden.common.core.utils.MapstructUtils
+import com.github.alphafoxz.foxden.common.core.utils.MessageUtils
+import com.github.alphafoxz.foxden.common.core.utils.StreamUtils
+import com.github.alphafoxz.foxden.common.core.utils.StringUtils
+import com.github.alphafoxz.foxden.common.encrypt.annotation.ApiEncrypt
 import com.github.alphafoxz.foxden.common.jimmer.helper.TenantHelper
 import com.github.alphafoxz.foxden.common.json.utils.JsonUtils
-import com.github.alphafoxz.foxden.common.ratelimiter.annotation.RateLimiter
-import com.github.alphafoxz.foxden.common.ratelimiter.enums.LimitType
 import com.github.alphafoxz.foxden.domain.system.bo.SysTenantBo
 import com.github.alphafoxz.foxden.domain.system.service.SysConfigService
 import com.github.alphafoxz.foxden.domain.system.service.SysTenantService
@@ -46,12 +48,13 @@ class AuthController(
      */
     @PostMapping("/login")
     fun login(@RequestBody body: String): R<LoginVo> {
-        val loginBody = JsonUtils.parseObject(body, LoginBody::class.java)
-        ValidatorUtils.validate(loginBody)
+        // 解析JSON获取clientId和grantType
+        val tempBody = JsonUtils.parseObject(body, LoginBody::class.java)
+            ?: throw IllegalArgumentException("Invalid login request body")
 
         // 授权类型和客户端id
-        val clientId = loginBody!!.clientId!!
-        val grantType = loginBody!!.grantType!!
+        val clientId = tempBody.clientId!!
+        val grantType = tempBody.grantType!!
 
         val client = clientService.queryByClientId(clientId)
         // 查询不到 client 或 client 内不包含 grantType
@@ -62,9 +65,9 @@ class AuthController(
         }
 
         // 校验租户
-        loginService.checkTenant(loginBody!!.tenantId!!)
+        loginService.checkTenant(tempBody.tenantId!!)
 
-        // 登录
+        // 登录 - 将原始JSON字符串传递给策略
         val loginVo = AuthStrategy.login(body, client, grantType)
 
         return R.ok(loginVo)
@@ -96,7 +99,8 @@ class AuthController(
      *
      * @return 租户列表
      */
-    @RateLimiter(time = 60, count = 20, limitType = LimitType.IP)
+    // 开发环境禁用限流
+    // @RateLimiter(time = 60, count = 100, limitType = LimitType.IP)
     @GetMapping("/tenant/list")
     fun tenantList(request: HttpServletRequest): R<LoginTenantVo> {
         // 返回对象

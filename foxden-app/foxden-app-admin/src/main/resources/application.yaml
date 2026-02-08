@@ -4,8 +4,19 @@ foxden:
   version: 0.0.1-SNAPSHOT
   copyrightYear: 2025
   demoEnabled: true
-  captchaEnabled: true
+  captchaEnabled: false
   addressEnabled: false
+
+# API加密配置
+api-decrypt:
+  enabled: true
+  headerFlag: encrypt-key
+  publicKey: MFwwDQYJKoZIhvcNAQEBBQADSwAwSAJBAJnNwrj4hi/y3CCJu868ghCG5dUj8wZK++RNlTLcXoMmdZWEQ/u02RgD5LyLAXGjLOjbMtC+/J9qofpSGTKSx/MCAwEAAQ==
+  privateKey: MIIBVAIBADANBgkqhkiG9w0BAQEFAASCAT4wggE6AgEAAkEAqhHyZfSsYourNxaY7Nt+PrgrxkiA50efORdI5U5lsW79MmFnusUA355oaSXcLhu5xxB38SMSyP2KvuKNPuH3owIDAQABAkAfoiLyL+Z4lf4Myxk6xUDgLaWGximj20CUf+5BKKnlrK+Ed8gAkM0HqoTt2UZwA5E2MzS4EI2gjfQhz5X28uqxAiEA3wNFxfrCZlSZHb0gn2zDpWowcSxQAgiCstxGUoOqlW8CIQDDOerGKH5OmCJ4Z21v+F25WaHYPxCFMvwxpcw99EcvDQIgIdhDTIqD2jfYjPTY8Jj3EDGPbH2HHuffvflECt3Ek60CIQCFRlCkHpi7hthhYhovyloRYsM+IS9h/0BzlEAuO0ktMQIgSPT3aFAgJYwKpqRYKlLDVcflZFCKY7u3UP8iWi1Qw0Y=
+
+# Jimmer ORM配置
+jimmer:
+  language: kotlin
 
 spring:
   profiles:
@@ -20,7 +31,6 @@ spring:
       - org.springframework.boot.autoconfigure.data.redis.RedisRepositoriesAutoConfiguration
       - com.baomidou.lock.spring.boot.autoconfigure.LockAutoConfiguration
       - com.baomidou.lock.spring.boot.autoconfigure.RedissonLockAutoConfiguration
-      - org.redisson.spring.starter.RedissonAutoConfigurationV2
   mvc:
     pathmatch:
       matching-strategy: ant_path_matcher
@@ -36,7 +46,7 @@ spring:
       max-request-size: 100MB
 
 server:
-  port: 21003
+  port: 12003
   servlet:
     context-path: /
   tomcat:

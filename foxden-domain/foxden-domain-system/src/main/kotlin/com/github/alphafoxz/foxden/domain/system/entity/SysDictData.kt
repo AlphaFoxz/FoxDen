@@ -8,7 +8,16 @@ import org.babyfish.jimmer.sql.*
  * 字典数据表 sys_dict_data
  */
 @Entity
-interface SysDictData : CommId, CommInfo, CommTenant {
+@Table(name = "sys_dict_data")
+interface SysDictData : CommInfo, CommTenant {
+    /**
+     * 主键ID
+     */
+    @org.babyfish.jimmer.sql.Column(name = "dict_code")
+    @Id
+    @GeneratedValue
+    val id: Long
+
     /**
      * 字典排序
      */
@@ -42,19 +51,19 @@ interface SysDictData : CommId, CommInfo, CommTenant {
     /**
      * 是否默认（Y是 N否）
      */
-    val isDefault: String?
+    @Column(name = "is_default")
+    val defaultFlag: String?
 
     /**
-     * 字典类型
+     * 字典类型对象（关联查询，非持久化字段）
      */
     @ManyToOne
-    @JoinColumn(name = "dict_type")
     val dictTypeObj: SysDictType?
 
     /**
      * 是否默认值
      */
     fun getDefault(): Boolean {
-        return SystemConstants.YES == isDefault
+        return SystemConstants.YES == defaultFlag
     }
 }

@@ -8,7 +8,16 @@ import java.util.Date
  * 操作日志记录表 sys_oper_log
  */
 @Entity
-interface SysOperLog : CommId {
+@Table(name = "sys_oper_log")
+interface SysOperLog {
+    /**
+     * 主键ID
+     */
+    @org.babyfish.jimmer.sql.Column(name = "oper_id")
+    @Id
+    @GeneratedValue
+    val id: Long
+
     /**
      * 租户编号
      */

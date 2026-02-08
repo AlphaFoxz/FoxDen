@@ -7,10 +7,20 @@ import org.babyfish.jimmer.sql.*
  * 部门表 sys_dept
  */
 @Entity
-interface SysDept : CommDelFlag, CommId, CommInfo, CommTenant {
+@Table(name = "sys_dept")
+interface SysDept : CommDelFlag, CommInfo, CommTenant {
+    /**
+     * 主键ID
+     */
+    @org.babyfish.jimmer.sql.Column(name = "dept_id")
+    @Id
+    @GeneratedValue
+    val id: Long
+
     /**
      * 父部门ID
      */
+    @IdView
     val parentId: Long?
 
     /**
@@ -69,7 +79,6 @@ interface SysDept : CommDelFlag, CommId, CommInfo, CommTenant {
     /**
      * 用户
      */
-    @OnDissociate(DissociateAction.DELETE)
     @OneToMany(mappedBy = "dept")
     val users: List<SysUser>
 }

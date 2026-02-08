@@ -8,21 +8,66 @@ user:
     maxRetryCount: 5              # 密码最大重试次数
     lockTime: 10                  # 锁定时间（分钟）
 
+# Redis 配置
+spring.data.redis:
+  host: localhost
+  port: 11002
+  password: 123456
+  database: 0
+  timeout: 3000ms
+  lettuce:
+    pool:
+      min-idle: 0
+      max-idle: 8
+      max-active: 8
+      max-wait: -1ms
+
+redisson:
+  # 缓存key前缀
+  key-prefix: foxden
+  # 线程池数量
+  threads: 16
+  # Netty线程池数量
+  nettyThreads: 32
+  # 单机配置
+  singleServerConfig:
+    # Redis 服务器地址
+    address: "redis://localhost:11002"
+    # 客户端名称
+    clientName: foxden-admin
+    # 最小空闲连接数
+    connectionMinimumIdleSize: 8
+    # 连接池大小
+    connectionPoolSize: 32
+    # 连接空闲超时，单位：毫秒
+    idleConnectionTimeout: 10000
+    # 命令等待超时，单位：毫秒
+    timeout: 3000
+    # 发布和订阅连接池大小
+    subscriptionConnectionPoolSize: 50
+
 spring:
   datasource:
     type: com.zaxxer.hikari.HikariDataSource
-    driver-class-name: org.h2.Driver
-    url: jdbc:h2:mem:foxden;DB_CLOSE_DELAY=-1;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE
-    username: sa
-    password:
-
-  h2:
-    console:
-      enabled: true
-      path: /h2-console
+    driver-class-name: org.postgresql.Driver
+    url: jdbc:postgresql://localhost:12001/postgres
+    username: postgres
+    password: 123456
+    hikari:
+      minimum-idle: 5
+      maximum-pool-size: 20
+      auto-commit: true
+      idle-timeout: 600000
+      max-lifetime: 1800000
+      connection-timeout: 30000
+      connection-test-query: SELECT 1
+  sql:
+    init:
+      mode: never
 
 jimmer:
-  dialect: org.babyfish.jimmer.sql.dialect.H2Dialect
+  language: kotlin
+  dialect: org.babyfish.jimmer.sql.dialect.PostgresDialect
   show-sql: true
   pretty-sql: true
   executor-context-level: DISABLED
@@ -30,4 +75,4 @@ jimmer:
     path: /jimmer
   database:
     initialization:
-      mode: always
+      mode: never

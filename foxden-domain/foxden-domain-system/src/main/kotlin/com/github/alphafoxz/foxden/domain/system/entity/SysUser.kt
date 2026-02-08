@@ -9,10 +9,20 @@ import java.util.Date
  * 用户对象 sys_user
  */
 @Entity
-interface SysUser : CommDelFlag, CommId, CommInfo, CommTenant {
+@Table(name = "sys_user")
+interface SysUser : CommDelFlag, CommInfo, CommTenant {
+    /**
+     * 主键ID
+     */
+    @org.babyfish.jimmer.sql.Column(name = "user_id")
+    @Id
+    @GeneratedValue
+    val id: Long
+
     /**
      * 部门ID
      */
+    @IdView
     val deptId: Long?
 
     /**
@@ -53,7 +63,6 @@ interface SysUser : CommDelFlag, CommId, CommInfo, CommTenant {
     /**
      * 密码
      */
-    @OnDissociate(DissociateAction.DELETE)
     val password: String?
 
     /**
@@ -74,7 +83,6 @@ interface SysUser : CommDelFlag, CommId, CommInfo, CommTenant {
     /**
      * 角色
      */
-    @OnDissociate(DissociateAction.DELETE)
     @ManyToMany
     @JoinTable(name = "sys_user_role")
     val roles: List<SysRole>
@@ -82,7 +90,6 @@ interface SysUser : CommDelFlag, CommId, CommInfo, CommTenant {
     /**
      * 岗位
      */
-    @OnDissociate(DissociateAction.DELETE)
     @ManyToMany
     @JoinTable(name = "sys_user_post")
     val posts: List<SysPost>

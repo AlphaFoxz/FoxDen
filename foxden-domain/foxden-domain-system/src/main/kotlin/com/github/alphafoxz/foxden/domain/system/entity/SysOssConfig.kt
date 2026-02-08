@@ -7,7 +7,16 @@ import org.babyfish.jimmer.sql.*
  * 对象存储配置对象 sys_oss_config
  */
 @Entity
-interface SysOssConfig : CommId, CommInfo {
+@Table(name = "sys_oss_config")
+interface SysOssConfig : CommInfo {
+    /**
+     * 主键ID
+     */
+    @org.babyfish.jimmer.sql.Column(name = "oss_config_id")
+    @Id
+    @GeneratedValue
+    val id: Long
+
     /**
      * 配置key
      */
@@ -46,7 +55,8 @@ interface SysOssConfig : CommId, CommInfo {
     /**
      * 是否https（0否 1是）
      */
-    val isHttps: String?
+    @Column(name = "is_https")
+    val httpsFlag: String?
 
     /**
      * 域

@@ -16,6 +16,7 @@ import org.springframework.scheduling.annotation.EnableScheduling
 @SpringBootApplication
 @ComponentScan(basePackages = [
     "com.github.alphafoxz.foxden.app.admin",
+    "com.github.alphafoxz.foxden.app.system",
     "com.github.alphafoxz.foxden.domain",
     "com.github.alphafoxz.foxden.common"
 ])

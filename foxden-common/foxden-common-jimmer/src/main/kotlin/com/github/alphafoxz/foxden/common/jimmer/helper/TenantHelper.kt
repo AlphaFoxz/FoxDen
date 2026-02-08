@@ -1,8 +1,8 @@
 package com.github.alphafoxz.foxden.common.jimmer.helper
 
-import com.github.alphafoxz.foxden.common.core.utils.SpringUtils
 import com.github.alphafoxz.foxden.common.core.utils.StringUtils
 import com.github.alphafoxz.foxden.common.core.constant.TenantConstants
+import com.github.alphafoxz.foxden.common.web.utils.ServletUtils
 import jakarta.servlet.http.HttpServletRequest
 import org.slf4j.LoggerFactory
 
@@ -22,7 +22,7 @@ object TenantHelper {
      */
     @JvmStatic
     fun getTenantId(): String {
-        return getTenantId(SpringUtils.getBean(HttpServletRequest::class.java))
+        return getTenantId(ServletUtils.getRequest())
     }
 
     /**

@@ -7,7 +7,16 @@ import org.babyfish.jimmer.sql.*
  * 通知公告表 sys_notice
  */
 @Entity
-interface SysNotice : CommId, CommInfo, CommTenant {
+@Table(name = "sys_notice")
+interface SysNotice : CommInfo, CommTenant {
+    /**
+     * 主键ID
+     */
+    @org.babyfish.jimmer.sql.Column(name = "notice_id")
+    @Id
+    @GeneratedValue
+    val id: Long
+
     /**
      * 公告标题
      */

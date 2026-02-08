@@ -55,9 +55,11 @@ class CaptchaController(
         // 生成验证码
         val captchaType = captchaProperties.type
         val codeGenerator = if (CaptchaType.MATH == captchaType) {
-            ReflectUtils.newInstance(captchaType.clazz, captchaProperties.numberLength, false)
+            // MathGenerator: (numberLength: Int)
+            cn.hutool.captcha.generator.MathGenerator(captchaProperties.numberLength)
         } else {
-            ReflectUtils.newInstance(captchaType.clazz, captchaProperties.charLength)
+            // 其他类型使用 CaptchaType 自带的创建方法
+            captchaType.newInstance()
         }
         val captcha = SpringUtils.getBean(captchaProperties.category.clazz)
         captcha.setGenerator(codeGenerator)

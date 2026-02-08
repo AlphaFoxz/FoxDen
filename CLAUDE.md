@@ -41,7 +41,7 @@ foxden/
 
 ## Applications
 
-- **foxden-app-admin**: Main admin application running on port 8080. Handles authentication, registration, and tenant selection. Entry point: `FoxdenAdminApplication.kt`
+- **foxden-app-admin**: Main admin application running on port 12003. Handles authentication, registration, and tenant selection. Entry point: `FoxdenAdminApplication.kt`
 - **foxden-app-system**: System management controllers (user, role, menu, dept, etc.)
 
 ## Build and Development Commands
@@ -316,5 +316,5 @@ jimmer:
 ### Testing with H2
 - H2 runs in-memory with PostgreSQL compatibility mode
 - Schema initialization is set to `always` in dev profile
-- Access H2 console at http://localhost:8080/h2-console
+- Access H2 console at http://localhost:12003/h2-console
 - JDBC URL: `jdbc:h2:mem:foxden`

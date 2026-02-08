@@ -1,66 +1,130 @@
 package com.github.alphafoxz.foxden.domain.system.service.impl
 
 import com.github.alphafoxz.foxden.domain.system.service.SysConfigService
-import org.springframework.stereotype.Service
+import com.github.alphafoxz.foxden.domain.system.entity.*
 import com.github.alphafoxz.foxden.domain.system.bo.SysConfigBo
 import com.github.alphafoxz.foxden.domain.system.vo.SysConfigVo
+import com.github.alphafoxz.foxden.common.core.constant.SystemConstants
+import com.github.alphafoxz.foxden.common.core.exception.ServiceException
+import org.babyfish.jimmer.sql.kt.ast.expression.*
+import org.babyfish.jimmer.sql.kt.*
+import org.springframework.stereotype.Service
 
 /**
  * Config 业务层处理
  */
 @Service
-class SysConfigServiceImpl(): SysConfigService {
+class SysConfigServiceImpl(
+    private val sqlClient: KSqlClient
+) : SysConfigService {
 
     override fun selectConfigList(config: SysConfigBo): List<SysConfigVo> {
-        // TODO: 实现业务逻辑
-        return emptyList()
+        val configs = sqlClient.createQuery(SysConfig::class) {
+            config.configId?.let { where(table.id eq it) }
+            config.configName?.takeIf { it.isNotBlank() }?.let { where(table.configName like "%${it}%") }
+            config.configKey?.takeIf { it.isNotBlank() }?.let { where(table.configKey like "%${it}%") }
+            config.configType?.takeIf { it.isNotBlank() }?.let { where(table.configType eq it) }
+            orderBy(table.id.asc())
+            select(table)
+        }.execute()
+
+        return configs.map { entityToVo(it) }
     }
 
     override fun selectConfigByKey(configKey: String): String? {
-        // TODO: 实现业务逻辑
-        return null
+        val config = sqlClient.createQuery(SysConfig::class) {
+            where(table.configKey eq configKey)
+            select(table.configValue)
+        }.fetchOneOrNull()
+
+        return config
     }
 
     override fun selectRegisterEnabled(tenantId: String?): Boolean {
-        // TODO: 实现业务逻辑
-        return true
+        // Default to true if config doesn't exist
+        val configValue = selectConfigByKey("sys.account.registerUser")
+        return configValue != "false"
     }
 
     override fun selectConfigObject(configKey: String): SysConfigVo? {
-        // TODO: 实现业务逻辑
-        return null
+        val config = sqlClient.createQuery(SysConfig::class) {
+            where(table.configKey eq configKey)
+            select(table)
+        }.fetchOneOrNull()
+
+        return config?.let { entityToVo(it) }
     }
 
     override fun selectConfigValueByKey(configKey: String): String? {
-        // TODO: 实现业务逻辑
-        return null
+        return selectConfigByKey(configKey)
     }
 
     override fun selectConfigValueByKey(configKey: String, defaultValue: String): String {
-    return ""
-        // TODO: 实现业务逻辑
+        return selectConfigByKey(configKey) ?: defaultValue
     }
 
     override fun insertConfig(bo: SysConfigBo): Int {
-        // TODO: 实现业务逻辑
-        return 0
+        val newConfig = com.github.alphafoxz.foxden.domain.system.entity.SysConfigDraft.`$`.produce {
+            configName = bo.configName ?: throw ServiceException("参数名称不能为空")
+            configKey = bo.configKey ?: throw ServiceException("参数键名不能为空")
+            configValue = bo.configValue
+            configType = bo.configType ?: SystemConstants.NO
+            remark = bo.remark
+            createTime = java.time.LocalDateTime.now()
+        }
+
+        val result = sqlClient.save(newConfig)
+        return if (result.isModified) 1 else 0
     }
 
     override fun updateConfig(bo: SysConfigBo): Int {
-        // TODO: 实现业务逻辑
-        return 0
+        val configIdVal = bo.configId ?: return 0
+        val existing = sqlClient.findById(SysConfig::class, configIdVal)
+            ?: throw ServiceException("参数配置不存在")
+
+        val updated = com.github.alphafoxz.foxden.domain.system.entity.SysConfigDraft.`$`.produce(existing) {
+            bo.configName?.let { configName = it }
+            bo.configKey?.let { configKey = it }
+            bo.configValue?.let { configValue = it }
+            bo.configType?.let { configType = it }
+            bo.remark?.let { remark = it }
+            updateTime = java.time.LocalDateTime.now()
+        }
+
+        val result = sqlClient.save(updated)
+        return if (result.isModified) 1 else 0
     }
 
     override fun deleteConfigByIds(configIds: Array<Long>) {
-        // TODO: 实现业务逻辑
+        sqlClient.deleteByIds(SysConfig::class, configIds.toList())
     }
 
     override fun resetConfigCache() {
-        // TODO: 实现业务逻辑
+        // TODO: Implement cache reset logic when cache is integrated
     }
 
     override fun checkConfigKeyUnique(config: SysConfigBo): Boolean {
-        // TODO: 实现业务逻辑
-        return true
+        val existing = sqlClient.createQuery(SysConfig::class) {
+            where(table.configKey eq config.configKey)
+            config.configId?.let { where(table.id ne it) }
+            select(table)
+        }.fetchOneOrNull()
+
+        return existing == null || existing.id == config.configId
+    }
+
+    /**
+     * 实体转 VO
+     */
+    private fun entityToVo(config: SysConfig): SysConfigVo {
+        return SysConfigVo(
+            configId = config.id,
+            configName = config.configName,
+            configKey = config.configKey,
+            configValue = config.configValue,
+            configType = config.configType,
+            remark = config.remark,
+            createTime = config.createTime
+        )
     }
 }

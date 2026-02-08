@@ -62,6 +62,9 @@ class RedisConfig {
             properties.singleServerConfig?.let { single ->
                 config.useSingleServer()
                     .setNameMapper(KeyPrefixHandler(properties.keyPrefix))
+                    .apply {
+                        single.address?.let { setAddress(it) }
+                    }
                     .setTimeout(single.timeout)
                     .setClientName(single.clientName)
                     .setIdleConnectionTimeout(single.idleConnectionTimeout)

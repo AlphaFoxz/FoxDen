@@ -7,10 +7,20 @@ import org.babyfish.jimmer.sql.*
  * 菜单权限表 sys_menu
  */
 @Entity
-interface SysMenu : CommId, CommInfo {
+@Table(name = "sys_menu")
+interface SysMenu : CommInfo {
+    /**
+     * 主键ID
+     */
+    @org.babyfish.jimmer.sql.Column(name = "menu_id")
+    @Id
+    @GeneratedValue
+    val id: Long
+
     /**
      * 父菜单ID
      */
+    @IdView
     val parentId: Long?
 
     /**
@@ -41,12 +51,14 @@ interface SysMenu : CommId, CommInfo {
     /**
      * 是否为外链（0是 1否）
      */
-    val isFrame: String?
+    @Column(name = "is_frame")
+    val frameFlag: String?
 
     /**
      * 是否缓存（0缓存 1不缓存）
      */
-    val isCache: String?
+    @Column(name = "is_cache")
+    val cacheFlag: String?
 
     /**
      * 类型（M目录 C菜单 F按钮）

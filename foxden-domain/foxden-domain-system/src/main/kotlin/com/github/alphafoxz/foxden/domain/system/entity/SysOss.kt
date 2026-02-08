@@ -7,7 +7,16 @@ import org.babyfish.jimmer.sql.*
  * OSS对象存储对象
  */
 @Entity
-interface SysOss : CommId, CommInfo, CommTenant {
+@Table(name = "sys_oss")
+interface SysOss : CommInfo, CommTenant {
+    /**
+     * 主键ID
+     */
+    @org.babyfish.jimmer.sql.Column(name = "oss_id")
+    @Id
+    @GeneratedValue
+    val id: Long
+
     /**
      * 文件名
      */

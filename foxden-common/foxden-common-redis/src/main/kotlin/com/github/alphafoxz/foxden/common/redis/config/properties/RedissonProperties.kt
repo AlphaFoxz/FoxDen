@@ -37,6 +37,12 @@ data class RedissonProperties(
 ) {
     data class SingleServerConfig(
         /**
+         * Redis 服务器地址
+         * 格式: redis://host:port 或 rediss://host:port (SSL)
+         */
+        var address: String? = null,
+
+        /**
          * 客户端名称
          */
         var clientName: String? = null,

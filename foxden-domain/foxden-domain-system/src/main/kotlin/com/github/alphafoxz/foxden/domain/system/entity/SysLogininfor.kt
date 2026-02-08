@@ -8,7 +8,16 @@ import java.util.Date
  * 系统访问记录表 sys_logininfor
  */
 @Entity
-interface SysLogininfor : CommId {
+@Table(name = "sys_logininfor")
+interface SysLogininfor {
+    /**
+     * 主键ID
+     */
+    @org.babyfish.jimmer.sql.Column(name = "info_id")
+    @Id
+    @GeneratedValue
+    val id: Long
+
     /**
      * 租户编号
      */

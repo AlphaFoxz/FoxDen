@@ -20,6 +20,7 @@ include("foxden-common:foxden-common-doc")
 include("foxden-common:foxden-common-sms")
 include("foxden-common:foxden-common-ratelimiter")
 include("foxden-common:foxden-common-social")
+include("foxden-common:foxden-common-encrypt")
 
 // Domain modules
 include("foxden-domain")
