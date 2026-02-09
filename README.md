@@ -206,7 +206,7 @@ fun selectUserList(bo: SysUserBo): List<SysUserVo> {
 
 ## 📚 Documentation
 
-- [Project Guide](CLAUDE.md) - Detailed project documentation
+- [Project Guide](.claude/CLAUDE.md) - Detailed project documentation
 - [Jimmer ORM Guide](.claude/JIMMER_GUIDE.md) - Jimmer usage guide
 - [Migration Guide](.claude/migration-guide.md) - Java to Kotlin migration notes
 
