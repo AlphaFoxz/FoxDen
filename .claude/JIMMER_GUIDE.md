@@ -7,11 +7,13 @@
 
 - [什么是 Jimmer](#什么是-jimmer)
 - [核心概念](#核心概念)
+- [Spring Boot 集成配置](#spring-boot-集成配置)
 - [实体定义](#实体定义)
 - [查询数据](#查询数据)
 - [保存数据](#保存数据)
 - [FoxDen 项目中的 Jimmer 使用](#foxden-项目中的-jimmer-使用)
 - [常见模式](#常见模式)
+- [常见问题](#常见问题)
 
 ---
 
@@ -58,6 +60,123 @@ Jimmer 实体**不是 POJO**，而是 **interface**，由 KSP（Kotlin）或 APT
 ### 3. Trait 设计模式
 
 Jimmer 使用 `@MappedSuperclass` trait 实现代码复用，避免重复定义公共字段。
+
+---
+
+## Spring Boot 集成配置
+
+### 核心原则：使用 Starter 自动配置
+
+**❌ 错误做法：手动创建 KSqlClient Bean**
+
+```kotlin
+// 不要这样做！
+@Configuration
+class JimmerKSqlClientConfig {
+    @Bean
+    fun kSqlClient(dataSource: DataSource): KSqlClient {
+        return newKSqlClient {
+            setConnectionManager {
+                dataSource.connection  // ❌ ConnectionManagerDsl 错误
+            }
+        }
+    }
+}
+```
+
+**✅ 正确做法：让 Spring Boot Starter 自动配置**
+
+```yaml
+# application.yaml
+jimmer:
+  language: kotlin    # 关键配置！指示创建 KSqlClient (Kotlin) 而非 JSqlClient (Java)
+  dialect: org.babyfish.jimmer.sql.dialect.PostgresDialect
+  show-sql: true
+  pretty-sql: true
+  executor-context-level: DISABLED
+  client:
+    path: /jimmer
+```
+
+```kotlin
+// 直接注入使用，无需手动配置
+@RestController
+class UserController(
+    private val sqlClient: KSqlClient  // ✅ Spring Boot Starter 自动注入
+) {
+    @GetMapping("/users")
+    fun getUsers(): List<User> {
+        return sqlClient.createQuery(User::class) {
+            select(table)
+        }.execute()
+    }
+}
+```
+
+### 配置说明
+
+| 配置项 | 说明 | 可选值 |
+|--------|------|--------|
+| `jimmer.language` | **最重要**：指定语言类型 | `kotlin` / `java` |
+| `jimmer.dialect` | 数据库方言 | `H2Dialect`, `PostgresDialect`, `MySQLDialect` 等 |
+| `jimmer.show-sql` | 打印 SQL | `true` / `false` |
+| `jimmer.pretty-sql` | 格式化 SQL | `true` / `false` |
+| `jimmer.executor-context-level` | 执行器上下文级别 | `DISABLED`, `SESSION`, `STATEMENT` |
+
+### 自动配置原理
+
+`jimmer-spring-boot-starter` 根据 `jimmer.language` 配置自动：
+
+1. **Kotlin 项目** (`language: kotlin`)
+   - 创建 `KSqlClient` Bean
+   - 启用 Kotlin DSL 支持
+   - 支持协程
+
+2. **Java 项目** (`language: java` 或未配置)
+   - 创建 `JSqlClient` Bean
+   - 使用 Java 风格 API
+
+### 扩展函数
+
+项目中定义的扩展函数简化常见操作：
+
+```kotlin
+// foxden-domain-system/src/main/.../service/extensions/ServiceExtensions.kt
+
+// 根据 ID 查询
+fun <E : Any> KSqlClient findById(
+    entityType: KClass<E>,
+    id: Long
+): E? = ...
+
+// 查询列表
+fun <E : Any> KSqlClient queryList(
+    entityType: KClass<E>,
+    where: (KMutableTableImplementor<E>) -> Unit
+): List<E> = ...
+
+// 分页查询
+fun <E : Any> KSqlClient queryPage(
+    entityType: KClass<E>,
+    pageNum: Int,
+    pageSize: Int,
+    where: (KMutableTableImplementor<E>) -> Unit
+): Page<E> = ...
+```
+
+**使用示例**:
+```kotlin
+// 使用扩展函数
+val user = sqlClient.findById(SysUser::class, userId)
+
+val users = sqlClient.queryList(SysUser::class) {
+    where(table.status.eq(true))
+}
+
+val page = sqlClient.queryPage(SysUser::class, 1, 10) {
+    where(table.userName.like("%admin%"))
+}
+```
 
 ---
 
@@ -729,6 +848,132 @@ sqlClient.update(
 // 如需查询所有租户，使用动态租户
 TenantHelper.dynamic(tenantId) {
     // 在此作用域内查询指定租户
+}
+```
+
+---
+
+## 常见问题
+
+### 1. ConnectionManagerDsl 错误
+
+**错误信息**:
+```
+IllegalStateException: ConnectionManagerDsl has not be proceeded
+```
+
+**原因**: 手动创建了 KSqlClient Bean，但配置不正确
+
+**解决方案**: 删除手动配置，使用 Spring Boot Starter 自动配置
+
+```kotlin
+// ❌ 删除此文件
+// JimmerKSqlClientConfig.kt
+
+// ✅ 确保配置正确
+// application.yaml
+jimmer:
+  language: kotlin  # 必须设置！
+```
+
+### 2. 类型推断错误
+
+**问题**: Jimmer DSL 中的类型推断有时需要显式指定
+
+**解决方案**:
+```kotlin
+// 明确指定类型
+where(table.userName eq "admin")  // 而非 eq("admin")
+```
+
+### 3. KSP 生成的代码找不到
+
+**原因**: 未配置 KSP 生成目录
+
+**解决方案**: 在 `build.gradle.kts` 中添加：
+
+```kotlin
+kotlin {
+    sourceSets.main {
+        kotlin.srcDir("build/generated/ksp/main/kotlin")
+    }
+}
+```
+
+### 4. Fetcher 定义错误
+
+**问题**: Fetcher 未正确导入或生成
+
+**解决方案**:
+```kotlin
+// 确保 KSP 已运行
+./gradlew :foxden-domain:foxden-domain-system:kspKotlin
+
+// 正确导入
+import com.github.alphafoxz.foxden.domain.system.entity.SysUserFetcher
+```
+
+### 5. 多对多关联保存
+
+**问题**: Draft 的关联列表类型不匹配
+
+**解决方案**: 使用简单的对象引用而非完整对象
+
+```kotlin
+val updated = SysUserDraft.`$`.produce(existing) {
+    // 对于多对多关联，使用已存在的关联对象
+    // 不要在 Draft 中创建新对象
+}
+```
+
+---
+
+## 最佳实践
+
+### 1. 始终使用 Fetcher
+
+```kotlin
+// ✅ 推荐：使用 Fetcher
+val user = sqlClient.findById(SysUser::class, id, SysUserFetcher.$.allScalarFields())
+
+// ❌ 避免：不使用 Fetcher（可能触发 N+1 查询）
+val user = sqlClient.findById(SysUser::class, id)
+```
+
+### 2. 利用扩展函数
+
+```kotlin
+// ✅ 使用扩展函数
+sqlClient.findById(SysUser::class, id)
+
+// ❌ 避免重复代码
+sqlClient.createQuery(SysUser::class) {
+    where(table.id eq id)
+    select(table)
+}.execute().firstOrNull()
+```
+
+### 3. 使用类型安全的 DSL
+
+```kotlin
+// ✅ 类型安全
+where(table.userName eq "admin")
+
+// ❌ 避免字符串
+where("user_name = 'admin'")
+```
+
+### 4. 合理使用事务
+
+```kotlin
+@Service
+class UserService {
+    @Transactional
+    fun createUserWithRoles(user: SysUser, roleIds: List<Long>) {
+        // 事务内的多个操作
+        val savedUser = sqlClient.insert(user)
+        // ... 分配角色
+    }
 }
 ```
 

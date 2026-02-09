@@ -28,7 +28,8 @@ foxden/
 │   ├── foxden-common-doc/          # SpringDoc OpenAPI documentation
 │   ├── foxden-common-idempotent/   # Idempotent request handling
 │   ├── foxden-common-ratelimiter/  # Rate limiting
-│   └── foxden-common-json/         # JSON configuration
+│   ├── foxden-common-json/         # JSON configuration
+│   └── foxden-common-encrypt/      # API encryption/decryption (RSA+AES)
 ├── foxden-domain/                   # Domain layer parent
 │   ├── foxden-domain-system/       # System domain (user, role, menu, dept, etc.)
 │   ├── foxden-domain-tenant/       # Tenant domain
@@ -93,15 +94,14 @@ foxden/
 - **Key Dependencies**:
   - Spring Security, Spring WebMVC, Spring Validation
   - Jimmer Spring Boot Starter with KSP code generation
-  - Jackson Kotlin Module
+  - Jackson Kotlin Module 2.18.2
   - Spring DevTools
-  - Redisson (Redis/distributed locking)
-  - Lock4j (distributed locking)
-  - JustAuth (social login)
-  - Hutool (Chinese utility library)
-  - MapStruct Plus (object mapping)
-  - SpringDoc OpenAPI (documentation)
-  - EasyExcel (Excel import/export)
+  - Redisson 3.35.0 (Redis/distributed locking)
+  - Lock4j 2.2.4 (distributed locking)
+  - JustAuth 1.16.7 (social login)
+  - Hutool 5.8.43 (Chinese utility library)
+  - SpringDoc OpenAPI 2.8.2 (documentation)
+  - EasyExcel 4.0.3 (Excel import/export)
 
 ## Architecture
 
@@ -182,7 +182,7 @@ com.github.alphafoxz.foxden
 │   ├── jimmer/                      # Jimmer traits (CommId, CommTenant, etc.)
 │   ├── web/                         # Web common utilities
 │   ├── security/                    # Security utilities
-│   └── email/                       # Email functionality
+│   └── mail/                        # Email functionality
 ├── domain/
 │   ├── system/                      # System domain entities, repositories, services
 │   │   ├── entity/                  # SysUser, SysRole, SysMenu, etc.

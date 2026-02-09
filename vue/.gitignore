@@ -34,3 +34,6 @@ tests/**/coverage/
 tests/e2e/reports
 *.try.ts
 selenium-debug.log
+
+# claude
+**/settings.local.json

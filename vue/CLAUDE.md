@@ -12,7 +12,7 @@ FoxDen Vue frontend - A Vue 3 application that serves as the web UI for the FoxD
 ```bash
 bun run dev
 ```
-Starts Vite dev server with hot reload. Proxies API requests to `http://127.0.0.1:11003`.
+Starts Vite dev server with hot reload. Proxies API requests to `http://127.0.0.1:12003`.
 
 ### Build for production
 ```bash

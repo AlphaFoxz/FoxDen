@@ -42,3 +42,6 @@ out/
 
 ### Kotlin ###
 .kotlin
+
+### Claude Code ###
+**/settings.local.json

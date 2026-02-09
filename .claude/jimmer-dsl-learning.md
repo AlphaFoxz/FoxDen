@@ -1,6 +1,6 @@
 # Jimmer Kotlin DSL 学习笔记
 
-**更新日期**: 2024-02-08
+**更新日期**: 2025-02-09
 
 ## ✅ 已验证的正确模式
 
@@ -109,48 +109,30 @@ val result = sqlClient.deleteByIds(SysUser::class, listOf(1L, 2L, 3L))
 val affectedRows = result.totalAffectedRowCount.toInt()
 ```
 
-## ❌ 待研究的模式
+## ✅ insert/update 操作
 
-### insert 操作
+Jimmer 使用 Draft API 进行数据修改。正确用法：
 
-**尝试过的语法（导致编译错误）**：
+### 插入新对象
 ```kotlin
-// ❌ 尝试1: DSL 属性设置
-sqlClient.insert(SysUser::class) {
-    this.userName = "admin"  // Unresolved reference 'userName'
+val newUser = SysUserDraft.`$`.produce {
+    userName = "admin"
+    nickName = "管理员"
+    status = "0"
 }
-
-// ❌ 尝试2: 使用 Entity 类型
-sqlClient.insert(SysUser) { ... }  // SysUser 不能作为表达式使用
+sqlClient.save(newUser)
 ```
 
-**需要研究**：
-- Jimmer Kotlin DSL 的正确 insert 语法
-- 是否需要使用生成的 Draft 类型
-- 是否需要特殊注解或配置
-
-### update 操作
-
-**尝试过的语法（导致编译错误）**：
+### 更新现有对象
 ```kotlin
-// ❌ 尝试1: DSL 属性设置
-sqlClient.update(SysUser::class) {
-    this.id = userId
-    this.status = "1"  // Unresolved reference 'update' and properties
+val existing = sqlClient.findById(SysUser::class, userId)
+val updated = SysUserDraft.`$`.produce(existing) {
+    nickName = "新昵称"
 }
-
-// ❌ 尝试2: 先查询再更新
-val existingUser = sqlClient.findById(SysUser::class, userId)
-sqlClient.update(SysUser::class) {
-    this.id = existingUser.id
-    this.nickName = newNickName  // 同样的问题
-}
+sqlClient.save(updated)
 ```
 
-**需要研究**：
-- Jimmer Kotlin DSL 的正确 update 语法
-- 部分更新的最佳实践
-- 如何处理 nullable 字段
+详细用法请参考 `.claude/JIMMER_GUIDE.md` 文档。
 
 ## 🔧 KSP 配置要求
 
