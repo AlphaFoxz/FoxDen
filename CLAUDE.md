@@ -6,6 +6,43 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 FoxDen is a multi-tenant SaaS system built with Spring Boot, Kotlin, and Jimmer ORM. It features user management, role-based access control (RBAC), social login integration, and data permission filtering. The system supports multiple authentication strategies (password, SMS, email, social, WeChat mini-program).
 
+### Project Locations
+
+**Current Project (FoxDen - Kotlin/Jimmer migration)**:
+```
+/mnt/f/idea_projects/FoxDen/
+```
+
+**Legacy Project (ruoyi - Java/MyBatis - Reference Only)**:
+```
+/mnt/f/idea_projects/FoxDen/old-version/
+├── ruoyi-admin/      # Admin application module
+├── ruoyi-common/     # Common modules (core, redis, security, etc.)
+├── ruoyi-extend/     # Extension modules
+├── ruoyi-modules/    # Business modules (system, workflow, etc.)
+└── pom.xml           # Maven build file
+```
+
+### IMPORTANT: When Searching for Legacy Code
+
+✅ **ALWAYS search in the `old-version/` directory**:
+```bash
+# Correct - Search legacy code in old-version
+find /mnt/f/idea_projects/FoxDen/old-version/ -name "*.kt" -o -name "*.java"
+grep -rn "className" /mnt/f/idea_projects/FoxDen/old-version/ruoyi-admin/
+
+# Correct - Read files from old-version
+Read /mnt/f/idea_projects/FoxDen/old-version/ruoyi-admin/src/main/java/...
+```
+
+❌ **DO NOT search in parent directories**:
+```bash
+# AVOID - This will search too broadly
+find /mnt/f/idea_projects/ -name "ruoyi-*"
+```
+
+**Purpose**: The `old-version/` directory contains the original ruoyi codebase that serves as the reference implementation. Use it to compare logic, understand patterns, and ensure the Kotlin migration maintains compatibility.
+
 ## Module Structure
 
 This is a multi-module Gradle project with the following structure:

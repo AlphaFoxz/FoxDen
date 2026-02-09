@@ -97,3 +97,8 @@ jimmer:
   database:
     initialization:
       mode: never
+
+# SSE 配置
+sse:
+  enabled: true
+  path: /resource/sse

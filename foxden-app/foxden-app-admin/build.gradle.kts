@@ -24,6 +24,7 @@ dependencies {
     implementation(project(":foxden-common:foxden-common-json"))
     implementation(project(":foxden-common:foxden-common-encrypt"))
     implementation(project(":foxden-common:foxden-common-social"))
+    implementation(project(":foxden-common:foxden-common-sse"))
 
     // Domain modules
     implementation(project(":foxden-domain:foxden-domain-system"))
