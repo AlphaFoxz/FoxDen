@@ -53,7 +53,6 @@ class SysSocialServiceImpl(
             expireIn = bo.expireIn
             refreshToken = bo.refreshToken
             openId = bo.openid
-            remark = bo.remark
             createTime = java.time.LocalDateTime.now()
         }
 
@@ -76,7 +75,6 @@ class SysSocialServiceImpl(
             bo.accessToken?.let { accessToken = it }
             bo.expireIn?.let { expireIn = it }
             bo.refreshToken?.let { refreshToken = it }
-            bo.remark?.let { remark = it }
             updateTime = java.time.LocalDateTime.now()
         }
 
@@ -102,7 +100,6 @@ class SysSocialServiceImpl(
             accessToken = social.accessToken,
             expireIn = social.expireIn,
             refreshToken = social.refreshToken,
-            remark = social.remark,
             createTime = social.createTime
         )
     }

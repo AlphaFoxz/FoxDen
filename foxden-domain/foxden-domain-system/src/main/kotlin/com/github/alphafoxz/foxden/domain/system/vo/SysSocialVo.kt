@@ -50,11 +50,6 @@ data class SysSocialVo(
     var refreshToken: String? = null,
 
     /**
-     * 备注
-     */
-    var remark: String? = null,
-
-    /**
      * 创建时间
      */
     var createTime: java.time.LocalDateTime? = null

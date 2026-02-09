@@ -61,6 +61,11 @@ interface SysDictData : CommInfo, CommTenant {
     val dictTypeObj: SysDictType?
 
     /**
+     * 备注
+     */
+    val remark: String?
+
+    /**
      * 是否默认值
      */
     fun getDefault(): Boolean {

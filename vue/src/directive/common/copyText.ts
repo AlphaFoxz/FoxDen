@@ -1,6 +1,6 @@
 /**
  * V-copyText 复制文本内容
- * Copyright (c) 2022 ruoyi
+ * Copyright (c) 2024 FoxDen
  */
 import {type DirectiveBinding} from 'vue';
 

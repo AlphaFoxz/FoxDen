@@ -36,4 +36,9 @@ interface SysNotice : CommInfo, CommTenant {
      * 公告状态（0正常 1关闭）
      */
     val status: String?
+
+    /**
+     * 备注
+     */
+    val remark: String?
 }

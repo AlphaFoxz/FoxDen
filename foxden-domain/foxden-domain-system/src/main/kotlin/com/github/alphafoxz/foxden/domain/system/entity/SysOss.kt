@@ -8,7 +8,7 @@ import org.babyfish.jimmer.sql.*
  */
 @Entity
 @Table(name = "sys_oss")
-interface SysOss : CommInfo, CommTenant {
+interface SysOss : CommDelFlag, CommInfo, CommTenant {
     /**
      * 主键ID
      */

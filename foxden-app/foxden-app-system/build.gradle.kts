@@ -18,6 +18,7 @@ dependencies {
     implementation(project(":foxden-common:foxden-common-excel"))
     implementation(project(":foxden-common:foxden-common-oss"))
     implementation(project(":foxden-common:foxden-common-doc"))
+    implementation(project(":foxden-common:foxden-common-encrypt"))
 
     // Domain modules
     implementation(project(":foxden-domain:foxden-domain-system"))
@@ -25,7 +26,6 @@ dependencies {
 
     // Runtime database dependencies
     runtimeOnly("org.postgresql:postgresql")
-    runtimeOnly("com.h2database:h2")
 
     // Spring Boot starters
     implementation("org.springframework.boot:spring-boot-starter-web")

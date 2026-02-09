@@ -16,6 +16,11 @@ data class SysPostBo(
     var postId: Long? = null,
 
     /**
+     * 部门ID
+     */
+    var deptId: Long? = null,
+
+    /**
      * 岗位编码
      */
     @get:NotBlank(message = "岗位编码不能为空")

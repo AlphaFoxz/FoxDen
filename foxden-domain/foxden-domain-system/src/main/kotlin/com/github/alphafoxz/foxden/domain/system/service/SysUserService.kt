@@ -211,6 +211,15 @@ interface SysUserService {
     fun resetUserPwd(userId: Long, password: String): Int
 
     /**
+     * 验证用户密码（用于登录验证）
+     *
+     * @param userName 用户名
+     * @param password 密码
+     * @return true-密码正确，false-密码错误
+     */
+    fun validatePassword(userName: String, password: String): Boolean
+
+    /**
      * 通过用户ID删除用户
      *
      * @param userId 用户ID

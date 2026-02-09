@@ -1,7 +1,9 @@
 package com.github.alphafoxz.foxden.domain.system.bo
 
+import com.github.alphafoxz.foxden.common.core.validate.AddGroup
 import jakarta.validation.constraints.NotBlank
 import jakarta.validation.constraints.Size
+import jakarta.validation.groups.Default
 
 /**
  * 社会化关系业务对象 sys_social
@@ -27,13 +29,13 @@ data class SysSocialBo(
     /**
      * 社交平台类型
      */
-    @get:NotBlank(message = "社交平台类型不能为空")
+    @get:NotBlank(message = "社交平台类型不能为空", groups = [AddGroup::class])
     var type: String? = null,
 
     /**
      * 社交平台唯一标识
      */
-    @get:NotBlank(message = "社交平台唯一标识不能为空")
+    @get:NotBlank(message = "社交平台唯一标识不能为空", groups = [AddGroup::class])
     @get:Size(min = 0, max = 255, message = "社交平台唯一标识长度不能超过{max}个字符")
     var openid: String? = null,
 
@@ -50,10 +52,5 @@ data class SysSocialBo(
     /**
      * 刷新令牌
      */
-    var refreshToken: String? = null,
-
-    /**
-     * 备注
-     */
-    var remark: String? = null
+    var refreshToken: String? = null
 )

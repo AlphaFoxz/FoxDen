@@ -2,23 +2,18 @@ package com.github.alphafoxz.foxden.app.admin.controller
 
 import cn.dev33.satoken.annotation.SaIgnore
 import cn.hutool.core.util.IdUtil
-import cn.hutool.core.util.RandomUtil
 import com.github.alphafoxz.foxden.app.admin.domain.vo.CaptchaVo
 import com.github.alphafoxz.foxden.common.core.constant.Constants
 import com.github.alphafoxz.foxden.common.core.constant.GlobalConstants
 import com.github.alphafoxz.foxden.common.core.domain.R
-import com.github.alphafoxz.foxden.common.core.exception.ServiceException
 import com.github.alphafoxz.foxden.common.core.utils.SpringUtils
-import com.github.alphafoxz.foxden.common.core.utils.reflect.ReflectUtils
 import com.github.alphafoxz.foxden.common.redis.utils.RedisUtils
 import com.github.alphafoxz.foxden.common.web.config.properties.CaptchaProperties
 import com.github.alphafoxz.foxden.common.web.enums.CaptchaType
-import jakarta.validation.constraints.NotBlank
 import org.springframework.validation.annotation.Validated
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RestController
 import java.time.Duration
-import java.util.LinkedHashMap
 
 /**
  * 验证码操作处理
@@ -56,7 +51,7 @@ class CaptchaController(
         val captchaType = captchaProperties.type
         val codeGenerator = if (CaptchaType.MATH == captchaType) {
             // MathGenerator: (numberLength: Int)
-            cn.hutool.captcha.generator.MathGenerator(captchaProperties.numberLength)
+            cn.hutool.captcha.generator.MathGenerator(captchaProperties.numberLength, false)
         } else {
             // 其他类型使用 CaptchaType 自带的创建方法
             captchaType.newInstance()
@@ -68,7 +63,8 @@ class CaptchaController(
         var code = captcha.getCode()
         if (CaptchaType.MATH == captchaType) {
             val parser = org.springframework.expression.spel.standard.SpelExpressionParser()
-            val exp = parser.parseExpression(com.github.alphafoxz.foxden.common.core.utils.StringUtils.remove(code, "="))
+            val exp =
+                parser.parseExpression(com.github.alphafoxz.foxden.common.core.utils.StringUtils.remove(code, "="))
             code = exp.getValue(String::class.java)
         }
         RedisUtils.setCacheObject(verifyKey, code, Duration.ofMinutes(Constants.CAPTCHA_EXPIRATION.toLong()))

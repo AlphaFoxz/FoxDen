@@ -67,4 +67,9 @@ interface SysRole : CommDelFlag, CommInfo, CommTenant {
     @ManyToMany
     @JoinTable(name = "sys_role_dept")
     val depts: List<SysDept>
+
+    /**
+     * 备注
+     */
+    val remark: String?
 }

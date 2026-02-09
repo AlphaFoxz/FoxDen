@@ -10,6 +10,7 @@ import com.github.alphafoxz.foxden.common.jimmer.core.page.TableDataInfo
 import com.github.alphafoxz.foxden.domain.system.bo.SysUserBo
 import com.github.alphafoxz.foxden.domain.system.entity.*
 import com.github.alphafoxz.foxden.domain.system.service.SysUserService
+import com.github.alphafoxz.foxden.domain.system.service.SysRoleService
 import com.github.alphafoxz.foxden.domain.system.vo.SysUserExportVo
 import com.github.alphafoxz.foxden.domain.system.vo.SysUserVo
 import org.babyfish.jimmer.sql.kt.ast.expression.*
@@ -25,7 +26,8 @@ import java.time.LocalDateTime
  */
 @Service
 class SysUserServiceImpl(
-    private val sqlClient: KSqlClient
+    private val sqlClient: KSqlClient,
+    private val roleService: SysRoleService
 ) : SysUserService {
 
     override fun selectPageUserList(user: SysUserBo, pageQuery: PageQuery): TableDataInfo<SysUserVo> {
@@ -78,7 +80,14 @@ class SysUserServiceImpl(
 
     override fun selectUserById(userId: Long): SysUserVo? {
         val user = sqlClient.findById(SysUser::class, userId) ?: return null
-        return entityToVo(user, withRoles = true)
+        val vo = entityToVo(user, withRoles = false)
+
+        // 手动查询角色数据（类似 ruoyi 的方式）
+        if (vo.userId != null) {
+            vo.roles = roleService.selectRolesByUserId(vo.userId!!)
+        }
+
+        return vo
     }
 
     override fun selectUserByEmail(email: String): SysUserVo? {
@@ -282,6 +291,16 @@ class SysUserServiceImpl(
 
         val result = sqlClient.save(updated)
         return if (result.isModified) 1 else 0
+    }
+
+    override fun validatePassword(userName: String, password: String): Boolean {
+        val user = sqlClient.createQuery(SysUser::class) {
+            where(table.userName eq userName)
+            select(table)
+        }.fetchOneOrNull() ?: return false
+
+        val hashedPassword = user.password ?: return false
+        return cn.hutool.crypto.digest.BCrypt.checkpw(password, hashedPassword)
     }
 
     override fun deleteUserById(userId: Long): Int {

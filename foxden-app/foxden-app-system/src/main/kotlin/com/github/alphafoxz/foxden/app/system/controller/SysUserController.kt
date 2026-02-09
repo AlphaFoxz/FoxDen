@@ -2,10 +2,14 @@ package com.github.alphafoxz.foxden.app.system.controller
 
 import cn.dev33.satoken.annotation.SaCheckPermission
 import com.github.alphafoxz.foxden.common.core.domain.R
+import com.github.alphafoxz.foxden.common.core.constant.SystemConstants
 import com.github.alphafoxz.foxden.common.core.utils.StringUtils
+import com.github.alphafoxz.foxden.common.core.utils.StreamUtils
 import com.github.alphafoxz.foxden.common.excel.utils.ExcelUtil
 import com.github.alphafoxz.foxden.common.idempotent.annotation.RepeatSubmit
 import com.github.alphafoxz.foxden.common.jimmer.core.page.PageQuery
+import com.github.alphafoxz.foxden.common.jimmer.helper.DataPermissionHelper
+import com.github.alphafoxz.foxden.common.jimmer.helper.TenantHelper
 import com.github.alphafoxz.foxden.common.jimmer.core.page.TableDataInfo
 import com.github.alphafoxz.foxden.common.log.annotation.Log
 import com.github.alphafoxz.foxden.common.log.enums.BusinessType
@@ -19,6 +23,8 @@ import com.github.alphafoxz.foxden.domain.system.service.SysTenantService
 import com.github.alphafoxz.foxden.domain.system.service.SysUserService
 import com.github.alphafoxz.foxden.domain.system.vo.SysUserExportVo
 import com.github.alphafoxz.foxden.domain.system.vo.SysUserVo
+import com.github.alphafoxz.foxden.domain.system.vo.UserInfoVo
+import com.github.alphafoxz.foxden.domain.system.vo.SysUserInfoVo
 import jakarta.servlet.http.HttpServletResponse
 import org.springframework.http.MediaType
 import org.springframework.validation.annotation.Validated
@@ -62,13 +68,75 @@ class SysUserController(
     }
 
     /**
+     * 获取当前用户信息
+     *
+     * @return 用户信息
+     */
+    @GetMapping("/getInfo")
+    fun getInfo(): R<UserInfoVo> {
+        val loginUser = LoginHelper.getLoginUser() ?: return R.fail("获取用户信息失败")
+
+        // 超级管理员 如果重新加载用户信息需清除动态租户
+        if (TenantHelper.isEnable() && LoginHelper.isSuperAdmin()) {
+            TenantHelper.clearDynamic()
+        }
+
+        val user = DataPermissionHelper.ignore(java.util.function.Supplier {
+            userService.selectUserById(loginUser.userId!!)
+        })
+        if (user == null) {
+            return R.fail("没有权限访问用户数据!")
+        }
+
+        val userInfoVo = UserInfoVo(
+            user = user,
+            permissions = loginUser.menuPermission,
+            roles = loginUser.rolePermission
+        )
+        return R.ok(userInfoVo)
+    }
+
+    /**
      * 根据用户编号获取详细信息
+     *
+     * @param userId 用户ID
      */
     @SaCheckPermission("system:user:query")
-    @GetMapping("/{userId}")
-    fun getInfo(@PathVariable userId: Long): R<SysUserVo> {
-        userService.checkUserDataScope(userId)
-        return R.ok(userService.selectUserById(userId))
+    @GetMapping(value = ["/", "/{userId}"])
+    fun getInfo(@PathVariable(required = false) userId: Long?): R<SysUserInfoVo> {
+        val userInfoVo = SysUserInfoVo()
+
+        if (userId != null) {
+            userService.checkUserDataScope(userId)
+            val sysUser = userService.selectUserById(userId)
+            userInfoVo.user = sysUser
+            userInfoVo.roleIds = roleService.selectRoleListByUserId(userId)
+
+            val deptId = sysUser?.deptId
+            if (deptId != null) {
+                // 查询部门下的岗位列表
+                val postBo = com.github.alphafoxz.foxden.domain.system.bo.SysPostBo().apply {
+                    this.deptId = deptId
+                    this.status = SystemConstants.NORMAL
+                }
+                userInfoVo.posts = postService.selectPostList(postBo)
+                // 查询用户的岗位ID列表
+                userInfoVo.postIds = postService.selectPostsByUserId(userId)
+            }
+        }
+
+        // 获取角色列表（状态正常）
+        val roleBo = com.github.alphafoxz.foxden.domain.system.bo.SysRoleBo().apply {
+            status = SystemConstants.NORMAL
+        }
+        val roles = roleService.selectRoleList(roleBo)
+        userInfoVo.roles = if (LoginHelper.isSuperAdmin(userId)) {
+            roles
+        } else {
+            StreamUtils.filter(roles) { r -> !r.isSuperAdmin() }
+        }
+
+        return R.ok(userInfoVo)
     }
 
     /**

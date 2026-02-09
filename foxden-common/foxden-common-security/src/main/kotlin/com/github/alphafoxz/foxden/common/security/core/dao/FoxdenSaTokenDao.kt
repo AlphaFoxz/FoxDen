@@ -2,6 +2,7 @@ package com.github.alphafoxz.foxden.common.security.core.dao
 
 import cn.dev33.satoken.dao.auto.SaTokenDaoBySessionFollowObject
 import cn.dev33.satoken.util.SaFoxUtil
+import com.github.alphafoxz.foxden.common.redis.utils.RedisUtils
 import com.github.benmanes.caffeine.cache.Cache
 import com.github.benmanes.caffeine.cache.Caffeine
 import java.time.Duration
@@ -32,8 +33,7 @@ object FoxdenSaTokenDao : SaTokenDaoBySessionFollowObject {
      */
     override fun get(key: String): String? {
         val o = CAFFEINE.get(key) { k ->
-            // TODO: 使用 RedisUtils.getCacheObject(k) as String?
-            null
+            RedisUtils.getCacheObject<String>(k)
         }
         return o as? String
     }
@@ -47,9 +47,9 @@ object FoxdenSaTokenDao : SaTokenDaoBySessionFollowObject {
         }
         // 判断是否为永不过期
         if (timeout == SaTokenDaoBySessionFollowObject.NEVER_EXPIRE) {
-            // TODO: RedisUtils.setCacheObject(key, value)
+            RedisUtils.setCacheObject(key, value)
         } else {
-            // TODO: RedisUtils.setCacheObject(key, value, Duration.ofSeconds(timeout))
+            RedisUtils.setCacheObject(key, value, Duration.ofSeconds(timeout))
         }
         CAFFEINE.invalidate(key)
     }
@@ -58,36 +58,35 @@ object FoxdenSaTokenDao : SaTokenDaoBySessionFollowObject {
      * 修改指定key-value键值对 (过期时间不变)
      */
     override fun update(key: String, value: String) {
-        // TODO: if (RedisUtils.hasKey(key)) {
-        //     RedisUtils.setCacheObject(key, value, true)
-        //     CAFFEINE.invalidate(key)
-        // }
+        if (RedisUtils.hasKey(key)) {
+            RedisUtils.setCacheObject(key, value, true)
+            CAFFEINE.invalidate(key)
+        }
     }
 
     /**
      * 删除Value
      */
     override fun delete(key: String) {
-        // TODO: if (RedisUtils.deleteObject(key)) {
-        //     CAFFEINE.invalidate(key)
-        // }
+        if (RedisUtils.deleteObject(key)) {
+            CAFFEINE.invalidate(key)
+        }
     }
 
     /**
      * 获取Value的剩余存活时间 (单位: 秒)
      */
     override fun getTimeout(key: String): Long {
-        // TODO: val timeout = RedisUtils.getTimeToLive(key)
+        val timeout = RedisUtils.getTimeToLive<Any>(key)
         // 加1的目的 解决sa-token使用秒 redis是毫秒导致1秒的精度问题 手动补偿
-        // return if (timeout < 0) timeout else timeout / 1000 + 1
-        return -1L
+        return if (timeout < 0) timeout else timeout / 1000 + 1
     }
 
     /**
      * 修改Value的剩余存活时间 (单位: 秒)
      */
     override fun updateTimeout(key: String, timeout: Long) {
-        // TODO: RedisUtils.expire(key, Duration.ofSeconds(timeout))
+        RedisUtils.expire(key, Duration.ofSeconds(timeout))
     }
 
     /**
@@ -95,8 +94,7 @@ object FoxdenSaTokenDao : SaTokenDaoBySessionFollowObject {
      */
     override fun getObject(key: String): Any? {
         val o = CAFFEINE.get(key) { k ->
-            // TODO: RedisUtils.getCacheObject(k)
-            null
+            RedisUtils.getCacheObject<Any>(k)
         }
         return o
     }
@@ -107,8 +105,7 @@ object FoxdenSaTokenDao : SaTokenDaoBySessionFollowObject {
     @Suppress("UNCHECKED_CAST")
     override fun <T> getObject(key: String, classType: Class<T>): T? {
         val o = CAFFEINE.get(key) { k ->
-            // TODO: RedisUtils.getCacheObject(k)
-            null
+            RedisUtils.getCacheObject<Any>(k)
         }
         return o as? T
     }
@@ -122,9 +119,9 @@ object FoxdenSaTokenDao : SaTokenDaoBySessionFollowObject {
         }
         // 判断是否为永不过期
         if (timeout == SaTokenDaoBySessionFollowObject.NEVER_EXPIRE) {
-            // TODO: RedisUtils.setCacheObject(key, `object`)
+            RedisUtils.setCacheObject(key, `object`)
         } else {
-            // TODO: RedisUtils.setCacheObject(key, `object`, Duration.ofSeconds(timeout))
+            RedisUtils.setCacheObject(key, `object`, Duration.ofSeconds(timeout))
         }
         CAFFEINE.invalidate(key)
     }
@@ -133,36 +130,35 @@ object FoxdenSaTokenDao : SaTokenDaoBySessionFollowObject {
      * 更新Object (过期时间不变)
      */
     override fun updateObject(key: String, `object`: Any?) {
-        // TODO: if (RedisUtils.hasKey(key)) {
-        //     RedisUtils.setCacheObject(key, `object`, true)
-        //     CAFFEINE.invalidate(key)
-        // }
+        if (RedisUtils.hasKey(key)) {
+            RedisUtils.setCacheObject(key, `object`, true)
+            CAFFEINE.invalidate(key)
+        }
     }
 
     /**
      * 删除Object
      */
     override fun deleteObject(key: String) {
-        // TODO: if (RedisUtils.deleteObject(key)) {
-        //     CAFFEINE.invalidate(key)
-        // }
+        if (RedisUtils.deleteObject(key)) {
+            CAFFEINE.invalidate(key)
+        }
     }
 
     /**
      * 获取Object的剩余存活时间 (单位: 秒)
      */
     override fun getObjectTimeout(key: String): Long {
-        // TODO: val timeout = RedisUtils.getTimeToLive(key)
+        val timeout = RedisUtils.getTimeToLive<Any>(key)
         // 加1的目的 解决sa-token使用秒 redis是毫秒导致1秒的精度问题 手动补偿
-        // return if (timeout < 0) timeout else timeout / 1000 + 1
-        return -1L
+        return if (timeout < 0) timeout else timeout / 1000 + 1
     }
 
     /**
      * 修改Object的剩余存活时间 (单位: 秒)
      */
     override fun updateObjectTimeout(key: String, timeout: Long) {
-        // TODO: RedisUtils.expire(key, Duration.ofSeconds(timeout))
+        RedisUtils.expire(key, Duration.ofSeconds(timeout))
     }
 
     /**
@@ -171,11 +167,17 @@ object FoxdenSaTokenDao : SaTokenDaoBySessionFollowObject {
     @Suppress("UNCHECKED_CAST")
     override fun searchData(prefix: String, keyword: String, start: Int, size: Int, sortType: Boolean): MutableList<String> {
         val keyStr = "$prefix*$keyword*"
-        return CAFFEINE.get(keyStr) { k ->
-            // TODO: val keys: Collection<String> = RedisUtils.keys(keyStr)
-            // val list = ArrayList(keys)
-            // SaFoxUtil.searchList(list, start, size, sortType)
-            ArrayList<String>()
-        } as? MutableList<String> ?: ArrayList()
+        val result: Any? = CAFFEINE.get(keyStr) { k ->
+            // Get keys and convert to Java ArrayList
+            val keysColl = RedisUtils.keys(k)
+            val javaList = java.util.ArrayList<String>()
+            for (item in keysColl) {
+                javaList.add(item)
+            }
+            SaFoxUtil.searchList(javaList, start, size, sortType)
+        }
+        @Suppress("UNCHECKED_CAST")
+        val list = result as? java.util.List<String>
+        return list?.toMutableList() ?: mutableListOf()
     }
 }

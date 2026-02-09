@@ -42,7 +42,6 @@ fun SysSocialService.insertByBo(data: MutableMap<String, Any?>): Int {
         data["token"]?.let { accessToken = it as String }
         data["expireIn"]?.let { expireIn = (it as Number).toInt() }
         data["refreshToken"]?.let { refreshToken = it as String }
-        data["remark"]?.let { remark = it as String }
     }
     return this.insertSocial(bo)
 }
@@ -61,7 +60,6 @@ fun SysSocialService.updateByBo(data: MutableMap<String, Any?>): Int {
         data["token"]?.let { accessToken = it as String }
         data["expireIn"]?.let { expireIn = (it as Number).toInt() }
         data["refreshToken"]?.let { refreshToken = it as String }
-        data["remark"]?.let { remark = it as String }
     }
     return this.updateSocial(bo)
 }

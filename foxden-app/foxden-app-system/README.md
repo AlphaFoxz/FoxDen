@@ -5,7 +5,7 @@ FoxDen 系统管理应用，提供完整的后台管理系统API接口。
 ## 技术栈
 
 - Kotlin 2.3.0
-- Spring Boot 3.4.1
+- Spring Boot 3.5.10
 - Jimmer 0.10.6 ORM
 - Sa-Token 1.44.0 (认证授权)
 

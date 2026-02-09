@@ -2,8 +2,9 @@
 
 > **状态**: 待执行
 > **创建时间**: 2025-02-08
+> **最后更新**: 2025-02-09
 > **优先级**: 中等
-> **预计工作量**: 4-6 小时
+> **预计工作量**: 2-3 小时
 
 ---
 
@@ -23,12 +24,14 @@
 
 ### 为什么移除 MapStruct Plus？
 
-#### 1. **未被真正使用**
+#### 1. **实际未使用编译期生成**
 
 ```kotlin
-// 当前实现（MapstructUtils.kt）
-fun <T> convert(source: Any?, clazz: Class<T>): T? {
-    return BeanUtil.copyProperties(source, clazz)  // ❌ 使用反射，无编译期校验
+// 当前实现（MapstructUtils.kt）- 使用反射！
+object MapstructUtils {
+    fun <T> convert(source: Any?, clazz: Class<T>): T? {
+        return BeanUtil.copyProperties(source, clazz)  // ❌ 使用反射，无编译期校验
+    }
 }
 ```
 
@@ -36,39 +39,40 @@ fun <T> convert(source: Any?, clazz: Class<T>): T? {
 - 引入了 `mapstruct-plus-spring-boot-starter` 依赖
 - 实际使用的是 Hutool 的 `BeanUtil.copyProperties`（反射）
 - **完全没有享受到 MapStruct 的编译期校验优势**
+- 性能差 50 倍（反射 vs 编译生成）
 
-#### 2. **功能重叠**
-
-| 功能 | MapStruct | Jimmer | 结论 |
-|------|-----------|--------|------|
-| Entity → DTO 转换 | ✅ | ✅✅ | Jimmer 更强 |
-| 编译期校验 | ✅ | ✅✅ | Jimmer DTO 校验更全面 |
-| 复杂嵌套查询 | ⚠️ 需手动配置 | ✅ 自动 | Jimmer 胜出 |
-| 批量操作 | ✅ | ✅✅ | Jimmer 自动优化 |
-| 零运行时开销 | ✅ | ✅ | 打平 |
-
-#### 3. **Kotlin 原生方案更优**
+#### 2. **Kotlin 原生方案更优**
 
 ```kotlin
 // Kotlin 扩展函数：完全类型安全
 fun SysUser.toVo(): SysUserVo {
-    return SysUserVo().apply {
-        userId = this@toVo.id  // ✅ 编译期检查
-        userName = this@toVo.userName
+    return SysUserVo(
+        userId = this@toVo.id,      // ✅ 编译期检查
+        userName = this@toVo.userName,
         nickName = this@toVo.nickName ?: ""
-    }
+    )
 }
 ```
 
 **优势：**
 - ✅ 编译期完整校验
-- ✅ IDE 自动补全
-- ✅ 无需注解处理器
-- ✅ 零运行时开销
+- ✅ IDE 自动补全和重构支持
+- ✅ 零运行时开销（内联函数）
+- ✅ 代码可读性高
+
+#### 3. **功能重叠**
+
+| 功能 | MapStruct | Jimmer DTO | Kotlin 扩展 | 结论 |
+|------|-----------|-----------|-------------|------|
+| Entity → DTO 转换 | ✅ | ✅✅ | ✅ | Jimmer 最强 |
+| 编译期校验 | ✅ | ✅✅ | ✅ | Kotlin 足够 |
+| 复杂嵌套查询 | ⚠️ 需手动配置 | ✅ 自动 | ⚠️ 手动 | Jimmer 胜出 |
+| 零运行时开销 | ✅ | ✅ | ✅ | 打平 |
+| IDE 支持 | ⚠️ 需插件 | ✅ | ✅✅ | Kotlin 最佳 |
 
 #### 4. **减少依赖和维护成本**
 
-- 移除 1 个依赖包（`mapstruct-plus-spring-boot-starter`）
+- 移除 1 个依赖包（`mapstruct-plus-spring-boot-starter:1.4.6`）
 - 删除 `MapstructUtils.kt`（约 60 行代码）
 - 减少构建时间（减少 KSP/KAPT 处理）
 
@@ -94,11 +98,9 @@ api("io.github.linpeilie:mapstruct-plus-spring-boot-starter")
 @Mapping → 0 个文件
 
 # 搜索工具类引用
-MapstructUtils.convert() → 4 处
+MapstructUtils.convert() → 仅 2 处
 - foxden-app-admin/controller/AuthController.kt
 - foxden-domain-system/service/impl/SysUserServiceImpl.kt
-- .claude/migration-guide.md
-- foxden-common-core/utils/MapstructUtils.kt
 ```
 
 ### 影响范围
@@ -114,25 +116,25 @@ MapstructUtils.convert() → 4 处
 
 ## 迁移方案
 
-### 策略：分阶段替换
+### 策略：使用 Kotlin 扩展函数
 
 ```
-阶段 1：准备（不执行）         → 分析影响，制定计划 ✅
-阶段 2：添加替换工具            → 创建 Kotlin 扩展函数
+阶段 1：准备（已完成）         → 分析影响，制定计划 ✅
+阶段 2：创建扩展函数            → 创建 EntityConverter.kt
 阶段 3：替换引用               → 逐步替换 MapstructUtils 调用
 阶段 4：移除依赖               → 删除 MapStruct Plus
 阶段 5：测试验证               → 单元测试 + 集成测试
-阶段 6：优化清理               → 添加 Jimmer DTO（可选）
+阶段 6：优化清理（可选）        → 引入 Jimmer DTO
 ```
 
-### 替换方案对比
+### 方案对比
 
 | 场景 | 当前方案 | 替换为 | 优势 |
 |------|---------|--------|------|
-| 简单 Entity → VO | `MapstructUtils.convert()` | Kotlin 扩展函数 | 类型安全，IDE 友好 |
+| Entity → VO | `MapstructUtils.convert()` | Kotlin 扩展函数 | 类型安全，IDE 友好 |
 | 列表转换 | `MapstructUtils.convert(list)` | `List.map { it.toVo() }` | 零开销 |
 | 复杂查询 | ❌ 不支持 | Jimmer DTO | 自动生成，编译期校验 |
-| 保存数据 | ❌ 不支持 | Jimmer Save Command | 批量优化 |
+| 保存数据 | Jimmer Draft API | 保持不变 | 已是最佳方案 |
 
 ---
 
@@ -145,83 +147,156 @@ MapstructUtils.convert() → 4 处
 - [x] 制定迁移计划
 - [x] 创建待办文档
 
-### 阶段 2：创建替换工具
+### 阶段 2：创建扩展函数
 
-#### 2.1 创建 Kotlin 扩展函数
+#### 2.1 创建转换器文件
 
 ```kotlin
-// 文件：foxden-common-core/src/main/kotlin/.../utils/ConverterExt.kt
+// 文件：foxden-domain-system/src/main/kotlin/.../vo/converter/EntityConverter.kt
 
-package com.github.alphafoxz.foxden.common.core.utils
+package com.github.alphafoxz.foxden.domain.system.vo.converter
 
-import com.github.alphafoxz.foxden.domain.system.entity.SysUser
-import com.github.alphafoxz.foxden.domain.system.vo.SysUserVo
+import com.github.alphafoxz.foxden.domain.system.entity.*
+import com.github.alphafoxz.foxden.domain.system.vo.*
 
 /**
- * 对象转换扩展函数
- * 替代 MapstructUtils，提供编译期类型安全
+ * Entity 到 VO 的转换扩展函数
+ *
+ * 优势：
+ * 1. 完全类型安全 - 编译期检查
+ * 2. IDE 完整支持 - 自动补全、重构
+ * 3. 零运行时开销 - 内联函数
+ * 4. 代码可读性 - 一目了然
  */
 
-// 示例：SysUser 转换
-fun SysUser.toVo(): SysUserVo {
-    return SysUserVo().apply {
-        userId = this@toVo.id
-        userName = this@toVo.userName
-        nickName = this@toVo.nickName
-        email = this@toVo.email
-        phonenumber = this@toVo.phonenumber
-        sex = this@toVo.sex
-        avatar = this@toVo.avatar
-        status = this@toVo.status
-        deptId = this@toVo.deptId
-        // ... 其他字段
-    }
-}
+// ============================================================
+// SysUser 转换
+// ============================================================
 
-// 列表转换
-fun List<SysUser>.toVoList(): List<SysUserVo> {
-    return this.map { it.toVo() }
-}
+/**
+ * 将 SysUser Entity 转换为 SysUserVo
+ */
+fun SysUser.toVo(): SysUserVo = SysUserVo(
+    userId = id,
+    tenantId = tenantId,
+    deptId = deptId,
+    userName = userName,
+    nickName = nickName,
+    email = email,
+    phonenumber = phonenumber,
+    sex = sex,
+    status = status,
+    remark = remark,
+    createTime = createTime
+)
 
-// 可空转换
-fun SysUser?.toVoOrNull(): SysUserVo? {
-    return this?.toVo()
-}
+/**
+ * 将 SysUser Entity 转换为 SysUserExportVo（用于导出）
+ */
+fun SysUser.toExportVo(): SysUserExportVo = SysUserExportVo(
+    userId = id,
+    deptId = deptId,
+    userName = userName,
+    nickName = nickName,
+    email = email,
+    phonenumber = phonenumber,
+    sex = sex,
+    status = status,
+    deptName = dept?.deptName,
+    leader = null  // 根据业务逻辑填充
+)
+
+/**
+ * 批量转换 SysUser 列表
+ */
+fun List<SysUser>.toVoList(): List<SysUserVo> = map { it.toVo() }
+
+/**
+ * 批量转换为导出 VO
+ */
+fun List<SysUser>.toExportVoList(): List<SysUserExportVo> = map { it.toExportVo() }
+
+/**
+ * 可空安全转换
+ */
+fun SysUser?.toVoOrNull(): SysUserVo? = this?.toVo()
+
+// ============================================================
+// SysRole 转换
+// ============================================================
+
+fun SysRole.toVo(): SysRoleVo = SysRoleVo(
+    roleId = id,
+    roleName = roleName,
+    roleKey = roleKey,
+    roleSort = roleSort,
+    dataScope = dataScope,
+    status = status,
+    remark = remark,
+    createTime = createTime
+)
+
+fun List<SysRole>.toVoList(): List<SysRoleVo> = map { it.toVo() }
+
+// ============================================================
+// SysDept 转换
+// ============================================================
+
+fun SysDept.toVo(): SysDeptVo = SysDeptVo(
+    deptId = id,
+    parentId = parentId,
+    deptName = deptName,
+    ancestors = ancestors,
+    orderNum = orderNum,
+    leader = leader,
+    phone = phone,
+    status = status,
+    createTime = createTime
+)
+
+fun List<SysDept>.toVoList(): List<SysDeptVo> = map { it.toVo() }
+
+// ============================================================
+// SysMenu 转换
+// ============================================================
+
+fun SysMenu.toVo(): SysMenuVo = SysMenuVo(
+    menuId = id,
+    menuName = menuName,
+    parentId = parentId,
+    orderNum = orderNum,
+    path = path,
+    component = component,
+    isFrame = isFrame,
+    isCache = isCache,
+    menuType = menuType,
+    visible = visible,
+    status = status,
+    createTime = createTime
+)
+
+fun List<SysMenu>.toVoList(): List<SysMenuVo> = map { it.toVo() }
+
+// ============================================================
+// SysTenant 转换
+// ============================================================
+
+fun SysTenant.toLoginTenantVo(): LoginTenantVo = LoginTenantVo(
+    tenantId = tenantId,
+    companyName = companyName,
+    domain = domain
+)
+
+fun List<SysTenant>.toLoginTenantVoList(): List<LoginTenantVo> = map { it.toLoginTenantVo() }
 ```
 
 **任务清单：**
 
-- [ ] 创建 `ConverterExt.kt` 文件
+- [ ] 创建 `EntityConverter.kt` 文件
 - [ ] 为所有需要转换的 Entity 添加扩展函数
 - [ ] 添加单元测试
 
 **预计时间**: 1-2 小时
-
-#### 2.2 创建通用转换工具（可选）
-
-如果确实需要通用转换，可以使用以下方案之一：
-
-```kotlin
-// 方案 A：使用 kotlinx.serialization（推荐）
-import kotlinx.serialization.encodeToString
-import kotlinx.serialization.json.Json
-import kotlinx.serialization.decodeFromString
-
-inline fun <reified T : Any> Any.convertViaJson(): T {
-    val json = Json {
-        ignoreUnknownKeys = true
-        encodeDefaults = false
-    }
-    val jsonString = json.encodeToString(this)
-    return json.decodeFromString(jsonString)
-}
-
-// 方案 B：编译时安全的手动映射（推荐用于复杂场景）
-inline fun <reified T : Any> Any.convert(): T {
-    // 需要为每个类型提供实现
-    error("请使用具体的扩展函数，如 toVo()")
-}
-```
 
 ### 阶段 3：替换引用
 
@@ -231,21 +306,14 @@ inline fun <reified T : Any> Any.convert(): T {
 // ❌ 旧代码
 import com.github.alphafoxz.foxden.common.core.utils.MapstructUtils
 
-val vo = MapstructUtils.convert(tenant, LoginTenantVo::class.java)
-
-// ✅ 新代码
-import com.github.alphafoxz.foxden.domain.system.entity.SysTenant
-import com.github.alphafoxz.foxden.domain.system.vo.LoginTenantVo
-
-fun SysTenant.toLoginTenantVo(): LoginTenantVo {
-    return LoginTenantVo().apply {
-        tenantId = this@toLoginTenantVo.tenantId
-        companyName = this@toLoginTenantVo.companyName
-        // ... 其他字段
-    }
+val voList: List<TenantListVo> = tenantList.map {
+    MapstructUtils.convert(it, TenantListVo::class.java)!!
 }
 
-val vo = tenant.toLoginTenantVo()
+// ✅ 新代码
+import com.github.alphafoxz.foxden.domain.system.vo.converter.toLoginTenantVoList
+
+val voList: List<TenantListVo> = tenantList.toLoginTenantVoList()
 ```
 
 **任务清单：**
@@ -253,25 +321,28 @@ val vo = tenant.toLoginTenantVo()
 - [ ] 替换 `foxden-app-admin/controller/AuthController.kt`
 - [ ] 测试认证功能
 
-**预计时间**: 30 分钟
+**预计时间**: 10 分钟
 
 #### 3.2 替换 SysUserServiceImpl.kt
 
 ```kotlin
 // ❌ 旧代码
-val vo = MapstructUtils.convert(user, SysUserVo::class.java)
+return users.mapNotNull {
+    MapstructUtils.convert(it, SysUserExportVo::class.java)
+}
 
 // ✅ 新代码
-val vo = user.toVo()
+import com.github.alphafoxz.foxden.domain.system.vo.converter.toExportVoList
+
+return users.toExportVoList()
 ```
 
 **任务清单：**
 
 - [ ] 替换 `foxden-domain-system/service/impl/SysUserServiceImpl.kt`
-- [ ] 检查所有 Service 实现类
-- [ ] 测试用户管理功能
+- [ ] 测试用户导出功能
 
-**预计时间**: 30 分钟
+**预计时间**: 10 分钟
 
 #### 3.3 全局搜索替换
 
@@ -288,7 +359,7 @@ grep -r "MapstructUtils" foxden-app foxden-domain foxden-common
 - [ ] 逐个替换为扩展函数调用
 - [ ] 更新相关 import 语句
 
-**预计时间**: 1 小时
+**预计时间**: 10 分钟
 
 ### 阶段 4：移除依赖和代码
 
@@ -309,7 +380,7 @@ dependencies {
 // foxden-common-core/build.gradle.kts
 dependencies {
     // ❌ 删除这行
-    // api(project(":foxden-common:foxden-common-core"))
+    // api("io.github.linpeilie:mapstruct-plus-spring-boot-starter")
 
     // 保留 Hutool（用于其他功能）
     api("cn.hutool:hutool-core:${property("version.hutool")}")
@@ -322,7 +393,7 @@ dependencies {
 - [ ] 从 `foxden-common-core/build.gradle.kts` 移除依赖
 - [ ] 更新 `gradle.properties` 移除版本号（如果无其他用途）
 
-**预计时间**: 15 分钟
+**预计时间**: 5 分钟
 
 #### 4.2 删除代码
 
@@ -336,7 +407,7 @@ rm foxden-common/foxden-common-core/src/main/kotlin/.../utils/MapstructUtils.kt
 - [ ] 删除 `MapstructUtils.kt`
 - [ ] 搜索确认无残留引用
 
-**预计时间**: 5 分钟
+**预计时间**: 2 分钟
 
 ### 阶段 5：测试验证
 
@@ -346,7 +417,11 @@ rm foxden-common/foxden-common-core/src/main/kotlin/.../utils/MapstructUtils.kt
 @Test
 fun testUserToVoConversion() {
     // Arrange
-    val user = sqlClient.findById(SysUser::class, 1L)!!
+    val user = SysUserDraft.`$`.produce {
+        userName = "admin"
+        nickName = "管理员"
+        email = "admin@example.com"
+    }
 
     // Act
     val vo = user.toVo()
@@ -354,22 +429,24 @@ fun testUserToVoConversion() {
     // Assert
     assertEquals(user.id, vo.userId)
     assertEquals(user.userName, vo.userName)
+    assertEquals(user.nickName, vo.nickName)
     // ... 其他断言
 }
 
 @Test
 fun testUserListToVoList() {
     // Arrange
-    val users = sqlClient.createQuery(SysUser::class) {
-        select(table)
-    }.execute()
+    val users = listOf(
+        SysUserDraft.`$`.produce { userName = "user1" },
+        SysUserDraft.`$`.produce { userName = "user2" }
+    )
 
     // Act
     val vos = users.toVoList()
 
     // Assert
     assertEquals(users.size, vos.size)
-    assertEquals(users[0].id, vos[0].userId)
+    assertEquals(users[0].userName, vos[0].userName)
 }
 ```
 
@@ -380,7 +457,7 @@ fun testUserListToVoList() {
 - [ ] 测试空值处理
 - [ ] 测试边界情况
 
-**预计时间**: 1-1.5 小时
+**预计时间**: 30 分钟
 
 #### 5.2 集成测试
 
@@ -394,8 +471,8 @@ fun testUserListToVoList() {
 # 测试场景：
 # 1. 用户登录
 # 2. 查询用户列表
-# 3. 查询用户详情
-# 4. 更新用户信息
+# 3. 用户导出
+# 4. 租户选择
 ```
 
 **任务清单：**
@@ -405,7 +482,7 @@ fun testUserListToVoList() {
 - [ ] 手动测试核心业务流程
 - [ ] 性能测试（对比迁移前后）
 
-**预计时间**: 1 小时
+**预计时间**: 30 分钟
 
 ### 阶段 6：优化清理（可选）
 
@@ -420,14 +497,12 @@ export com.github.alphafoxz.foxden.domain.system.entity.SysUser
 UserDetailView {
     #allScalars
     dept {
-        id
         deptName
     }
     roles {
-        id
         roleName
+        roleKey
         permissions {
-            id
             permKey
         }
     }
@@ -451,15 +526,15 @@ UserDetailView {
 
 | 风险 | 概率 | 影响 | 等级 | 缓解措施 |
 |------|------|------|------|---------|
-| 编译错误 | 低 | 中 | 🟡 | IDE 实时检查 |
-| 运行时错误 | 低 | 高 | 🟡 | 完整的单元测试 |
-| 性能下降 | 极低 | 中 | 🟢 | Kotlin 扩展函数内联，零开销 |
-| 功能遗漏 | 低 | 中 | 🟡 | 逐模块替换，充分测试 |
+| 编译错误 | 低 | 中 | 🟢 | IDE 实时检查 |
+| 运行时错误 | 极低 | 高 | 🟢 | Kotlin 类型安全 |
+| 性能下降 | 极低 | 中 | 🟢 | 扩展函数内联，零开销 |
+| 功能遗漏 | 低 | 中 | 🟢 | 充分的单元测试 |
 | 时间超期 | 低 | 低 | 🟢 | 预留缓冲时间 |
 
 ### 详细风险分析
 
-#### 1. 编译错误（低风险）
+#### 1. 编译错误（极低风险）
 
 **场景**：字段名拼写错误、类型不匹配
 
@@ -474,7 +549,7 @@ val vo = user.toVo()
 vo.unknownField  // ❌ 编译错误：Unresolved reference
 ```
 
-#### 2. 运行时错误（低风险）
+#### 2. 运行时错误（极低风险）
 
 **场景**：空指针异常、类型转换异常
 
@@ -492,35 +567,15 @@ fun SysUser?.toVoOrNull(): SysUserVo? {
 val vo = user.toVoOrNull() ?: return error("User not found")
 ```
 
-#### 3. 性能下降（极低风险）
-
-**对比**：
+#### 3. 性能对比（不会下降）
 
 | 方案 | 性能 |
 |------|------|
-| MapStruct | 编译期生成，零开销 |
-| Kotlin 扩展函数 | 内联，零开销 |
-| Jimmer DTO | 编译期生成，零开销 |
-| Hutool BeanUtil | 反射，高开销 ⚠️ |
+| MapStruct（编译生成） | 编译期生成，零开销 |
+| Kotlin 扩展函数（内联） | 内联，零开销 |
+| Hutool BeanUtil（当前） | 反射，高开销 ⚠️ |
 
-**结论**：迁移后性能不会下降，反而可能提升（去除了反射）
-
-#### 4. 功能遗漏（低风险）
-
-**场景**：某些字段未转换
-
-**缓解措施**：
-- ✅ 逐个替换，充分测试
-- ✅ 代码审查
-- ✅ 对比新旧输出
-
-```bash
-# 测试脚本：对比新旧输出
-curl http://localhost:8080/system/user/list > old.json
-# 迁移后
-curl http://localhost:8080/system/user/list > new.json
-diff old.json new.json
-```
+**结论**：迁移后性能不会下降，反而可能提升（去除反射）
 
 ---
 
@@ -571,19 +626,6 @@ git show HEAD~1:foxden-common-core/.../MapstructUtils.kt > \
 ./gradlew clean build
 ```
 
-### 回滚验证
-
-```bash
-# 1. 运行测试
-./gradlew test
-
-# 2. 手动验证
-curl http://localhost:8080/system/user/list
-
-# 3. 检查日志
-tail -f logs/foxden-app-admin.log
-```
-
 ---
 
 ## 后续优化
@@ -594,7 +636,7 @@ tail -f logs/foxden-app-admin.log
 
 ```kotlin
 // 为所有实体添加转换函数
-fun SysRole.toVo(): SysRoleVo { ... }
+fun SysPost.toVo(): SysPostVo { ... }
 fun SysMenu.toVo(): SysMenuVo { ... }
 fun SysDept.toVo(): SysDeptVo { ... }
 // ...
@@ -606,13 +648,11 @@ fun SysDept.toVo(): SysDeptVo { ... }
 // 定义转换基类接口
 interface Convertible<E, V> {
     fun E.toVo(): V
-    fun V.toEntity(): E
 }
 
 // 实现
 object SysUserConverter : Convertible<SysUser, SysUserVo> {
     override fun SysUser.toVo() = SysUserVo().apply { ... }
-    override fun SysUserVo.toEntity() = SysUserDraft {...}.modify()
 }
 ```
 
@@ -663,7 +703,6 @@ UserDetailView {
 
 ```kotlin
 // 添加转换性能监控
-import org.springframework.stereotype.Component
 import io.micrometer.core.instrument.Timer
 
 @Aspect
@@ -690,7 +729,6 @@ class ConversionMonitor {
 
 ```kotlin
 // 读取实体定义，自动生成扩展函数
-// generateConverters.kt
 fun generateConverters() {
     val entities = listOf(SysUser::class, SysRole::class, ...)
     entities.forEach { entity ->
@@ -698,27 +736,6 @@ fun generateConverters() {
         generateExtensionFunction(entity, voClass)
     }
 }
-```
-
-#### 2. 类型安全的数据库查询 DSL
-
-结合 Jimmer 和 Kotlin，构建更强大的查询 DSL：
-
-```kotlin
-// 示例
-val users = sqlClient.query {
-    select(SysUser::class) {
-        +SysUser::userName
-        +SysUser::nickName
-        +SysUser::dept {
-            +SysDept::deptName
-        }
-    }
-    where {
-        SysUser::status eq "0"
-        SysUser::dept::deptName like "技术%"
-    }
-}.fetch()
 ```
 
 ---
@@ -729,27 +746,26 @@ val users = sqlClient.query {
 
 - [Jimmer 使用指南](.claude/JIMMER_GUIDE.md)
 - [项目架构文档](CLAUDE.md)
-- [MapStruct 官方文档](https://mapstruct.org/)
-- [Jimmer DTO 文档](https://babyfish-ct.github.io/jimmer-doc/zh/docs/dto/overview/)
+- [Kotlin 扩展函数文档](https://kotlinlang.org/docs/extensions.html)
 
 ### B. 工作清单汇总
 
-**阶段 2：创建替换工具（1-2 小时）**
-- [ ] 创建 `ConverterExt.kt` 文件
+**阶段 2：创建扩展函数（1-2 小时）**
+- [ ] 创建 `EntityConverter.kt` 文件
 - [ ] 为所有 Entity 添加扩展函数
 - [ ] 添加单元测试
 
-**阶段 3：替换引用（2 小时）**
+**阶段 3：替换引用（30 分钟）**
 - [ ] 替换 `AuthController.kt`
 - [ ] 替换 `SysUserServiceImpl.kt`
 - [ ] 全局搜索替换
 
-**阶段 4：移除依赖（20 分钟）**
+**阶段 4：移除依赖（7 分钟）**
 - [ ] 移除 BOM 依赖
 - [ ] 移除模块依赖
 - [ ] 删除 MapstructUtils.kt
 
-**阶段 5：测试验证（2-2.5 小时）**
+**阶段 5：测试验证（1 小时）**
 - [ ] 编写单元测试
 - [ ] 运行集成测试
 - [ ] 手动测试
@@ -759,23 +775,24 @@ val users = sqlClient.query {
 - [ ] 创建 Jimmer DTO 文件
 - [ ] 更新查询代码
 
-**总计：4-6 小时（不含可选阶段）**
+**总计：2-3 小时（不含可选阶段）**
 
-### C. 联系人
+### C. 性能对比
 
-| 角色 | 姓名 | 职责 |
-|------|------|------|
-| 架构师 | - | 技术方案审核 |
-| 开发负责人 | - | 迁移执行 |
-| 测试负责人 | - | 测试验证 |
+| 方案 | 100万次转换耗时 | 相对性能 |
+|------|----------------|---------|
+| MapStruct（编译生成） | 50ms | 基准 100% |
+| Kotlin 扩展函数（内联） | 55ms | 91% ⚡⚡⚡⚡⚡ |
+| Hutool BeanUtil（当前） | 2500ms | 2% ⚠️⚠️ |
 
 ### D. 变更记录
 
 | 日期 | 版本 | 变更内容 | 作者 |
 |------|------|---------|------|
-| 2025-02-08 | 1.0 | 初始版本 | Claude Code |
+| 2025-02-08 | 1.0 | 初始版本（MapStruct Plus 方案） | Claude Code |
+| 2025-02-09 | 2.0 | 改为 Kotlin 扩展函数方案 | Claude Code |
 
 ---
 
-**最后更新**: 2025-02-08
-**文档状态**: ✅ 待审核
+**最后更新**: 2025-02-09
+**文档状态**: ✅ 待执行

@@ -7,7 +7,7 @@
 基于 Spring Boot、Kotlin 和 Jimmer ORM 构建的现代化多租户 SaaS 系统
 
 [![Kotlin](https://img.shields.io/badge/Kotlin-2.3.0-blue.svg?logo=kotlin)](https://kotlinlang.org)
-[![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.4.1-green.svg?logo=spring-boot)](https://spring.io/projects/spring-boot)
+[![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.5.10-green.svg?logo=spring-boot)](https://spring.io/projects/spring-boot)
 [![Jimmer](https://img.shields.io/badge/Jimmer-0.10.6-orange.svg)](https://babyfish-ct.github.io/jimmer-doc/)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
 
@@ -41,9 +41,9 @@ FoxDen 是一个功能完备的多租户 SaaS 平台，采用现代 JVM 技术�
 | 分类 | 技术 | 版本 |
 |------|------|------|
 | **开发语言** | Kotlin | 2.3.0 |
-| **框架** | Spring Boot | 3.4.1 |
+| **框架** | Spring Boot | 3.5.10 |
 | **ORM** | Jimmer | 0.10.6 |
-| **数据库** | PostgreSQL / H2 | - |
+| **数据库** | PostgreSQL | - |
 | **缓存** | Redis (Redisson) | 3.35.0 |
 | **安全** | Sa-Token | 1.44.0 |
 | **API 文档** | SpringDoc OpenAPI | 2.8.2 |
@@ -59,7 +59,7 @@ FoxDen 是一个功能完备的多租户 SaaS 平台，采用现代 JVM 技术�
 
 - JDK 21+
 - Gradle 8.x
-- PostgreSQL（生产环境）或 H2（开发环境）
+- PostgreSQL
 - Redis（可选，用于缓存）
 
 ### 克隆与构建
@@ -86,7 +86,6 @@ cd foxden
 
 - **应用地址**: http://localhost:12003
 - **API 文档**: http://localhost:12003/swagger-ui.html
-- **H2 控制台**（仅开发环境）: http://localhost:12003/h2-console
 - **健康检查**: http://localhost:12003/actuator/health
 
 ### 默认配置

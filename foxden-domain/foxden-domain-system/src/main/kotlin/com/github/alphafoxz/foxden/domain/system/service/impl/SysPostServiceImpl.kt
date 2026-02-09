@@ -1,13 +1,17 @@
 package com.github.alphafoxz.foxden.domain.system.service.impl
 
-import com.github.alphafoxz.foxden.domain.system.service.SysPostService
-import com.github.alphafoxz.foxden.domain.system.entity.*
-import com.github.alphafoxz.foxden.domain.system.bo.SysPostBo
-import com.github.alphafoxz.foxden.domain.system.vo.SysPostVo
 import com.github.alphafoxz.foxden.common.core.constant.SystemConstants
 import com.github.alphafoxz.foxden.common.core.exception.ServiceException
-import org.babyfish.jimmer.sql.kt.ast.expression.*
-import org.babyfish.jimmer.sql.kt.*
+import com.github.alphafoxz.foxden.domain.system.bo.SysPostBo
+import com.github.alphafoxz.foxden.domain.system.entity.*
+import com.github.alphafoxz.foxden.domain.system.service.SysPostService
+import com.github.alphafoxz.foxden.domain.system.vo.SysPostVo
+import org.babyfish.jimmer.sql.kt.KSqlClient
+import org.babyfish.jimmer.sql.kt.ast.expression.asc
+import org.babyfish.jimmer.sql.kt.ast.expression.eq
+import org.babyfish.jimmer.sql.kt.ast.expression.like
+import org.babyfish.jimmer.sql.kt.ast.expression.ne
+import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.stereotype.Service
 
 /**
@@ -15,7 +19,8 @@ import org.springframework.stereotype.Service
  */
 @Service
 class SysPostServiceImpl(
-    private val sqlClient: KSqlClient
+    private val sqlClient: KSqlClient,
+    private val jdbcTemplate: JdbcTemplate
 ) : SysPostService {
 
     override fun selectPostList(post: SysPostBo): List<SysPostVo> {
@@ -46,8 +51,12 @@ class SysPostServiceImpl(
     }
 
     override fun selectPostsByUserId(userId: Long): List<Long> {
-        val user = sqlClient.findById(SysUser::class, userId) ?: return emptyList()
-        return user.posts.map { it.id }
+        // Query the join table directly to get post IDs for the user
+        return jdbcTemplate.queryForList(
+            "SELECT post_id FROM sys_user_post WHERE user_id = ?",
+            Long::class.java,
+            userId
+        )
     }
 
     override fun deletePostByIds(postIds: Array<Long>) {

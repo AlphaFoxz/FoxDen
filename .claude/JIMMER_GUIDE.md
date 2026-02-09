@@ -393,6 +393,388 @@ fun selectPageUserList(bo: SysUserBo, pageQuery: PageQuery): TableDataInfo<SysUs
 
 ---
 
+## 处理关联属性的懒加载问题
+
+### 问题现象
+
+在使用 Jimmer ORM 时，直接访问实体的关联属性（如 `@ManyToMany`, `@ManyToOne`）会抛出 `UnloadedException`：
+
+```kotlin
+// ❌ 错误示例：直接访问关联属性
+override fun selectUserById(userId: Long): SysUserVo? {
+    val user = sqlClient.findById(SysUser::class, userId) ?: return null
+
+    // 尝试访问 roles 列表
+    user.roles.forEach { role ->  // ❌ UnloadedException
+        println(role.roleName)
+    }
+
+    return entityToVo(user)
+}
+```
+
+**错误信息**:
+```
+org.babyfish.jimmer.UnloadedException: The property "SysUser.roles" is unloaded
+    at org.babyfish.jimmer.sql.ast.impl.TupleImplementor.throwUnloadedException
+    at com.github.alphafoxz.foxden.domain.system.entity.SysUserImpl.getRoles(SysUserImpl.kt:88)
+```
+
+### 根本原因
+
+Jimmer 的关联属性默认是**懒加载**（Lazy）的：
+
+| 关联类型 | 默认加载方式 | 说明 |
+|---------|-------------|------|
+| `@ManyToOne` | Lazy | 需要显式 Fetcher 或手动查询 |
+| `@ManyToMany` | Lazy | 需要显式 Fetcher 或手动查询 |
+| `@OneToMany` | Lazy | 需要显式 Fetcher 或手动查询 |
+
+这与传统的 JPA/Hibernate 不同，Jimmer **不会**自动触发关联查询，必须显式指定要加载的关联。
+
+### 解决方案对比
+
+#### 方案 1: 使用 Fetcher API（高级用法）
+
+**优点**：
+- ✅ 避免 N+1 查询问题
+- ✅ 类型安全
+- ✅ 支持复杂的嵌套查询
+- ✅ Jimmer 推荐的最佳实践
+
+**缺点**：
+- ❌ API 相对复杂
+- ❌ 需要提前定义 Fetcher
+- ❌ 学习曲线陡峭
+
+**示例代码**：
+
+```kotlin
+// 定义 Fetcher（通常在实体类同目录下定义）
+val USER_WITH_ROLES_FETCHER = SysUserFetcher.$
+    .allScalarFields()  // 所有标量字段
+    .roles {            // 加载角色关联
+        allScalarFields()
+    }
+
+// 使用 Fetcher 查询
+override fun selectUserById(userId: Long): SysUserVo? {
+    val user = sqlClient.findById(
+        SysUser::class,
+        userId,
+        USER_WITH_ROLES_FETCHER  // ✅ 使用 Fetcher
+    ) ?: return null
+
+    // 现在可以安全访问 roles
+    user.roles.forEach { role ->
+        println(role.roleName)
+    }
+
+    return entityToVo(user)
+}
+```
+
+**在查询中使用 Fetcher**：
+
+```kotlin
+// 使用 fetch() 方法
+val users = sqlClient.createQuery(SysUser::class) {
+    where(table.status eq "0")
+    select(table.fetch(USER_WITH_ROLES_FETCHER))
+}.execute()
+
+// 使用 fetcher 参数
+val user = sqlClient.findById(
+    SysUser::class,
+    userId,
+    SysUserFetcher.$.allScalarFields().roles { allScalarFields() }
+)
+```
+
+#### 方案 2: 手动查询（简单用法 - 推荐）
+
+**优点**：
+- ✅ 简单直观，易于理解
+- ✅ 与 ruoyi/MyBatis 的模式相似
+- ✅ 不需要学习复杂的 Fetcher API
+- ✅ 适合基本的关联查询场景
+
+**缺点**：
+- ⚠️ 可能产生 N+1 查询（但通常影响不大）
+- ⚠️ 需要手动组合数据
+
+**示例代码**：
+
+```kotlin
+@Service
+class SysUserServiceImpl(
+    private val sqlClient: KSqlClient,
+    private val roleService: SysRoleService  // 注入角色服务
+) : SysUserService {
+
+    override fun selectUserById(userId: Long): SysUserVo? {
+        // 步骤 1: 查询用户实体（不加载关联）
+        val user = sqlClient.findById(SysUser::class, userId) ?: return null
+
+        // 步骤 2: 转换为 VO（不包含关联数据）
+        val vo = entityToVo(user, withRoles = false)
+
+        // 步骤 3: 手动查询角色数据并设置到 VO
+        if (vo.userId != null) {
+            vo.roles = roleService.selectRolesByUserId(vo.userId!!)
+        }
+
+        return vo
+    }
+
+    // 实体转 VO 方法
+    private fun entityToVo(user: SysUser, withRoles: Boolean = false): SysUserVo {
+        return SysUserVo().apply {
+            userId = user.id
+            deptId = user.deptId
+            userName = user.userName
+            nickName = user.nickName
+            email = user.email
+            phonenumber = user.phonenumber
+            status = user.status
+
+            // 根据参数决定是否加载角色
+            if (withRoles) {
+                roles = user.roles.map { role ->
+                    SysRoleVo().apply {
+                        roleId = role.id
+                        roleName = role.roleName
+                        roleKey = role.roleKey
+                    }
+                }
+            }
+        }
+    }
+}
+```
+
+**在 SysMenuServiceImpl 中的应用**：
+
+```kotlin
+@Service
+class SysMenuServiceImpl(
+    private val sqlClient: KSqlClient,
+    private val roleService: SysRoleService  // 注入角色服务
+) : SysMenuService {
+
+    override fun selectMenuTreeByUserId(userId: Long): List<SysMenu> {
+        val user = sqlClient.findById(SysUser::class, userId)
+            ?: return emptyList()
+
+        // ✅ 手动查询角色数据（避免懒加载问题）
+        val roles = roleService.selectRolesByUserId(userId)
+
+        val menus = if (isAdmin(roles)) {
+            // 管理员 - 返回所有菜单
+            sqlClient.createQuery(SysMenu::class) {
+                orderBy(table.orderNum.asc())
+                select(table)
+            }.execute()
+        } else {
+            // TODO: 根据用户角色过滤菜单
+            sqlClient.createQuery(SysMenu::class) {
+                orderBy(table.orderNum.asc())
+                select(table)
+            }.execute()
+        }
+
+        return menus
+    }
+
+    /**
+     * 判断是否是管理员（基于角色列表）
+     */
+    private fun isAdmin(roles: List<SysRoleVo>): Boolean {
+        return roles.any {
+            it.roleKey == "admin" || it.roleKey == "role_admin"
+        }
+    }
+}
+```
+
+### 与 ruoyi/MyBatis 的对比
+
+**ruoyi-vue-pro (MyBatis-Plus)**：
+
+```java
+// MyBatis 会自动加载关联（如果配置了）
+@Service
+public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> {
+
+    public SysUserVO selectUserById(Long userId) {
+        // MyBatis-Plus 会自动注入关联查询
+        SysUser user = this.getById(userId);
+
+        // 直接获取角色（已自动加载）
+        List<SysRole> roles = user.getRoles();
+
+        return convert(user, roles);
+    }
+}
+```
+
+**FoxDen (Jimmer - 手动查询方案)**：
+
+```kotlin
+// Jimmer 需要手动查询关联
+@Service
+class SysUserServiceImpl(
+    private val sqlClient: KSqlClient,
+    private val roleService: SysRoleService
+) : SysUserService {
+
+    fun selectUserById(userId: Long): SysUserVo? {
+        val user = sqlClient.findById(SysUser::class, userId) ?: return null
+
+        // 手动查询角色（类似 MyBatis 的方式）
+        val roles = roleService.selectRolesByUserId(userId)
+
+        return entityToVo(user, roles)
+    }
+}
+```
+
+**对比结论**：
+- ruoyi 使用 MyBatis-Plus，关联查询通过 XML 或注解配置
+- FoxDen 使用 Jimmer，手动查询方案与 ruoyi 的**结果等效**，实现方式类似
+- 手动查询方案更直观，适合从 MyBatis 迁移过来的开发者
+
+### 最佳实践建议
+
+#### 何时使用 Fetcher API
+
+✅ **推荐使用 Fetcher 的场景**：
+- 复杂的嵌套查询（如：用户 -> 角色 -> 菜单 -> 权限）
+- 需要避免 N+1 查询问题（如：批量查询用户及其角色）
+- 需要递归查询树形结构（如：菜单树、部门树）
+- 多个模块都需要相同的关联数据结构
+
+**示例：批量查询用户及其角色（避免 N+1）**
+
+```kotlin
+// 使用 Fetcher 一次性加载所有用户及其角色
+val users = sqlClient.createQuery(SysUser::class) {
+    where(table.deptId eq deptId)
+    select(table.fetch(
+        SysUserFetcher.$
+            .allScalarFields()
+            .roles {  // ✅ 一次性加载所有角色
+                allScalarFields()
+            }
+    ))
+}.execute()
+
+// 不会产生 N+1 查询
+// Jimmer 会生成类似这样的 SQL：
+// SELECT u.*, r.* FROM sys_user u
+// LEFT JOIN sys_user_role ur ON u.id = ur.user_id
+// LEFT JOIN sys_role r ON ur.role_id = r.id
+// WHERE u.dept_id = ?
+```
+
+#### 何时使用手动查询
+
+✅ **推荐使用手动查询的场景**：
+- 简单的单条记录查询（如：根据 ID 查询用户及其角色）
+- 需要额外的业务逻辑处理（如：过滤、排序、转换）
+- 从 MyBatis 迁移过来的代码
+- 关联数据需要从多个来源组合
+
+**示例：查询用户并过滤角色**
+
+```kotlin
+fun selectUserWithActiveRoles(userId: Long): SysUserVo? {
+    val user = sqlClient.findById(SysUser::class, userId) ?: return null
+
+    // 手动查询并过滤角色
+    val activeRoles = roleService.selectRolesByUserId(userId)
+        .filter { it.status == "0" }  // 只返回启用的角色
+
+    return SysUserVo().apply {
+        userId = user.id
+        userName = user.userName
+        roles = activeRoles  // 使用过滤后的角色
+    }
+}
+```
+
+### 完整示例：Controller 层的使用
+
+```kotlin
+@RestController
+@RequestMapping("/system/user")
+class SysUserController(
+    private val userService: SysUserService,
+    private val roleService: SysRoleService
+) {
+
+    /**
+     * 根据用户 ID 获取详细信息（包含角色）
+     */
+    @GetMapping("/{userId}")
+    fun getInfo(@PathVariable userId: Long): R<SysUserInfoVo> {
+        val user = DataPermissionHelper.ignore(java.util.function.Supplier {
+            userService.selectUserById(userId)
+        }) ?: return R.fail("用户不存在")
+
+        // 手动查询角色和岗位
+        val roles = roleService.selectRolesByUserId(userId)
+        val posts = postService.selectPostsByUserId(userId)
+
+        return R.ok(SysUserInfoVo(
+            user = user,
+            roles = roles,
+            posts = posts,
+            roleIds = roles.map { it.roleId },
+            postIds = posts.map { it.postId }
+        ))
+    }
+
+    /**
+     * 获取当前登录用户信息
+     */
+    @GetMapping("/getInfo")
+    fun getInfo(): R<UserInfoVo> {
+        val loginUser = LoginHelper.getLoginUser() ?: return R.fail("获取用户信息失败")
+
+        val user = DataPermissionHelper.ignore(java.util.function.Supplier {
+            userService.selectUserById(loginUser.userId!!)
+        })
+
+        return R.ok(UserInfoVo(
+            user = user,
+            permissions = loginUser.menuPermission,
+            roles = loginUser.rolePermission
+        ))
+    }
+}
+```
+
+### 总结
+
+| 方案 | 适用场景 | 优点 | 缺点 |
+|------|---------|------|------|
+| **Fetcher API** | 复杂嵌套查询、批量查询、树形结构 | 避免 N+1、类型安全、性能最优 | API 复杂、学习成本高 |
+| **手动查询** | 简单查询、单条记录、需要业务处理 | 简单直观、易迁移、灵活 | 可能 N+1（通常影响不大） |
+
+**推荐策略**：
+1. **默认使用手动查询**：简单直接，符合现有代码风格
+2. **批量查询使用 Fetcher**：避免 N+1 问题
+3. **复杂嵌套使用 Fetcher**：一次性加载多级关联
+4. **树形结构使用 Fetcher**：支持递归查询
+
+**关键原则**：
+- 不要直接访问实体的关联属性（会抛出 `UnloadedException`）
+- 始终使用 Fetcher 或手动查询来加载关联数据
+- 根据实际需求选择合适的方案
+
+---
+
 ## 保存数据
 
 ### Jimmer Draft API

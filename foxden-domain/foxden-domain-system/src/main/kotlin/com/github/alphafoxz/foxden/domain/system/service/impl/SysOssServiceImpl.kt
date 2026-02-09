@@ -88,7 +88,6 @@ class SysOssServiceImpl(
             fileSuffix = oss.fileSuffix,
             url = oss.url,
             service = oss.service,
-            remark = oss.remark,
             createTime = oss.createTime
             // Note: createBy in entity is Long (user ID), but VO expects String (username)
             // For now, skip setting this field

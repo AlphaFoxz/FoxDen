@@ -100,4 +100,9 @@ interface SysUser : CommDelFlag, CommInfo, CommTenant {
     @ManyToOne
     @JoinColumn(name = "dept_id")
     val dept: SysDept?
+
+    /**
+     * 备注
+     */
+    val remark: String?
 }

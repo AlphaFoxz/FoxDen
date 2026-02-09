@@ -125,7 +125,7 @@ val authRequest = SocialUtils.getAuthRequest(
 ## 技术栈
 
 - **JustAuth** 1.16.7 - 社交登录核心库
-- **Spring Boot** 3.4.1 - 自动配置支持
+- **Spring Boot** 3.5.10 - 自动配置支持
 - **Redis (Redisson)** - 状态缓存
 - **Hutool** 5.8.43 - HTTP请求工具
 

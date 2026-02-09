@@ -50,6 +50,11 @@ interface SysTenant : CommDelFlag, CommId, CommInfo {
     val intro: String?
 
     /**
+     * 备注
+     */
+    val remark: String?
+
+    /**
      * 租户套餐编号
      */
     val packageId: Long?

@@ -36,4 +36,9 @@ interface SysConfig : CommInfo, CommTenant {
      * 系统内置（Y是 N否）
      */
     val configType: String?
+
+    /**
+     * 备注
+     */
+    val remark: String?
 }

@@ -28,6 +28,11 @@ interface SysDictType : CommInfo, CommTenant {
     val dictType: String
 
     /**
+     * 备注
+     */
+    val remark: String?
+
+    /**
      * 字典数据
      */
     @OneToMany(mappedBy = "dictTypeObj")

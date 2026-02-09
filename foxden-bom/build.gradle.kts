@@ -39,7 +39,6 @@ dependencies {
 
         // Database
         api("org.postgresql:postgresql:${property("version.postgresql")}")
-        api("com.h2database:h2:${property("version.h2")}")
 
         // Documentation
         api("org.springdoc:springdoc-openapi-starter-webmvc-ui:${property("version.springdoc")}")
@@ -95,16 +94,16 @@ dependencies {
         api("com.github.therapi:therapi-runtime-javadoc:0.15.0")
 
         // SMS4J
-        api("org.dromara.sms4j:sms4j-spring-boot-starter:3.0.4")
+        api("org.dromara.sms4j:sms4j-spring-boot-starter:${property("version.sms4j")}")
 
         // EasyExcel
         api("com.alibaba:easyexcel:${property("version.easyexcel")}")
 
         // AWS SDK for S3 protocol compatibility
-        api("software.amazon.awssdk:s3:2.25.65")
-        api("software.amazon.awssdk:netty-nio-client:2.25.65")
-        api("software.amazon.awssdk:s3-transfer-manager:2.25.65")
-        api("software.amazon.awssdk:apache-client:2.25.65")
+        api("software.amazon.awssdk:s3:${property("version.awssdk")}")
+        api("software.amazon.awssdk:netty-nio-client:${property("version.awssdk")}")
+        api("software.amazon.awssdk:s3-transfer-manager:${property("version.awssdk")}")
+        api("software.amazon.awssdk:apache-client:${property("version.awssdk")}")
 
         // OSS
         api("io.minio:minio:${property("version.minio")}")
@@ -116,6 +115,6 @@ dependencies {
         api("com.baomidou:lock4j-redisson-spring-boot-starter:${property("version.lock4j")}")
 
         // Social login
-        api("me.zhyd.oauth:JustAuth:1.16.7")
+        api("me.zhyd.oauth:JustAuth:${property("version.justAuth")}")
     }
 }

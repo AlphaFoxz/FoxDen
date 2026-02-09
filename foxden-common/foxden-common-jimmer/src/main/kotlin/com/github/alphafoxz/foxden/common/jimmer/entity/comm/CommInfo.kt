@@ -33,9 +33,4 @@ interface CommInfo {
      * 更新时间
      */
     val updateTime: LocalDateTime?
-
-    /**
-     * 备注
-     */
-    val remark: String?
 }

@@ -24,11 +24,9 @@ import com.github.alphafoxz.foxden.common.security.utils.tokenValue
 import com.github.alphafoxz.foxden.common.security.utils.tokenTimeout
 import com.github.alphafoxz.foxden.common.jimmer.helper.TenantHelper
 import com.github.alphafoxz.foxden.common.web.config.properties.CaptchaProperties
-import com.github.alphafoxz.foxden.domain.system.entity.SysUser
 import com.github.alphafoxz.foxden.domain.system.service.SysUserService
 import com.github.alphafoxz.foxden.domain.system.vo.SysClientVo
 import com.github.alphafoxz.foxden.domain.system.vo.SysUserVo
-import org.babyfish.jimmer.sql.kt.ast.expression.eq
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
@@ -72,8 +70,9 @@ class PasswordAuthStrategy(
 
         val loginUser = TenantHelper.dynamic(tenantId) {
             val user = loadUserByUsername(username)
+
             sysLoginService.checkLogin(LoginType.PASSWORD, tenantId, username) {
-                !BCrypt.checkpw(password, user.password ?: "")
+                !userService.validatePassword(username, password)
             }
             // 此处可根据登录用户的数据不同 自行创建 loginUser
             sysLoginService.buildLoginUser(user)

@@ -97,4 +97,9 @@ interface SysMenu : CommInfo {
      */
     @OneToMany(mappedBy = "parent")
     val children: List<SysMenu>
+
+    /**
+     * 备注
+     */
+    val remark: String?
 }

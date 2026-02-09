@@ -60,4 +60,9 @@ interface SysPost : CommInfo, CommTenant {
      */
     @ManyToMany(mappedBy = "posts")
     val users: List<SysUser>
+
+    /**
+     * 备注
+     */
+    val remark: String?
 }

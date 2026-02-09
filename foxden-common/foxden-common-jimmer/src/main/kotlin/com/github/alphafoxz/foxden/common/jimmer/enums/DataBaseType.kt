@@ -25,11 +25,6 @@ enum class DataBaseType(
     ORACLE("oracle", "Oracle"),
 
     /**
-     * H2
-     */
-    H2("h2", "H2"),
-
-    /**
      * SQL Server
      */
     SQL_SERVER("sqlserver", "SQL Server");

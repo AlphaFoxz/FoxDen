@@ -5,11 +5,11 @@ FoxDen 管理端应用，提供用户认证、授权、租户管理等功能。
 ## 技术栈
 
 - Kotlin 2.3.0
-- Spring Boot 3.4.1
+- Spring Boot 3.5.10
 - Jimmer 0.10.6 ORM
 - Sa-Token 1.44.0 (认证授权)
 - Redis (Redisson 3.35.0)
-- PostgreSQL / H2
+- PostgreSQL
 
 ## 模块结构
 
@@ -87,15 +87,15 @@ java -jar foxden-app/foxden-app-admin/build/libs/foxden-app-admin.jar
 ### application.yaml
 主要配置项：
 - 服务端口：12003
-- 数据库：PostgreSQL（生产）/ H2（开发）
+- 数据库：PostgreSQL
 - Jimmer ORM配置（Kotlin DSL）
 - API加密配置（RSA+AES混合加密）
 - 日志配置
 
 ### application-dev.yaml
 开发环境配置：
-- H2内存数据库
-- Jimmer H2方言
+- PostgreSQL数据库
+- Jimmer PostgreSQL方言
 - SQL日志输出
 
 ## API接口

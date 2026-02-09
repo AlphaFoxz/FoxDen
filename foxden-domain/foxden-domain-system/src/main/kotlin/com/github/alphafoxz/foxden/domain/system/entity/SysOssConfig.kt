@@ -77,4 +77,9 @@ interface SysOssConfig : CommInfo {
      * 桶权限类型(0private 1public 2custom)
      */
     val accessPolicy: String?
+
+    /**
+     * 备注
+     */
+    val remark: String?
 }

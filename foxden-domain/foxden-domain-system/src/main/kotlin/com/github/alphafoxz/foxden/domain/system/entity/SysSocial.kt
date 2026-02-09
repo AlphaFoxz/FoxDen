@@ -7,7 +7,7 @@ import org.babyfish.jimmer.sql.*
  * 社会化关系对象 sys_social
  */
 @Entity
-interface SysSocial : CommId, CommInfo, CommTenant {
+interface SysSocial : CommId, CommDelFlag, CommInfo, CommTenant {
     /**
      * 用户ID
      */

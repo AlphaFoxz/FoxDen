@@ -12,7 +12,7 @@ FoxDen 是一个多租户 SaaS 系统，正从 Java 迁移至 Kotlin。项目采
 | Gradle | Kotlin DSL | ✅ 已迁移 |
 | Jimmer | 0.10.6 | ORM框架 |
 | Spring Boot | 3.4.1 | Web框架 |
-| Database | PostgreSQL (生产) / H2 (开发) | 数据库 |
+| Database | PostgreSQL | 数据库 |
 | Redis | Redisson 3.35.0 | 缓存 |
 | Sa-Token | 1.44.0 | 安全框架 |
 
@@ -81,7 +81,6 @@ pkill -f "foxden-app-admin"
 ### 应用访问
 
 - **管理端**: http://localhost:12003
-- **H2控制台**: http://localhost:12003/h2-console
 - **API文档**: http://localhost:12003/swagger-ui.html
 - **健康检查**: http://localhost:12003/actuator/health
 
@@ -460,11 +459,9 @@ class UserController(
 
 #### 3. 数据库初始化
 
-**H2 开发数据库**:
+**PostgreSQL 数据库**:
 - 表结构初始化脚本
 - 初始数据导入
-
-**PostgreSQL 生产数据库**:
 - 数据库迁移脚本
 - 数据备份恢复
 

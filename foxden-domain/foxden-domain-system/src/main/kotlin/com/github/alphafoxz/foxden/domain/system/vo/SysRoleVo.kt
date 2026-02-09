@@ -98,4 +98,11 @@ data class SysRoleVo(
      * 用户是否存在此角色标识
      */
     var flag: Boolean? = null
-)
+) {
+    /**
+     * 是否为超级管理员角色
+     */
+    fun isSuperAdmin(): Boolean {
+        return com.github.alphafoxz.foxden.common.core.constant.SystemConstants.SUPER_ADMIN_ID == roleId
+    }
+}

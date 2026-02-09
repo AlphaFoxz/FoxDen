@@ -10,14 +10,17 @@ import com.github.alphafoxz.foxden.common.jimmer.core.page.PageQuery
 import com.github.alphafoxz.foxden.common.jimmer.core.page.TableDataInfo
 import org.babyfish.jimmer.sql.kt.ast.expression.*
 import org.babyfish.jimmer.sql.kt.*
+import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.stereotype.Service
+import org.babyfish.jimmer.sql.ast.tuple.Tuple2
 
 /**
  * Role 业务层处理
  */
 @Service
 class SysRoleServiceImpl(
-    private val sqlClient: KSqlClient
+    private val sqlClient: KSqlClient,
+    private val jdbcTemplate: JdbcTemplate
 ) : SysRoleService {
 
     override fun selectPageRoleList(role: SysRoleBo, pageQuery: PageQuery): TableDataInfo<SysRoleVo> {
@@ -40,25 +43,68 @@ class SysRoleServiceImpl(
     }
 
     override fun selectRolesByUserId(userId: Long): List<SysRoleVo> {
-        val user = sqlClient.findById(SysUser::class, userId) ?: return emptyList()
-        return user.roles.map { entityToVo(it) }
+        // Query roles through the sys_user_role join table using raw SQL
+        val roleIds = jdbcTemplate.queryForList(
+            "SELECT role_id FROM sys_user_role WHERE user_id = ?",
+            Long::class.java,
+            userId
+        )
+
+        if (roleIds.isEmpty()) {
+            return emptyList()
+        }
+
+        // Use findById for each role since IN clause is not available
+        val roles = roleIds.mapNotNull { roleId -> sqlClient.findById(SysRole::class, roleId) }
+        return roles.map { entityToVo(it) }
     }
 
     override fun selectRolesAuthByUserId(userId: Long): List<SysRoleVo> {
-        val user = sqlClient.findById(SysUser::class, userId) ?: return emptyList()
-        return user.roles
+        // Query roles through the sys_user_role join table using raw SQL
+        val roleIds = jdbcTemplate.queryForList(
+            "SELECT role_id FROM sys_user_role WHERE user_id = ?",
+            Long::class.java,
+            userId
+        )
+
+        if (roleIds.isEmpty()) {
+            return emptyList()
+        }
+
+        // Use findById for each role and filter by status
+        val roles = roleIds.mapNotNull { roleId -> sqlClient.findById(SysRole::class, roleId) }
             .filter { it.status == SystemConstants.NORMAL }
-            .map { entityToVo(it) }
+
+        return roles.map { entityToVo(it) }
     }
 
     override fun selectRolePermissionByUserId(userId: Long): Set<String> {
-        val user = sqlClient.findById(SysUser::class, userId) ?: return emptySet()
-        return user.roles
-            .filter { it.status == SystemConstants.NORMAL }
-            .flatMap { role ->
-                role.menus.mapNotNull { menu -> menu.perms }
-            }
-            .toSet()
+        // Query role IDs through the sys_user_role join table
+        val roleIds = jdbcTemplate.queryForList(
+            "SELECT role_id FROM sys_user_role WHERE user_id = ?",
+            Long::class.java,
+            userId
+        )
+
+        if (roleIds.isEmpty()) {
+            return emptySet()
+        }
+
+        // Query menu permissions through the sys_role_menu join table
+        val menuPerms = jdbcTemplate.queryForList(
+            """
+            SELECT DISTINCT m.perms
+            FROM sys_menu m
+            INNER JOIN sys_role_menu rm ON m.menu_id = rm.menu_id
+            WHERE rm.role_id IN (${roleIds.joinToString(",") { "?" }})
+            AND m.perms IS NOT NULL
+            AND m.perms != ''
+            """,
+            String::class.java,
+            *roleIds.toTypedArray()
+        )
+
+        return menuPerms.toSet()
     }
 
     override fun selectRoleAll(): List<SysRoleVo> {
@@ -72,13 +118,35 @@ class SysRoleServiceImpl(
     }
 
     override fun selectRoleListByUserId(userId: Long): List<Long> {
-        val user = sqlClient.findById(SysUser::class, userId) ?: return emptyList()
-        return user.roles.map { it.id }
+        // Query role IDs through the sys_user_role join table using raw SQL
+        return jdbcTemplate.queryForList(
+            "SELECT role_id FROM sys_user_role WHERE user_id = ?",
+            Long::class.java,
+            userId
+        )
     }
 
     override fun selectRoleById(roleId: Long): SysRoleVo? {
         val role = sqlClient.findById(SysRole::class, roleId) ?: return null
-        return entityToVo(role, withMenus = true, withDepts = true)
+
+        // Query menu IDs through the sys_role_menu join table
+        val menuIds = jdbcTemplate.queryForList(
+            "SELECT menu_id FROM sys_role_menu WHERE role_id = ?",
+            Long::class.java,
+            roleId
+        )
+
+        // Query dept IDs through the sys_role_dept join table
+        val deptIds = jdbcTemplate.queryForList(
+            "SELECT dept_id FROM sys_role_dept WHERE role_id = ?",
+            Long::class.java,
+            roleId
+        )
+
+        val vo = entityToVo(role, withMenus = false, withDepts = false)
+        vo.menuIds = menuIds.toTypedArray()
+        vo.deptIds = deptIds.toTypedArray()
+        return vo
     }
 
     override fun selectRoleByIds(roleIds: List<Long>): List<SysRoleVo> {
@@ -120,23 +188,12 @@ class SysRoleServiceImpl(
     }
 
     override fun countUserRoleByRoleId(roleId: Long): Long {
-        // Simple approach: query all users and count those with the role
-        // This is not efficient but works for now
-        // TODO: Find a more efficient way using Jimmer DSL for many-to-many relationships
-        var count = 0L
-        val users = sqlClient.createQuery(SysUser::class) {
-            where(table.delFlag eq "0")
-            select(table)
-        }.execute()
-
-        for (user in users) {
-            val userWithRoles = sqlClient.findById(SysUser::class, user.id)
-            if (userWithRoles != null && userWithRoles.roles.any { it.id == roleId }) {
-                count++
-            }
-        }
-
-        return count
+        // Count users with this role through the sys_user_role join table
+        return jdbcTemplate.queryForObject(
+            "SELECT COUNT(DISTINCT user_id) FROM sys_user_role WHERE role_id = ?",
+            Long::class.java,
+            roleId
+        ) ?: 0L
     }
 
     override fun insertRole(bo: SysRoleBo): Int {
@@ -230,6 +287,10 @@ class SysRoleServiceImpl(
 
     /**
      * 实体转 VO
+     *
+     * Note: withMenus and withDepts parameters are kept for compatibility,
+     * but the actual loading is handled by the calling methods using raw SQL queries
+     * to avoid Jimmer lazy loading UnloadedException
      */
     private fun entityToVo(role: SysRole, withMenus: Boolean = false, withDepts: Boolean = false): SysRoleVo {
         return SysRoleVo().apply {
@@ -249,13 +310,8 @@ class SysRoleServiceImpl(
             updateTime = role.updateTime
             delFlag = role.delFlag.toString()
 
-            if (withMenus) {
-                menuIds = role.menus.map { it.id }.toTypedArray()
-            }
-
-            if (withDepts) {
-                deptIds = role.depts.map { it.id }.toTypedArray()
-            }
+            // menuIds and deptIds should be set by calling methods using raw SQL queries
+            // to avoid lazy loading issues
         }
     }
 }

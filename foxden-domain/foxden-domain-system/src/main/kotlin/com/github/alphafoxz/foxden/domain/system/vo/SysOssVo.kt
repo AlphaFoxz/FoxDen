@@ -40,11 +40,6 @@ data class SysOssVo(
     var service: String? = null,
 
     /**
-     * 备注
-     */
-    var remark: String? = null,
-
-    /**
      * 创建者
      */
     var createBy: String? = null,

@@ -85,11 +85,11 @@ foxden/
 ## Technology Stack
 
 - **Language**: Kotlin 2.3.0
-- **Framework**: Spring Boot 3.4.1
+- **Framework**: Spring Boot 3.5.10
 - **Build Tool**: Gradle (Kotlin DSL) with KSP
 - **Java Version**: 21
 - **ORM**: Jimmer 0.10.6 (Kotlin-first ORM with compiled validation)
-- **Database**: PostgreSQL (production), H2 (development/testing)
+- **Database**: PostgreSQL
 - **Security**: Sa-Token 1.44.0 with JWT (simple mode)
 - **Key Dependencies**:
   - Spring Security, Spring WebMVC, Spring Validation
@@ -260,13 +260,13 @@ Run `code-gen/run.bat` to regenerate DTOs and fetchers based on entity definitio
 ## Configuration
 
 ### Active Profile
-Default profile is `dev` (see `foxden-app-admin/src/main/resources/application.yaml`). The dev profile uses H2 database with in-memory storage.
+Default profile is `dev` (see `foxden-app-admin/src/main/resources/application.yaml`).
 
 ### Database Configuration
-For H2 (development):
+For PostgreSQL:
 ```yaml
 jimmer:
-  dialect: org.babyfish.jimmer.sql.dialect.H2Dialect
+  dialect: org.babyfish.jimmer.sql.dialect.PostgresDialect
 ```
 
 For PostgreSQL (production):
@@ -285,7 +285,6 @@ jimmer:
 - JMX warnings on startup are harmless (JMX is disabled in config)
 - Jimmer's `@LogicalDeleted` on Boolean properties requires explicit `value` parameter
 - KSP generates code to `build/generated/ksp/main/kotlin` (automatically included)
-- H2 console is available at `/h2-console` in dev mode
 
 ## Kotlin Compiler Options
 
@@ -312,9 +311,3 @@ jimmer:
 1. Add `@DataPermission` annotation to service method or class
 2. Specify `@DataColumn` mappings for placeholder replacement
 3. Use `DataPermissionHelper.ignore { }` to bypass filtering when needed
-
-### Testing with H2
-- H2 runs in-memory with PostgreSQL compatibility mode
-- Schema initialization is set to `always` in dev profile
-- Access H2 console at http://localhost:12003/h2-console
-- JDBC URL: `jdbc:h2:mem:foxden`

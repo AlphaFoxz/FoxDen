@@ -39,6 +39,11 @@ interface SysTenantPackage : CommDelFlag, CommInfo {
     val status: String?
 
     /**
+     * 备注
+     */
+    val remark: String?
+
+    /**
      * 租户
      */
     @OnDissociate(DissociateAction.DELETE)

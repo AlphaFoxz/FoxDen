@@ -1,31 +1,41 @@
 package com.github.alphafoxz.foxden.domain.system.service.impl
 
-import com.github.alphafoxz.foxden.domain.system.service.SysMenuService
-import com.github.alphafoxz.foxden.domain.system.entity.*
-import com.github.alphafoxz.foxden.domain.system.bo.SysMenuBo
-import com.github.alphafoxz.foxden.domain.system.vo.RouterVo
-import com.github.alphafoxz.foxden.domain.system.vo.SysMenuVo
+import cn.hutool.core.lang.tree.Tree
 import com.github.alphafoxz.foxden.common.core.constant.SystemConstants
 import com.github.alphafoxz.foxden.common.core.exception.ServiceException
-import org.babyfish.jimmer.sql.kt.ast.expression.*
-import org.babyfish.jimmer.sql.kt.*
+import com.github.alphafoxz.foxden.domain.system.bo.SysMenuBo
+import com.github.alphafoxz.foxden.domain.system.entity.*
+import com.github.alphafoxz.foxden.domain.system.service.SysMenuService
+import com.github.alphafoxz.foxden.domain.system.service.SysRoleService
+import com.github.alphafoxz.foxden.domain.system.vo.RouterVo
+import com.github.alphafoxz.foxden.domain.system.vo.SysMenuVo
+import com.github.alphafoxz.foxden.domain.system.vo.SysRoleVo
+import org.babyfish.jimmer.sql.kt.KSqlClient
+import org.babyfish.jimmer.sql.kt.ast.expression.asc
+import org.babyfish.jimmer.sql.kt.ast.expression.eq
+import org.babyfish.jimmer.sql.kt.ast.expression.like
+import org.babyfish.jimmer.sql.kt.ast.expression.ne
 import org.springframework.stereotype.Service
-import cn.hutool.core.lang.tree.Tree
 
 /**
  * Menu 业务层处理
  */
 @Service
 class SysMenuServiceImpl(
-    private val sqlClient: KSqlClient
+    private val sqlClient: KSqlClient,
+    private val roleService: SysRoleService
 ) : SysMenuService {
 
     override fun selectMenuList(userId: Long): List<SysMenuVo> {
         val user = sqlClient.findById(SysUser::class, userId)
+            ?: return emptyList()
+
+        // 手动查询角色数据（避免懒加载问题）
+        val roles = roleService.selectRolesByUserId(userId)
 
         // 如果是管理员，返回所有菜单
         // 否则返回用户角色关联的菜单
-        val menus = if (user != null && isAdmin(user)) {
+        val menus = if (isAdmin(roles)) {
             sqlClient.createQuery(SysMenu::class) {
                 orderBy(table.orderNum.asc())
                 select(table)
@@ -77,8 +87,12 @@ class SysMenuServiceImpl(
 
     override fun selectMenuTreeByUserId(userId: Long): List<SysMenu> {
         val user = sqlClient.findById(SysUser::class, userId)
+            ?: return emptyList()
 
-        val menus = if (user != null && isAdmin(user)) {
+        // 手动查询角色数据（避免懒加载问题）
+        val roles = roleService.selectRolesByUserId(userId)
+
+        val menus = if (isAdmin(roles)) {
             sqlClient.createQuery(SysMenu::class) {
                 orderBy(table.orderNum.asc())
                 select(table)
@@ -151,11 +165,11 @@ class SysMenuServiceImpl(
             path = bo.path
             component = bo.component
             queryParam = bo.queryParam
-            frameFlag = when(bo.isFrame) {
+            frameFlag = when (bo.isFrame) {
                 "1" -> "1"
                 else -> "0"
             }
-            cacheFlag = when(bo.isCache) {
+            cacheFlag = when (bo.isCache) {
                 "0" -> "0"
                 else -> "1"
             }
@@ -184,13 +198,13 @@ class SysMenuServiceImpl(
             bo.component?.let { component = it }
             bo.queryParam?.let { queryParam = it }
             bo.isFrame?.let {
-                frameFlag = when(it) {
+                frameFlag = when (it) {
                     "1" -> "1"
                     else -> "0"
                 }
             }
             bo.isCache?.let {
-                cacheFlag = when(it) {
+                cacheFlag = when (it) {
                     "0" -> "0"
                     else -> "1"
                 }
@@ -209,7 +223,7 @@ class SysMenuServiceImpl(
 
     override fun deleteMenuById(menuId: Long): Int {
         val result = sqlClient.deleteById(SysMenu::class, menuId)
-        return result.totalAffectedRowCount.toInt()
+        return result.totalAffectedRowCount
     }
 
     override fun deleteMenuById(menuIds: List<Long>) {
@@ -228,12 +242,21 @@ class SysMenuServiceImpl(
     }
 
     /**
-     * 判断是否是管理员
+     * 判断是否是管理员（基于角色列表）
      */
-    private fun isAdmin(user: SysUser): Boolean {
-        return user.roles.any {
+    private fun isAdmin(roles: List<SysRoleVo>): Boolean {
+        return roles.any {
             it.roleKey == "admin" || it.roleKey == "role_admin"
         }
+    }
+
+    /**
+     * 判断是否是管理员（基于用户对象）
+     * @deprecated 此方法已废弃，因为 user.roles 是懒加载的，请使用角色列表版本
+     */
+    private fun isAdmin(user: SysUser): Boolean {
+        // 不推荐使用，因为 roles 是懒加载的
+        throw UnsupportedOperationException("Use isAdmin(roles: List<SysRoleVo>) instead")
     }
 
     /**
