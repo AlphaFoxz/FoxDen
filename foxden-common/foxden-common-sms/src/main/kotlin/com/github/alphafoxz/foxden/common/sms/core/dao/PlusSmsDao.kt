@@ -45,6 +45,18 @@ class PlusSmsDao : SmsDao {
     }
 
     /**
+     * remove
+     * <p> 根据key移除缓存
+     *
+     * @param key 缓存键
+     * @return 被删除的value
+     * @author :Wind
+     */
+    override fun remove(key: String): Any? {
+        return RedisUtils.deleteObject(GlobalConstants.GLOBAL_REDIS_KEY + key)
+    }
+
+    /**
      * 清空
      */
     override fun clean() {

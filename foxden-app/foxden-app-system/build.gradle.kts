@@ -63,16 +63,12 @@ tasks.withType<JavaExec> {
     systemProperty("java.awt.headless", "true")
 }
 
-// Spring Boot configuration
-springBoot {
-    mainClass.set(null as String?)
-}
-
-tasks.withType<org.springframework.boot.gradle.tasks.bundling.BootJar> {
+// Spring Boot configuration - disable bootJar for library module
+tasks.named<org.springframework.boot.gradle.tasks.bundling.BootJar>("bootJar") {
     enabled = false
 }
 
-tasks.withType<Jar> {
+tasks.named<Jar>("jar") {
     enabled = true
     archiveClassifier.set("")
 }

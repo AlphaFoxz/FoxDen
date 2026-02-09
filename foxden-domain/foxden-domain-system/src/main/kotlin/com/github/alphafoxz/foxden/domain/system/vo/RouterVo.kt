@@ -52,7 +52,12 @@ data class RouterVo(
     /**
      * 子路由
      */
-    var children: List<RouterVo>? = null
+    var children: List<RouterVo>? = null,
+
+    /**
+     * 是否总是显示
+     */
+    var alwaysShow: Boolean? = null
 )
 
 /**

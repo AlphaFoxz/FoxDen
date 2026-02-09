@@ -28,7 +28,11 @@ include("foxden-domain")
 include("foxden-domain:foxden-domain-system")
 include("foxden-domain:foxden-domain-tenant")
 include("foxden-domain:foxden-domain-infrastructure")
+include("foxden-domain:foxden-domain-workflow")
+include("foxden-domain:foxden-domain-gen")
+include("foxden-domain:foxden-domain-test")
 
 // Application modules
 include("foxden-app:foxden-app-admin")
 include("foxden-app:foxden-app-system")
+include("foxden-app:foxden-app-workflow")

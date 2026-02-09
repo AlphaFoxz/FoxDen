@@ -5,15 +5,88 @@
 
 ## 目录
 
+### 基础知识
 - [什么是 Jimmer](#什么是-jimmer)
+  - [Jimmer vs 传统 ORM](#jimmer-vs-传统-orm)
 - [核心概念](#核心概念)
+  - [1. 实体（Entity）](#1-实体entity)
+  - [2. 三大核心功能](#2-三大核心功能)
+  - [3. Trait 设计模式](#3-trait-设计模式)
+
+### 配置与定义
 - [Spring Boot 集成配置](#spring-boot-集成配置)
+  - [核心原则：使用 Starter 自动配置](#核心原则使用-starter-自动配置)
+  - [配置说明](#配置说明)
+  - [自动配置原理](#自动配置原理)
+  - [扩展函数](#扩展函数)
 - [实体定义](#实体定义)
+  - [基本 Entity 定义](#基本-entity-定义)
+  - [常用注解](#常用注解)
+  - [关联行为（@OnDissociate）](#关联行为ondissociate)
+  - [Trait 复用（FoxDen 项目）](#trait-复用foxden-项目)
+
+### 查询操作
 - [查询数据](#查询数据)
+  - [1. 使用 SQL Client 查询](#1-使用-sql-client-查询)
+  - [2. 使用 Fetcher 控制查询形状](#2-使用-fetcher-控制查询形状)
+    - [创建 Fetcher 的正确方式](#创建-fetcher-的正确方式)
+    - [在查询中使用 Fetcher](#在查询中使用-fetcher)
+    - [递归 Fetcher（树形结构）](#递归-fetcher树形结构)
+  - [3. 动态查询](#3-动态查询)
+  - [4. 分页查询](#4-分页查询)
+
+### 进阶专题
+- [处理关联属性的懒加载问题](#处理关联属性的懒加载问题)
+  - [问题现象](#问题现象)
+  - [根本原因](#根本原因)
+  - [解决方案对比](#解决方案对比)
+    - [方案 1: 使用 Fetcher API（高级用法）](#方案-1-使用-fetcher-api高级用法)
+    - [方案 2: 手动查询（简单用法 - 推荐）](#方案-2-手动查询简单用法---推荐)
+  - [与 ruoyi/MyBatis 的对比](#与-ruoyimybatis-的对比)
+  - [最佳实践建议](#最佳实践建议)
 - [保存数据](#保存数据)
+  - [Jimmer Draft API](#jimmer-draft-api)
+  - [插入新对象](#插入新对象)
+  - [更新现有对象](#更新现有对象)
+  - [更新单个字段](#更新单个字段)
+  - [重要注意事项](#重要注意事项)
+  - [多对多关联（待研究）](#多对多关联待研究)
+
+### 项目应用
 - [FoxDen 项目中的 Jimmer 使用](#foxden-项目中的-jimmer-使用)
+  - [1. 项目特点](#1-项目特点)
+  - [2. 实体定义位置](#2-实体定义位置)
+  - [3. 常用扩展函数](#3-常用扩展函数)
+  - [4. 分页封装](#4-分页封装)
+  - [5. 数据权限](#5-数据权限)
+  - [6. 多租户](#6-多租户)
 - [常见模式](#常见模式)
+  - [模式 1：按条件查询列表](#模式-1按条件查询列表)
+  - [模式 2：检查唯一性](#模式-2检查唯一性)
+  - [模式 3：批量查询并转换](#模式-3批量查询并转换)
+  - [模式 4：树形结构查询](#模式-4树形结构查询)
+  - [模式 5：逻辑删除](#模式-5逻辑删除)
+
+### 实践指南
+- [注意事项](#注意事项)
+  - [1. 属性缺失 vs null](#1-属性缺失-vs-null)
+  - [2. 不可变对象更新](#2-不可变对象更新)
+  - [3. 多租户过滤](#3-多租户过滤)
 - [常见问题](#常见问题)
+  - [1. ConnectionManagerDsl 错误](#1-connectionmanagerdsl-错误)
+  - [2. 类型推断错误](#2-类型推断错误)
+  - [3. KSP 生成的代码找不到](#3-ksp-生成的代码找不到)
+  - [4. Fetcher 定义错误](#4-fetcher-定义错误)
+  - [5. 多对多关联保存](#5-多对多关联保存)
+- [最佳实践](#最佳实践)
+
+### 参考资料
+- [参考资料](#参考资料)
+- [附录：Kotlin DSL 快速参考](#附录kotlin-dsl-快速参考)
+  - [✅ 已验证的正确模式](#-已验证的正确模式)
+  - [⚠️ 常见错误](#-常见错误)
+  - [🔧 KSP 配置要求](#-ksp-配置要求)
+  - [🎯 学习建议](#-学习建议)
 
 ---
 
@@ -314,23 +387,68 @@ class UserService(
 
 **概念**：Fetcher 类似 GraphQL，可以精确控制查询返回的数据结构，避免 N+1 问题。
 
-```kotlin
-// 定义 Fetcher
-val USER_FETCHER = SysUserFetcher.$
-    .allScalarFields()  // 所有标量字段
-    .dept {             // 关联的部门
-        id()
-        name()
-    }
-    .roles {            // 关联的角色列表
-        id()
-        roleName()
-        roleKey()
-    }
+#### 创建 Fetcher 的正确方式
 
-// 使用 Fetcher 查询
+**重要**：Jimmer 的 Fetcher 通过 `newFetcher` 函数创建，而非 `SysMenuFetcher.$` 单例对象。
+
+```kotlin
+import org.babyfish.jimmer.sql.kt.fetcher.newFetcher
+
+// ✅ 正确方式 1：使用 newFetcher 函数
+val MENU_TREE_FETCHER = newFetcher(SysMenu::class).by {
+    allScalarFields()
+    children {
+        allScalarFields()
+        children {
+            allScalarFields()
+            // 支持递归定义
+        }
+    }
+}
+
+// ✅ 正确方式 2：简化语法（单级关联）
+val USER_WITH_ROLE_FETCHER = newFetcher(SysUser::class).by {
+    allScalarFields()
+    roles {
+        allScalarFields()
+    }
+}
+
+// ❌ 错误方式：使用 SysMenuFetcher.$（不推荐）
+val WRONG_FETCHER = SysMenuFetcher.$  // 不推荐，用于内部实现
+```
+
+#### 在查询中使用 Fetcher
+
+```kotlin
+// 方式 1：在 findById 中使用 Fetcher
 fun getUserWithRoles(userId: Long): SysUser? {
-    return sqlClient.findById(SysUser::class, userId, USER_FETCHER)
+    return sqlClient.findById(
+        SysUser::class,
+        userId,
+        USER_WITH_ROLE_FETCHER
+    )
+}
+
+// 方式 2：在 createQuery 中使用 table.fetch
+fun getMenuTree(): List<SysMenu> {
+    return sqlClient.createQuery(SysMenu::class) {
+        where(table.parentId.isNull())
+        orderBy(table.orderNum.asc())
+        select(table.fetch(MENU_TREE_FETCHER))
+    }.execute()
+}
+
+// 方式 3：直接在查询中定义 Fetcher
+fun getMenus(): List<SysMenu> {
+    return sqlClient.createQuery(SysMenu::class) {
+        select(table.fetch {
+            allScalarFields()
+            children {
+                allScalarFields()
+            }
+        })
+    }.execute()
 }
 ```
 
@@ -339,6 +457,39 @@ fun getUserWithRoles(userId: Long): SysUser? {
 - ✅ 按需加载字段
 - ✅ 类型安全
 - ✅ 支持递归查询（树形结构）
+
+#### 递归 Fetcher（树形结构）
+
+对于菜单树、部门树等递归结构，使用 Jimmer 的 `*` 语法实现无限递归：
+
+```kotlin
+// 递归 Fetcher 定义 - 使用 children*() 实现无限递归
+val MENU_TREE_FETCHER = newFetcher(SysMenu::class).by {
+    allScalarFields()
+    // 使用 parent*() 递归加载所有父级（向上递归）
+    `parent*`()
+    // 使用 children*() 递归加载所有子级（向下递归）
+    `children*`()
+}
+
+// 使用递归 Fetcher 查询菜单树
+fun getMenuTree(): List<SysMenu> {
+    return sqlClient.createQuery(SysMenu::class) {
+        where(table.parentId.isNull())
+        orderBy(table.orderNum.asc())
+        select(table.fetch(MENU_TREE_FETCHER))
+    }.execute()
+}
+```
+
+**关键点**：
+- `children*()` - 星号表示无限递归，自动加载所有层级的子菜单
+- `parent*()` - 递归加载所有层级的父菜单
+- 手动嵌套 `children { children { ... } }` 只能加载固定层级，不推荐
+
+**注意事项**：
+- 递归深度受数据库性能限制，建议配合 `WHERE` 条件限制范围
+- 对于超深树形结构，考虑使用分页或限制深度
 
 ### 3. 动态查询
 

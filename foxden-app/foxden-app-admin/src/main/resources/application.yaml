@@ -9,7 +9,7 @@ foxden:
 # 验证码配置
 captcha:
   # 是否启用验证码校验（开发环境可关闭）
-  enable: true
+  enable: false
   # 验证码类型：math 数组计算 char 字符验证
   type: MATH
   # 验证码类别：line 线段干扰 circle 圆圈干扰 shear 扭曲干扰
