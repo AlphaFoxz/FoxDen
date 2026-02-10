@@ -37,8 +37,7 @@ class SysOssConfigController(
     @SaCheckPermission("system:ossConfig:list")
     @GetMapping("/list")
     fun list(bo: SysOssConfigBo, pageQuery: PageQuery): TableDataInfo<SysOssConfigVo> {
-        val list = ossConfigService.selectOssConfigList(bo)
-        return TableDataInfo.build(list)
+        return ossConfigService.queryPageList(bo, pageQuery)
     }
 
     /**
@@ -49,7 +48,7 @@ class SysOssConfigController(
     @SaCheckPermission("system:ossConfig:list")
     @GetMapping("/{ossConfigId}")
     fun getInfo(@NotNull(message = "主键不能为空") @PathVariable ossConfigId: Long): R<SysOssConfigVo> {
-        return R.ok(ossConfigService.selectOssConfigById(ossConfigId))
+        return R.ok(ossConfigService.queryById(ossConfigId))
     }
 
     /**
@@ -60,7 +59,7 @@ class SysOssConfigController(
     @RepeatSubmit()
     @PostMapping
     fun add(@Validated(AddGroup::class) @RequestBody bo: SysOssConfigBo): R<Void> {
-        return toAjax(ossConfigService.insertOssConfig(bo))
+        return toAjax(ossConfigService.insertByBo(bo))
     }
 
     /**
@@ -71,7 +70,7 @@ class SysOssConfigController(
     @RepeatSubmit()
     @PutMapping
     fun edit(@Validated(EditGroup::class) @RequestBody bo: SysOssConfigBo): R<Void> {
-        return toAjax(ossConfigService.updateOssConfig(bo))
+        return toAjax(ossConfigService.updateByBo(bo))
     }
 
     /**
@@ -83,8 +82,7 @@ class SysOssConfigController(
     @Log(title = "对象存储配置", businessType = BusinessType.DELETE)
     @DeleteMapping("/{ossConfigIds}")
     fun remove(@NotEmpty(message = "主键不能为空") @PathVariable ossConfigIds: Array<Long>): R<Void> {
-        ossConfigService.deleteOssConfigByIds(ossConfigIds)
-        return toAjax(ossConfigIds.size)
+        return toAjax(ossConfigService.deleteWithValidByIds(ossConfigIds.toList(), true))
     }
 
     /**
@@ -95,7 +93,6 @@ class SysOssConfigController(
     @RepeatSubmit()
     @PutMapping("/changeStatus")
     fun changeStatus(@RequestBody bo: SysOssConfigBo): R<Void> {
-        // TODO: Implement status change when service method is available
-        return R.fail("状态修改功能待实现")
+        return toAjax(ossConfigService.updateOssConfigStatus(bo))
     }
 }

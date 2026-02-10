@@ -57,6 +57,7 @@ interface SysTenant : CommDelFlag, CommId, CommInfo {
     /**
      * 租户套餐编号
      */
+    @IdView("tenantPackage")
     val packageId: Long?
 
     /**

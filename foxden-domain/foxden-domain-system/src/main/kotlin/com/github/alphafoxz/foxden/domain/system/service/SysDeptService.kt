@@ -88,4 +88,28 @@ interface SysDeptService {
      * @return 结果
      */
     fun deleteDeptById(deptId: Long): Int
+
+    /**
+     * 构建前端所需要下拉树结构
+     *
+     * @param dept 部门列表
+     * @return 下拉树结构列表
+     */
+    fun buildDeptTreeSelect(depts: List<SysDeptVo>): List<com.github.alphafoxz.foxden.common.core.domain.Tree<Long>>
+
+    /**
+     * 根据角色ID查询部门树信息
+     *
+     * @param roleId 角色ID
+     * @return 选中部门列表
+     */
+    fun selectDeptListByRoleId(roleId: Long): List<Long>
+
+    /**
+     * 查询部门树列表
+     *
+     * @param dept 部门信息
+     * @return 部门树列表
+     */
+    fun selectDeptTreeList(dept: SysDeptBo): List<com.github.alphafoxz.foxden.common.core.domain.Tree<Long>>
 }

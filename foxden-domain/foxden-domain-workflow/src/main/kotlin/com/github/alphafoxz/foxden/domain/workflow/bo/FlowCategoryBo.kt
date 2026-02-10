@@ -16,6 +16,11 @@ data class FlowCategoryBo(
     var categoryId: Long? = null,
 
     /**
+     * 分类编码
+     */
+    var categoryCode: String? = null,
+
+    /**
      * 父流程分类id
      */
     @get:NotNull(message = "父流程分类id不能为空", groups = [AddGroup::class, EditGroup::class])
@@ -30,5 +35,10 @@ data class FlowCategoryBo(
     /**
      * 显示顺序
      */
-    var orderNum: Int? = null
+    var orderNum: Int? = null,
+
+    /**
+     * 备注
+     */
+    var remark: String? = null
 )

@@ -46,7 +46,6 @@ interface SysTenantPackage : CommDelFlag, CommInfo {
     /**
      * 租户
      */
-    @OnDissociate(DissociateAction.DELETE)
     @OneToMany(mappedBy = "tenantPackage")
     val tenants: List<SysTenant>
 }

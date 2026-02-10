@@ -1,5 +1,6 @@
 package com.github.alphafoxz.foxden.domain.system.service
 
+import com.github.alphafoxz.foxden.common.core.service.PermissionService
 import com.github.alphafoxz.foxden.domain.system.vo.RouterVo
 import com.github.alphafoxz.foxden.domain.system.vo.SysMenuVo
 
@@ -8,7 +9,7 @@ import com.github.alphafoxz.foxden.domain.system.vo.SysMenuVo
  *
  * @author Lion Li
  */
-interface SysPermissionService {
+interface SysPermissionService : PermissionService {
 
     /**
      * 获取角色数据权限

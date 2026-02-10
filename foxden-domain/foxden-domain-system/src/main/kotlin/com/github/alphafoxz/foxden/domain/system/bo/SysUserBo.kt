@@ -26,6 +26,11 @@ data class SysUserBo(
     var deptId: Long? = null,
 
     /**
+     * 角色ID（用于查询已分配/未分配用户列表）
+     */
+    var roleId: Long? = null,
+
+    /**
      * 用户账号
      */
     @field:Xss(message = "用户账号不能包含脚本字符")

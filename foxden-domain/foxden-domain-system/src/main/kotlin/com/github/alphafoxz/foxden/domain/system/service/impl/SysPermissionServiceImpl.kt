@@ -1,89 +1,160 @@
 package com.github.alphafoxz.foxden.domain.system.service.impl
 
+import com.github.alphafoxz.foxden.common.core.constant.TenantConstants
+import com.github.alphafoxz.foxden.common.core.service.PermissionService
+import com.github.alphafoxz.foxden.common.security.utils.LoginHelper
+import com.github.alphafoxz.foxden.domain.system.service.SysMenuService
 import com.github.alphafoxz.foxden.domain.system.service.SysPermissionService
-import com.github.alphafoxz.foxden.domain.system.entity.*
+import com.github.alphafoxz.foxden.domain.system.service.SysRoleService
 import com.github.alphafoxz.foxden.domain.system.vo.RouterVo
 import com.github.alphafoxz.foxden.domain.system.vo.SysMenuVo
-import org.babyfish.jimmer.sql.kt.KSqlClient
 import org.springframework.stereotype.Service
 
 /**
- * Permission 业务层处理
+ * 用户权限处理
+ *
+ * @author ruoyi
  */
 @Service
 class SysPermissionServiceImpl(
-    private val sqlClient: KSqlClient
-) : SysPermissionService {
+    private val roleService: SysRoleService,
+    private val menuService: SysMenuService
+) : SysPermissionService, PermissionService {
 
+    /**
+     * 获取角色数据权限
+     *
+     * @param userId  用户id
+     * @return 角色权限信息
+     */
+    override fun getRolePermission(userId: Long): Set<String> {
+        val roles = mutableSetOf<String>()
+        // 管理员拥有所有权限
+        if (LoginHelper.isSuperAdmin(userId)) {
+            roles.add(TenantConstants.SUPER_ADMIN_ROLE_KEY)
+        } else {
+            roles.addAll(roleService.selectRolePermissionByUserId(userId))
+        }
+        return roles
+    }
+
+    /**
+     * 获取菜单数据权限
+     *
+     * @param userId  用户id
+     * @return 菜单权限信息
+     */
+    override fun getMenuPermission(userId: Long): Set<String> {
+        val perms = mutableSetOf<String>()
+        // 管理员拥有所有权限
+        if (LoginHelper.isSuperAdmin(userId)) {
+            perms.add("*:*:*")
+        } else {
+            perms.addAll(menuService.selectMenuPermsByUserId(userId))
+        }
+        return perms
+    }
+
+    /**
+     * 获取角色数据权限
+     *
+     * @param userId  用户ID
+     * @param roleIds 角色ID
+     * @return 权限列表
+     */
     override fun getRoleCustom(userId: Long, roleIds: Array<Long>): String {
-        // TODO: Implement data scope custom logic
-        // This should return the data scope configuration for the user's roles
-        return ""
+        // TODO: 实现数据权限自定义逻辑
+        // 获取角色数据权限配置
+        // 1=全部数据权限 2=自定义数据权限 3=本部门数据权限 4=本部门及以下数据权限 5=仅本人数据权限
+        return "1"
     }
 
+    /**
+     * 获取角色数据权限
+     *
+     * @param roleIds 角色ID
+     * @return 权限列表
+     */
     override fun getRoleCustom(roleIds: Array<Long>): String {
-        // TODO: Implement data scope custom logic
-        return ""
+        return getRoleCustom(0L, roleIds)
     }
 
+    /**
+     * 获取角色权限
+     *
+     * @param userId  用户ID
+     * @param roleIds 角色ID
+     * @return 权限列表
+     */
     override fun getRolePermission(userId: Long, roleIds: Array<Long>): Set<String> {
-        if (roleIds.isEmpty()) return emptySet()
-
-        // Get all permissions for the roles
-        val permissions = mutableSetOf<String>()
-
-        roleIds.forEach { roleId ->
-            val role = sqlClient.findById(SysRole::class, roleId)
-            if (role != null) {
-                // Get permissions from role's menus
-                // TODO: Research Jimmer's association loading
-                // For now, return empty set
-            }
+        if (LoginHelper.isSuperAdmin(userId)) {
+            return setOf(TenantConstants.SUPER_ADMIN_ROLE_KEY)
         }
-
-        return permissions
+        return roleService.selectRolePermissionByUserId(userId)
     }
 
+    /**
+     * 获取角色权限
+     *
+     * @param roleIds 角色ID
+     * @return 权限列表
+     */
     override fun getRolePermission(roleIds: Array<Long>): Set<String> {
-        return getRolePermission(0L, roleIds)
-    }
-
-    override fun getMenuPermission(userId: Long, roleIds: Array<Long>): Set<String> {
-        if (roleIds.isEmpty()) return emptySet()
-
         val permissions = mutableSetOf<String>()
-
-        roleIds.forEach { roleId ->
-            val role = sqlClient.findById(SysRole::class, roleId)
-            if (role != null) {
-                // Get menu permissions from role's menus
-                // TODO: Research Jimmer's association loading
-            }
+        for (roleId in roleIds) {
+            permissions.addAll(menuService.selectMenuPermsByRoleId(roleId))
         }
-
         return permissions
     }
 
+    /**
+     * 获取菜单数据权限
+     *
+     * @param userId  用户ID
+     * @param roleIds 角色ID
+     * @return 权限列表
+     */
+    override fun getMenuPermission(userId: Long, roleIds: Array<Long>): Set<String> {
+        if (LoginHelper.isSuperAdmin(userId)) {
+            return setOf("*:*:*")
+        }
+        return menuService.selectMenuPermsByUserId(userId)
+    }
+
+    /**
+     * 获取菜单数据权限
+     *
+     * @param roleIds 角色ID
+     * @return 权限列表
+     */
     override fun getMenuPermission(roleIds: Array<Long>): Set<String> {
-        return getMenuPermission(0L, roleIds)
+        val permissions = mutableSetOf<String>()
+        for (roleId in roleIds) {
+            permissions.addAll(menuService.selectMenuPermsByRoleId(roleId))
+        }
+        return permissions
     }
 
+    /**
+     * 根据用户ID构建路由列表
+     *
+     * @param userId 用户ID
+     * @return 路由列表
+     */
     override fun buildMenusByUserId(userId: Long): List<RouterVo> {
-        // TODO: Implement menu building logic
-        // This requires:
-        // 1. Getting user's roles
-        // 2. Getting menus for those roles
-        // 3. Building tree structure
-        // 4. Converting to RouterVo
-        return emptyList()
+        // 获取 SysMenu 实体列表用于构建路由
+        val menuEntities = menuService.selectMenuTreeByUserId(userId)
+        return menuService.buildMenus(menuEntities)
     }
 
+    /**
+     * 根据用户ID构建菜单树
+     *
+     * @param userId 用户ID
+     * @return 菜单列表
+     */
     override fun buildMenuTreeByUserId(userId: Long): List<SysMenuVo> {
-        // TODO: Implement menu tree building logic
-        // This requires:
-        // 1. Getting user's roles
-        // 2. Getting menus for those roles
-        // 3. Building tree structure
-        return emptyList()
+        val menus = menuService.selectMenuList(userId)
+        return menuService.buildMenuTree(menus)
     }
 }

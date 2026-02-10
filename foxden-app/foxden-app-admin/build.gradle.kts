@@ -25,6 +25,7 @@ dependencies {
     implementation(project(":foxden-common:foxden-common-encrypt"))
     implementation(project(":foxden-common:foxden-common-social"))
     implementation(project(":foxden-common:foxden-common-sse"))
+    implementation(project(":foxden-common:foxden-common-job"))
 
     // Domain modules
     implementation(project(":foxden-domain:foxden-domain-system"))
@@ -32,6 +33,9 @@ dependencies {
 
     // System app modules (for controllers)
     implementation(project(":foxden-app:foxden-app-system"))
+
+    // Job app module (for scheduled task executors)
+    implementation(project(":foxden-app:foxden-app-job"))
 
     // Runtime database dependencies
     runtimeOnly("org.postgresql:postgresql")

@@ -8,7 +8,7 @@ import org.babyfish.jimmer.sql.*
  */
 @Entity
 @Table(name = "flow_category")
-interface FlowCategory : CommDelFlag, CommInfo, CommTenant {
+interface FoxFlowCategory : CommDelFlag, CommInfo, CommTenant {
     /**
      * 主键ID（对应数据库的 category_id）
      */

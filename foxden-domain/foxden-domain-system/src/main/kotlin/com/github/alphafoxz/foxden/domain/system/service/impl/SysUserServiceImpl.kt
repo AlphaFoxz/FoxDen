@@ -15,6 +15,7 @@ import com.github.alphafoxz.foxden.domain.system.vo.SysUserExportVo
 import com.github.alphafoxz.foxden.domain.system.vo.SysUserVo
 import org.babyfish.jimmer.sql.kt.ast.expression.*
 import org.babyfish.jimmer.sql.kt.*
+import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.stereotype.Service
 import java.time.LocalDateTime
 
@@ -27,7 +28,8 @@ import java.time.LocalDateTime
 @Service
 class SysUserServiceImpl(
     private val sqlClient: KSqlClient,
-    private val roleService: SysRoleService
+    private val roleService: SysRoleService,
+    private val jdbcTemplate: JdbcTemplate
 ) : SysUserService {
 
     override fun selectPageUserList(user: SysUserBo, pageQuery: PageQuery): TableDataInfo<SysUserVo> {
@@ -51,13 +53,116 @@ class SysUserServiceImpl(
     }
 
     override fun selectAllocatedList(user: SysUserBo, pageQuery: PageQuery): TableDataInfo<SysUserVo> {
-        // TODO: 实现已分配用户列表查询（关联角色）
-        return TableDataInfo.build()
+        // 查询已分配到指定角色的用户列表
+        val roleId = user.roleId ?: return TableDataInfo.build()
+
+        // 构建SQL查询
+        val sql = StringBuilder(
+            """
+            SELECT DISTINCT u.user_id FROM sys_user u
+            INNER JOIN sys_user_role ur ON u.user_id = ur.user_id
+            WHERE u.del_flag = '0' AND ur.role_id = ?
+            """.trimIndent()
+        )
+
+        val params = mutableListOf<Any?>()
+
+        // 添加动态条件
+        user.userName?.takeIf { it.isNotBlank() }?.let {
+            sql.append(" AND u.user_name LIKE CONCAT('%', ?, '%')")
+            params.add(it)
+        }
+        user.status?.takeIf { it.isNotBlank() }?.let {
+            sql.append(" AND u.status = ?")
+            params.add(it)
+        }
+        user.phonenumber?.takeIf { it.isNotBlank() }?.let {
+            sql.append(" AND u.phonenumber LIKE CONCAT('%', ?, '%')")
+            params.add(it)
+        }
+
+        sql.append(" ORDER BY u.user_id ASC")
+
+        // 查询用户ID列表
+        val allParams = mutableListOf<Any?>(roleId)
+        allParams.addAll(params)
+        val userIds = jdbcTemplate.queryForList(sql.toString(), Long::class.java, *allParams.toTypedArray())
+
+        // 查询用户详细信息
+        val users = userIds.mapNotNull { userId ->
+            sqlClient.findById(SysUser::class, userId)
+        }
+
+        // 手动分页
+        val total = users.size.toLong()
+        val pageSize = pageQuery.pageSize ?: 10
+        val pageNum = pageQuery.pageNum ?: 1
+        val start = ((pageNum - 1) * pageSize).toInt()
+        val end = minOf(start + pageSize, total.toInt())
+        val pagedUsers = if (start < total) users.subList(start, end) else emptyList()
+
+        return TableDataInfo(pagedUsers.map { entityToVo(it) }, total)
     }
 
     override fun selectUnallocatedList(user: SysUserBo, pageQuery: PageQuery): TableDataInfo<SysUserVo> {
-        // TODO: 实现未分配用户列表查询（关联角色）
-        return TableDataInfo.build()
+        // 查询未分配到指定角色的用户列表
+        val roleId = user.roleId ?: return TableDataInfo.build()
+
+        // 先查询已分配的用户ID
+        val allocatedUserIds = jdbcTemplate.queryForList(
+            "SELECT ur.user_id FROM sys_user_role ur WHERE ur.role_id = ?",
+            Long::class.java,
+            roleId
+        ).toSet()
+
+        // 构建SQL查询
+        val sql = StringBuilder(
+            """
+            SELECT u.user_id FROM sys_user u
+            LEFT JOIN sys_user_role ur ON u.user_id = ur.user_id AND ur.role_id = ?
+            WHERE u.del_flag = '0' AND ur.role_id IS NULL
+            """.trimIndent()
+        )
+
+        val params = mutableListOf<Any?>(roleId)
+
+        // 排除已分配的用户
+        if (allocatedUserIds.isNotEmpty()) {
+            sql.append(" AND u.user_id NOT IN (")
+            sql.append(allocatedUserIds.joinToString(",") { "?" })
+            sql.append(")")
+            params.addAll(allocatedUserIds)
+        }
+
+        // 添加动态条件
+        user.userName?.takeIf { it.isNotBlank() }?.let {
+            sql.append(" AND u.user_name LIKE CONCAT('%', ?, '%')")
+            params.add(it)
+        }
+        user.phonenumber?.takeIf { it.isNotBlank() }?.let {
+            sql.append(" AND u.phonenumber LIKE CONCAT('%', ?, '%')")
+            params.add(it)
+        }
+
+        sql.append(" ORDER BY u.user_id ASC")
+
+        // 查询用户ID列表
+        val userIds = jdbcTemplate.queryForList(sql.toString(), Long::class.java, *params.toTypedArray())
+
+        // 查询用户详细信息
+        val users = userIds.mapNotNull { userId ->
+            sqlClient.findById(SysUser::class, userId)
+        }
+
+        // 手动分页
+        val total = users.size.toLong()
+        val pageSize = pageQuery.pageSize ?: 10
+        val pageNum = pageQuery.pageNum ?: 1
+        val start = ((pageNum - 1) * pageSize).toInt()
+        val end = minOf(start + pageSize, total.toInt())
+        val pagedUsers = if (start < total) users.subList(start, end) else emptyList()
+
+        return TableDataInfo(pagedUsers.map { entityToVo(it) }, total)
     }
 
     override fun selectUserByUserName(userName: String): SysUserVo? {

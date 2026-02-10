@@ -8,7 +8,7 @@ import org.babyfish.jimmer.sql.*
  */
 @Entity
 @Table(name = "flow_node")
-interface FlowNode : CommDelFlag, CommId {
+interface FoxFlowNode : CommDelFlag, CommId {
     /**
      * 节点类型
      */

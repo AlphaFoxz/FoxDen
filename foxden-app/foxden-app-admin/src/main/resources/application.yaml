@@ -58,7 +58,6 @@ spring:
       max-request-size: 100MB
 
 server:
-  port: 12003
   servlet:
     context-path: /
   tomcat:

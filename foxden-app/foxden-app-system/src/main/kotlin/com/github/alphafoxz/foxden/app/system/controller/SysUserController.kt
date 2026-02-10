@@ -23,8 +23,11 @@ import com.github.alphafoxz.foxden.domain.system.service.SysTenantService
 import com.github.alphafoxz.foxden.domain.system.service.SysUserService
 import com.github.alphafoxz.foxden.domain.system.vo.SysUserExportVo
 import com.github.alphafoxz.foxden.domain.system.vo.SysUserVo
-import com.github.alphafoxz.foxden.domain.system.vo.UserInfoVo
 import com.github.alphafoxz.foxden.domain.system.vo.SysUserInfoVo
+import com.github.alphafoxz.foxden.domain.system.vo.UserInfoVo
+import com.github.alphafoxz.foxden.domain.system.listener.SysUserImportListener
+import com.github.alphafoxz.foxden.domain.system.vo.SysUserImportVo
+import com.github.alphafoxz.foxden.common.core.domain.Tree
 import jakarta.servlet.http.HttpServletResponse
 import org.springframework.http.MediaType
 import org.springframework.validation.annotation.Validated
@@ -224,5 +227,49 @@ class SysUserController(
     @GetMapping("/dept/{deptId}")
     fun listByDeptId(@PathVariable deptId: Long): R<List<SysUserVo>> {
         return R.ok(userService.selectUserListByDept(deptId))
+    }
+
+    /**
+     * 获取部门树列表
+     */
+    @SaCheckPermission("system:user:list")
+    @GetMapping("/deptTree")
+    fun deptTree(@RequestParam(required = false) deptId: Long?): R<List<Tree<Long>>> {
+        val depts = deptService.selectDeptTreeList(com.github.alphafoxz.foxden.domain.system.bo.SysDeptBo())
+        return R.ok(depts)
+    }
+
+    /**
+     * 下载用户导入模板
+     */
+    @SaCheckPermission("system:user:import")
+    @PostMapping("/importTemplate")
+    fun importTemplate(response: HttpServletResponse) {
+        ExcelUtil.exportExcel(
+            emptyList(),
+            "用户数据",
+            SysUserImportVo::class.java,
+            response
+        )
+    }
+
+    /**
+     * 导入用户数据
+     */
+    @SaCheckPermission("system:user:import")
+    @Log(title = "用户管理", businessType = BusinessType.IMPORT)
+    @RepeatSubmit
+    @PostMapping("/importData")
+    fun importData(
+        @RequestParam(required = false) isUpdateSupport: Boolean?,
+        @RequestParam file: MultipartFile
+    ): R<String> {
+        val listener = SysUserImportListener(isUpdateSupport ?: false)
+        val result = ExcelUtil.importExcel(
+            file.inputStream,
+            SysUserImportVo::class.java,
+            listener
+        )
+        return R.ok(result.getAnalysis())
     }
 }

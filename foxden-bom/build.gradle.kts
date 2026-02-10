@@ -116,5 +116,13 @@ dependencies {
 
         // Social login
         api("me.zhyd.oauth:JustAuth:${property("version.justAuth")}")
+
+        // SnailJob
+        api("com.aizuda:snail-job-client-starter:${property("version.snailJob")}")
+        api("com.aizuda:snail-job-client-job-core:${property("version.snailJob")}")
+
+        // WarmFlow 工作流引擎
+        api("org.dromara.warm:warm-flow-mybatis-plus-sb3-starter:${property("version.warmFlow")}")
+        api("org.dromara.warm:warm-flow-plugin-ui-sb-web:${property("version.warmFlow")}")
     }
 }

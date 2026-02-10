@@ -10,11 +10,14 @@ import com.github.alphafoxz.foxden.common.jimmer.core.page.TableDataInfo
 import com.github.alphafoxz.foxden.common.log.annotation.Log
 import com.github.alphafoxz.foxden.common.log.enums.BusinessType
 import com.github.alphafoxz.foxden.common.web.core.BaseController
+import com.github.alphafoxz.foxden.domain.system.bo.SysDeptBo
 import com.github.alphafoxz.foxden.domain.system.bo.SysRoleBo
+import com.github.alphafoxz.foxden.domain.system.bo.SysUserBo
 import com.github.alphafoxz.foxden.domain.system.service.SysDeptService
 import com.github.alphafoxz.foxden.domain.system.service.SysRoleService
 import com.github.alphafoxz.foxden.domain.system.service.SysUserService
 import com.github.alphafoxz.foxden.domain.system.vo.SysRoleVo
+import com.github.alphafoxz.foxden.domain.system.vo.SysUserVo
 import jakarta.servlet.http.HttpServletResponse
 import org.springframework.validation.annotation.Validated
 import org.springframework.web.bind.annotation.*
@@ -141,4 +144,83 @@ class SysRoleController(
     fun optionselect(): R<List<SysRoleVo>> {
         return R.ok(roleService.selectRoleAll())
     }
+
+    /**
+     * 查询已分配用户角色列表
+     */
+    @SaCheckPermission("system:role:list")
+    @GetMapping("/authUser/allocatedList")
+    fun allocatedList(user: SysUserBo, pageQuery: PageQuery): TableDataInfo<SysUserVo> {
+        return userService.selectAllocatedList(user, pageQuery)
+    }
+
+    /**
+     * 查询未分配用户角色列表
+     */
+    @SaCheckPermission("system:role:list")
+    @GetMapping("/authUser/unallocatedList")
+    fun unallocatedList(user: SysUserBo, pageQuery: PageQuery): TableDataInfo<SysUserVo> {
+        return userService.selectUnallocatedList(user, pageQuery)
+    }
+
+    /**
+     * 取消授权用户
+     */
+    @SaCheckPermission("system:role:edit")
+    @Log(title = "角色管理", businessType = BusinessType.GRANT)
+    @RepeatSubmit
+    @PutMapping("/authUser/cancel")
+    fun cancelAuthUser(@RequestBody userRole: UserRoleRequest): R<Void> {
+        return toAjax(roleService.deleteAuthUser(userRole.userId, userRole.roleId))
+    }
+
+    /**
+     * 用户角色请求对象
+     */
+    data class UserRoleRequest(
+        val userId: Long,
+        val roleId: Long
+    )
+
+    /**
+     * 批量取消授权用户
+     */
+    @SaCheckPermission("system:role:edit")
+    @Log(title = "角色管理", businessType = BusinessType.GRANT)
+    @RepeatSubmit
+    @PutMapping("/authUser/cancelAll")
+    fun cancelAuthUserAll(@RequestParam roleId: Long, @RequestParam userIds: Array<Long>): R<Void> {
+        return toAjax(roleService.deleteAuthUsers(roleId, userIds))
+    }
+
+    /**
+     * 批量选择用户授权
+     */
+    @SaCheckPermission("system:role:edit")
+    @Log(title = "角色管理", businessType = BusinessType.GRANT)
+    @RepeatSubmit
+    @PutMapping("/authUser/selectAll")
+    fun selectAuthUserAll(@RequestParam roleId: Long, @RequestParam userIds: Array<Long>): R<Void> {
+        roleService.checkRoleDataScope(roleId)
+        return toAjax(roleService.insertAuthUsers(roleId, userIds))
+    }
+
+    /**
+     * 获取对应角色部门树列表
+     */
+    @SaCheckPermission("system:role:list")
+    @GetMapping("/deptTree/{roleId}")
+    fun roleDeptTreeselect(@PathVariable roleId: Long): R<DeptTreeSelectVo> {
+        val checkedKeys = deptService.selectDeptListByRoleId(roleId)
+        val depts = deptService.selectDeptTreeList(SysDeptBo())
+        return R.ok(DeptTreeSelectVo(checkedKeys, depts))
+    }
+
+    /**
+     * 角色部门树选择VO
+     */
+    data class DeptTreeSelectVo(
+        val checkedKeys: List<Long>,
+        val depts: List<com.github.alphafoxz.foxden.common.core.domain.Tree<Long>>
+    )
 }

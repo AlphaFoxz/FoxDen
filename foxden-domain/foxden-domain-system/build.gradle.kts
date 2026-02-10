@@ -1,5 +1,6 @@
 plugins {
     kotlin("jvm")
+    kotlin("plugin.spring")
     id("com.google.devtools.ksp")
 }
 
@@ -9,6 +10,7 @@ dependencies {
     api(project(":foxden-common:foxden-common-jimmer"))
     api(project(":foxden-common:foxden-common-security"))
     api(project(":foxden-common:foxden-common-oss"))
+    api(project(":foxden-common:foxden-common-excel"))
     api(project(":foxden-domain:foxden-domain-tenant"))
     implementation("org.babyfish.jimmer:jimmer-spring-boot-starter")
     ksp("org.babyfish.jimmer:jimmer-ksp:${property("version.jimmer")}")

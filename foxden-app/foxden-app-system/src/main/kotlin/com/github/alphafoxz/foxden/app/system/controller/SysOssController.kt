@@ -3,7 +3,6 @@ package com.github.alphafoxz.foxden.app.system.controller
 import cn.dev33.satoken.annotation.SaCheckPermission
 import com.github.alphafoxz.foxden.common.core.domain.R
 import com.github.alphafoxz.foxden.common.core.validate.QueryGroup
-import com.github.alphafoxz.foxden.common.idempotent.annotation.RepeatSubmit
 import com.github.alphafoxz.foxden.common.jimmer.core.page.PageQuery
 import com.github.alphafoxz.foxden.common.jimmer.core.page.TableDataInfo
 import com.github.alphafoxz.foxden.common.log.annotation.Log
@@ -19,8 +18,6 @@ import org.springframework.http.MediaType
 import org.springframework.validation.annotation.Validated
 import org.springframework.web.bind.annotation.*
 import org.springframework.web.multipart.MultipartFile
-import java.net.URLEncoder
-import java.nio.charset.StandardCharsets
 
 /**
  * 文件上传 控制层
@@ -50,8 +47,8 @@ class SysOssController(
      */
     @SaCheckPermission("system:oss:query")
     @GetMapping("/listByIds/{ossIds}")
-    fun listByIds(@NotEmpty(message = "主键不能为空") @PathVariable ossIds: Array<Long>): R<List<SysOssVo?>> {
-        val list = ossIds.map { ossService.selectByIds(it) }
+    fun listByIds(@NotEmpty(message = "主键不能为空") @PathVariable ossIds: Array<Long>): R<List<SysOssVo>> {
+        val list = ossService.listByIds(ossIds.toList())
         return R.ok(list)
     }
 
@@ -60,15 +57,15 @@ class SysOssController(
      *
      * @param file 文件
      */
+    @SaCheckPermission("system:oss:upload")
     @Log(title = "OSS对象存储", businessType = BusinessType.INSERT)
     @PostMapping(value = ["/upload"], consumes = [MediaType.MULTIPART_FORM_DATA_VALUE])
     fun upload(@RequestPart("file") file: MultipartFile): R<SysOssUploadVo> {
         val oss = ossService.upload(file)
         val uploadVo = SysOssUploadVo(
-            url = oss?.url,
-            fileName = oss?.fileName,
-            ossId = oss?.ossId.toString(),
-            originalName = file.originalFilename
+            url = oss.url,
+            fileName = oss.fileName,
+            ossId = oss.ossId.toString()
         )
         return R.ok(uploadVo)
     }
@@ -80,19 +77,9 @@ class SysOssController(
      */
     @SaCheckPermission("system:oss:download")
     @GetMapping("/download/{ossId}")
+    @Throws(Exception::class)
     fun download(@PathVariable ossId: Long, response: HttpServletResponse) {
-        val oss = ossService.queryById(ossId)
-        if (oss != null) {
-            val fileName = URLEncoder.encode(oss.fileName ?: "download", StandardCharsets.UTF_8)
-            response.contentType = "application/octet-stream"
-            response.setHeader("Content-Disposition", "attachment; filename=\"$fileName\"")
-            // TODO: Implement actual file download using OssClient
-            // For now, redirect to the presigned URL
-            val presignedUrl = ossService.getPresignedObjectUrl(ossId)
-            if (presignedUrl != null) {
-                response.sendRedirect(presignedUrl)
-            }
-        }
+        ossService.download(ossId, response)
     }
 
     /**
@@ -104,6 +91,6 @@ class SysOssController(
     @Log(title = "OSS对象存储", businessType = BusinessType.DELETE)
     @DeleteMapping("/{ossIds}")
     fun remove(@NotEmpty(message = "主键不能为空") @PathVariable ossIds: Array<Long>): R<Void> {
-        return toAjax(ossService.deleteWithValidByIds(ossIds))
+        return toAjax(ossService.deleteWithValidByIds(ossIds.toList(), true))
     }
 }

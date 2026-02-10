@@ -6,12 +6,17 @@ import com.github.alphafoxz.foxden.domain.system.bo.SysRoleBo
 import com.github.alphafoxz.foxden.domain.system.vo.SysRoleVo
 import com.github.alphafoxz.foxden.common.core.constant.SystemConstants
 import com.github.alphafoxz.foxden.common.core.exception.ServiceException
+import com.github.alphafoxz.foxden.common.core.utils.SpringUtils
+import com.github.alphafoxz.foxden.common.security.utils.LoginHelper
 import com.github.alphafoxz.foxden.common.jimmer.core.page.PageQuery
 import com.github.alphafoxz.foxden.common.jimmer.core.page.TableDataInfo
+import cn.dev33.satoken.stp.StpUtil
+import com.github.alphafoxz.foxden.common.core.utils.StringUtils
 import org.babyfish.jimmer.sql.kt.ast.expression.*
 import org.babyfish.jimmer.sql.kt.*
 import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
 import org.babyfish.jimmer.sql.ast.tuple.Tuple2
 
 /**
@@ -249,40 +254,216 @@ class SysRoleServiceImpl(
 
     override fun deleteRoleById(roleId: Long): Int {
         val result = sqlClient.deleteById(SysRole::class, roleId)
-        return result.totalAffectedRowCount.toInt()
+        return result.totalAffectedRowCount
     }
 
     override fun deleteRoleByIds(roleIds: List<Long>): Int {
         val result = sqlClient.deleteByIds(SysRole::class, roleIds)
-        return result.totalAffectedRowCount.toInt()
+        return result.totalAffectedRowCount
     }
 
     override fun authDataScope(bo: SysRoleBo): Int {
-        // TODO: 实现数据权限授权
-        throw ServiceException("功能待实现")
+        val roleId = bo.roleId ?: return 0
+
+        // 1. 先删除角色原有的部门关联
+        jdbcTemplate.update("DELETE FROM sys_role_dept WHERE role_id = ?", roleId)
+
+        // 2. 如果有部门权限配置，插入新的关联
+        val deptIds = bo.deptIds
+        if (!deptIds.isNullOrEmpty() && bo.dataScope != null) {
+            val deptCheckStrictly = bo.deptCheckStrictly ?: false
+
+            deptIds.forEach { deptId ->
+                jdbcTemplate.update(
+                    "INSERT INTO sys_role_dept (role_id, dept_id) VALUES (?, ?)",
+                    roleId,
+                    deptId
+                )
+            }
+        }
+
+        // 3. 更新角色的数据权限配置
+        val rows = sqlClient.createUpdate(SysRole::class) {
+            where(table.id eq roleId)
+            set(table.dataScope, bo.dataScope)
+            set(table.deptCheckStrictly, bo.deptCheckStrictly)
+            set(table.updateTime, java.time.LocalDateTime.now())
+        }.execute()
+
+        // 4. 清理该角色的在线用户
+        if (rows > 0) {
+            cleanOnlineUserByRole(roleId)
+        }
+
+        return rows
     }
 
+    @Transactional
     override fun deleteAuthUser(userId: Long, roleId: Long): Int {
-        // TODO: 实现 deleteAuthUser
-        throw ServiceException("功能待实现")
+        // 不允许修改当前登录用户的角色
+        val currentUserId = LoginHelper.getUserId()
+        if (currentUserId != null && currentUserId == userId) {
+            throw ServiceException("不允许修改当前用户角色!")
+        }
+
+        // 删除用户角色关联
+        val rows = jdbcTemplate.update(
+            "DELETE FROM sys_user_role WHERE user_id = ? AND role_id = ?",
+            userId, roleId
+        )
+
+        // 如果删除成功，清理该用户的在线会话
+        if (rows > 0) {
+            cleanOnlineUser(listOf(userId))
+        }
+
+        return rows
     }
 
+    @Transactional
     override fun deleteAuthUsers(roleId: Long, userIds: Array<Long>): Int {
-        // TODO: 实现 deleteAuthUsers
-        throw ServiceException("功能待实现")
+        val ids = userIds.toList()
+
+        // 不允许修改当前登录用户的角色
+        val currentUserId = LoginHelper.getUserId()
+        if (currentUserId != null && ids.contains(currentUserId)) {
+            throw ServiceException("不允许修改当前用户角色!")
+        }
+
+        // 批量删除用户角色关联
+        val inClause = userIds.joinToString(",") { "?" }
+        val params = mutableListOf(roleId)
+        params.addAll(userIds.toList())
+        val rows = jdbcTemplate.update(
+            "DELETE FROM sys_user_role WHERE role_id = ? AND user_id IN ($inClause)",
+            *params.toTypedArray()
+        )
+
+        // 如果删除成功，清理这些用户的在线会话
+        if (rows > 0) {
+            cleanOnlineUser(ids)
+        }
+
+        return rows
     }
 
+    @Transactional
     override fun insertAuthUsers(roleId: Long, userIds: Array<Long>): Int {
-        // TODO: 实现 insertAuthUsers - 需要研究 Jimmer 多对多关联
-        throw ServiceException("功能待实现 - 需要 Jimmer 多对多关联的正确用法")
+        val ids = userIds.toList()
+
+        // 不允许修改当前登录用户的角色
+        val currentUserId = LoginHelper.getUserId()
+        if (currentUserId != null && ids.contains(currentUserId)) {
+            throw ServiceException("不允许修改当前用户角色!")
+        }
+
+        // 批量插入用户角色关联
+        var rows = 0
+        ids.forEach { userId ->
+            try {
+                // 先检查是否已存在关联
+                val count = jdbcTemplate.queryForObject(
+                    "SELECT COUNT(*) FROM sys_user_role WHERE user_id = ? AND role_id = ?",
+                    Int::class.java,
+                    userId, roleId
+                )
+
+                if (count == 0) {
+                    // 插入新关联
+                    val result = jdbcTemplate.update(
+                        "INSERT INTO sys_user_role (user_id, role_id) VALUES (?, ?)",
+                        userId, roleId
+                    )
+                    rows += result
+                }
+            } catch (e: Exception) {
+                // 忽略重复键错误
+            }
+        }
+
+        // 如果插入成功，清理这些用户的在线会话（需要重新登录获取新角色）
+        if (rows > 0) {
+            cleanOnlineUser(ids)
+        }
+
+        return rows
     }
 
     override fun cleanOnlineUserByRole(roleId: Long) {
-        // TODO: 实现 cleanOnlineUserByRole
+        // 查询该角色绑定的用户数量
+        val userCount = jdbcTemplate.queryForObject(
+            "SELECT COUNT(*) FROM sys_user_role WHERE role_id = ?",
+            Int::class.java,
+            roleId
+        ) ?: 0
+
+        if (userCount == 0) {
+            return
+        }
+
+        // 获取所有在线token
+        val keys = StpUtil.searchTokenValue("", 0, -1, false)
+        if (keys.isEmpty()) {
+            return
+        }
+
+        // 角色关联的在线用户量过大时会导致redis阻塞，需要谨慎操作
+        keys.parallelStream().forEach { key ->
+            val token = key.substringAfterLast(":")
+            // 如果已经过期则跳过
+            if (StpUtil.stpLogic.getTokenActiveTimeoutByToken(token) < -1) {
+                return@forEach
+            }
+
+            try {
+                val loginId = StpUtil.getLoginIdByToken(token)
+                // 检查该用户是否拥有当前角色
+                val hasRole = jdbcTemplate.queryForObject(
+                    "SELECT COUNT(*) FROM sys_user_role WHERE user_id = ? AND role_id = ?",
+                    Int::class.java,
+                    loginId.toString().toLong(), roleId
+                ) ?: 0
+
+                if (hasRole > 0) {
+                    // 踢出该用户
+                    StpUtil.logoutByTokenValue(token)
+                }
+            } catch (e: Exception) {
+                // token可能已失效，忽略错误
+            }
+        }
     }
 
     override fun cleanOnlineUser(userIds: List<Long>) {
-        // TODO: 实现 cleanOnlineUser
+        if (userIds.isEmpty()) {
+            return
+        }
+
+        // 获取所有在线token
+        val keys = StpUtil.searchTokenValue("", 0, -1, false)
+        if (keys.isEmpty()) {
+            return
+        }
+
+        keys.parallelStream().forEach { key ->
+            val token = key.substringAfterLast(":")
+            // 如果已经过期则跳过
+            if (StpUtil.stpLogic.getTokenActiveTimeoutByToken(token) < -1) {
+                return@forEach
+            }
+
+            try {
+                val loginId = StpUtil.getLoginIdByToken(token)
+
+                // 检查该用户是否在需要清理的列表中
+                if (userIds.contains(loginId.toString().toLong())) {
+                    // 踢出该用户
+                    StpUtil.logoutByTokenValue(token)
+                }
+            } catch (e: Exception) {
+                // token可能已失效，忽略错误
+            }
+        }
     }
 
     /**

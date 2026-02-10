@@ -1,82 +1,91 @@
 package com.github.alphafoxz.foxden.domain.system.service
 
-import com.github.alphafoxz.foxden.common.oss.entity.UploadResult
+import com.github.alphafoxz.foxden.common.core.domain.dto.OssDTO
+import com.github.alphafoxz.foxden.common.core.service.OssService
+import com.github.alphafoxz.foxden.common.jimmer.core.page.PageQuery
+import com.github.alphafoxz.foxden.common.jimmer.core.page.TableDataInfo
 import com.github.alphafoxz.foxden.domain.system.bo.SysOssBo
 import com.github.alphafoxz.foxden.domain.system.vo.SysOssVo
+import jakarta.servlet.http.HttpServletResponse
 import org.springframework.web.multipart.MultipartFile
-import java.io.InputStream
+import java.io.File
 
 /**
  * 文件上传 服务层
  *
  * @author Lion Li
  */
-interface SysOssService {
+interface SysOssService : OssService {
 
     /**
-     * 分页查询OSS对象存储列表
+     * 查询OSS对象存储列表
      *
-     * @param bo OSS对象存储信息
-     * @param pageQuery 分页参数
-     * @return OSS对象存储分页列表
-     */
-    fun queryPageList(bo: SysOssBo, pageQuery: com.github.alphafoxz.foxden.common.jimmer.core.page.PageQuery): com.github.alphafoxz.foxden.common.jimmer.core.page.TableDataInfo<SysOssVo>
-
-    /**
-     * 根据ID查询OSS对象存储
-     *
-     * @param ossId OSS对象存储ID
-     * @return OSS对象存储
-     */
-    fun queryById(ossId: Long): SysOssVo?
-
-    /**
-     * 上传文件到OSS
-     *
-     * @param file 文件
+     * @param sysOss    OSS对象存储分页查询对象
+     * @param pageQuery 分页查询实体类
      * @return 结果
      */
-    fun upload(file: MultipartFile): SysOssVo?
+    fun queryPageList(sysOss: SysOssBo, pageQuery: PageQuery): TableDataInfo<SysOssVo>
 
     /**
-     * 上传文件到OSS
+     * 根据一组 ossIds 获取对应的 SysOssVo 列表
      *
-     * @param fileName 文件名称
-     * @param content 文件内容
-     * @return 结果
+     * @param ossIds 一组文件在数据库中的唯一标识集合
+     * @return 包含 SysOssVo 对象的列表
      */
-    fun upload(fileName: String, content: InputStream): SysOssVo?
+    fun listByIds(ossIds: Collection<Long>): List<SysOssVo>
 
     /**
-     * 上传文件到OSS
+     * 根据 ossId 从缓存或数据库中获取 SysOssVo 对象
      *
-     * @param fileName 文件名称
-     * @param content  文件内容
-     * @return 结果
+     * @param ossId 文件在数据库中的唯一标识
+     * @return SysOssVo 对象，包含文件信息
      */
-    fun upload(fileName: String, content: ByteArray): SysOssVo?
+    fun getById(ossId: Long): SysOssVo?
 
     /**
-     * 通过OSS对象存储ID查询文件
+     * 上传 MultipartFile 到对象存储服务，并保存文件信息到数据库
      *
-     * @param ossId OSS对象存储ID
-     * @return 文件路径
+     * @param file 要上传的 MultipartFile 对象
+     * @return 上传成功后的 SysOssVo 对象，包含文件信息
      */
-    fun selectByIds(ossId: Long): SysOssVo?
+    fun upload(file: MultipartFile): SysOssVo
+
+    /**
+     * 上传文件到对象存储服务，并保存文件信息到数据库
+     *
+     * @param file 要上传的文件对象
+     * @return 上传成功后的 SysOssVo 对象，包含文件信息
+     */
+    fun upload(file: File): SysOssVo
+
+    /**
+     * 文件下载方法，支持一次性下载完整文件
+     *
+     * @param ossId    OSS对象ID
+     * @param response HttpServletResponse对象，用于设置响应头和向客户端发送文件内容
+     */
+    @Throws(Exception::class)
+    fun download(ossId: Long, response: HttpServletResponse)
+
+    /**
+     * 根据一组 ossIds 获取对应文件的 URL 列表
+     *
+     * @param ossIds 以逗号分隔的 ossId 字符串
+     * @return 以逗号分隔的文件 URL 字符串
+     */
+    fun selectUrlByIds(ossIds: String): String
+
+    /**
+     * OssService 接口方法实现 - 根据ossIds获取DTO列表
+     */
+    override fun selectByIds(ossIds: String): List<OssDTO>
 
     /**
      * 删除OSS对象存储
      *
-     * @param ossIds OSS对象存储ID
+     * @param ids     OSS对象ID串
+     * @param isValid 判断是否需要校验
      * @return 结果
      */
-    fun deleteWithValidByIds(ossIds: Array<Long>): Int
-
-    /**
-     * 获取签名
-     *
-     * @param ossId OSS对象ID
-     * @return 签名字符串
-     */
-    fun getPresignedObjectUrl(ossId: Long): String?
+    fun deleteWithValidByIds(ids: Collection<Long>, isValid: Boolean): Boolean
 }

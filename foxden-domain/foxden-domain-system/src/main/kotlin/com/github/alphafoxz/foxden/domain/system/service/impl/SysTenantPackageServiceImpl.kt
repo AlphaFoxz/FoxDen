@@ -1,31 +1,56 @@
 package com.github.alphafoxz.foxden.domain.system.service.impl
 
 import com.github.alphafoxz.foxden.domain.system.service.SysTenantPackageService
-import com.github.alphafoxz.foxden.domain.tenant.entity.SysTenantPackage
+import com.github.alphafoxz.foxden.domain.tenant.entity.*
 import com.github.alphafoxz.foxden.domain.system.bo.SysTenantPackageBo
 import com.github.alphafoxz.foxden.domain.system.vo.SysTenantPackageVo
-import org.babyfish.jimmer.sql.kt.KSqlClient
+import com.github.alphafoxz.foxden.common.core.constant.SystemConstants
+import com.github.alphafoxz.foxden.common.core.exception.ServiceException
+import org.babyfish.jimmer.sql.kt.ast.expression.*
+import org.babyfish.jimmer.sql.kt.*
+import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
+import java.time.LocalDateTime
 
 /**
- * TenantPackage 业务层处理
+ * 租户套餐Service业务层处理
+ *
+ * @author Michelle.Chung
  */
 @Service
 class SysTenantPackageServiceImpl(
-    private val sqlClient: KSqlClient
+    private val sqlClient: KSqlClient,
+    private val jdbcTemplate: JdbcTemplate
 ) : SysTenantPackageService {
 
     override fun selectTenantPackageList(bo: SysTenantPackageBo): List<SysTenantPackageVo> {
-        // TODO: Implement full query when Jimmer DSL is available for tenant module
-        // For now, only query by ID
-        val packageId = bo.packageId
-        if (packageId != null) {
-            val pkg = sqlClient.findById(SysTenantPackage::class, packageId)
-            return if (pkg != null) listOf(entityToVo(pkg)) else emptyList()
-        }
+        val packages = sqlClient.createQuery(SysTenantPackage::class) {
+            where(table.delFlag eq "0")
+            bo.packageId?.let { where(table.id eq it) }
+            bo.packageName?.takeIf { it.isNotBlank() }?.let {
+                where(table.packageName like "%${it}%")
+            }
+            bo.status?.takeIf { it.isNotBlank() }?.let { where(table.status eq it) }
+            orderBy(table.id.asc())
+            select(table)
+        }.execute()
 
-        // Return empty list for now
-        return emptyList()
+        return packages.map { entityToVo(it) }
+    }
+
+    /**
+     * 查询租户套餐已启用列表
+     */
+    fun selectList(): List<SysTenantPackageVo> {
+        val packages = sqlClient.createQuery(SysTenantPackage::class) {
+            where(table.delFlag eq "0")
+            where(table.status eq SystemConstants.NORMAL)
+            orderBy(table.id.asc())
+            select(table)
+        }.execute()
+
+        return packages.map { entityToVo(it) }
     }
 
     override fun selectTenantPackageById(packageId: Long): SysTenantPackageVo? {
@@ -34,31 +59,132 @@ class SysTenantPackageServiceImpl(
     }
 
     override fun checkPackageNameUnique(bo: SysTenantPackageBo): Boolean {
-        // TODO: Implement uniqueness check when Jimmer DSL is available
-        return true
+        val existing = sqlClient.createQuery(SysTenantPackage::class) {
+            where(table.packageName eq bo.packageName)
+            bo.packageId?.let { where(table.id ne it) }
+            where(table.delFlag eq "0")
+            select(table.id)
+        }.fetchOneOrNull()
+
+        return existing == null
     }
 
+    @Transactional
     override fun insertTenantPackage(bo: SysTenantPackageBo): Int {
-        // TODO: Implement insert using raw SQL or other method when Draft API is not available
-        return 0
+        // 检查套餐名称唯一性
+        if (!checkPackageNameUnique(bo)) {
+            throw ServiceException("套餐名称已存在")
+        }
+
+        // 保存菜单id
+        val menuIdsStr = if (bo.menuIds.isNullOrBlank()) "" else bo.menuIds
+
+        val newPkg = SysTenantPackageDraft.`$`.produce {
+            packageName = bo.packageName ?: throw ServiceException("套餐名称不能为空")
+            this.menuIds = menuIdsStr
+            menuCheckStrictly = false // 默认值
+            remark = bo.remark
+            status = bo.status ?: SystemConstants.NORMAL
+            delFlag = "0"
+            createTime = LocalDateTime.now()
+            createBy = bo.createBy?.toLong()
+        }
+
+        val result = sqlClient.save(newPkg)
+        return if (result.isModified) 1 else 0
     }
 
+    @Transactional
     override fun updateTenantPackage(bo: SysTenantPackageBo): Int {
-        // TODO: Implement update using raw SQL or other method when Draft API is not available
-        return 0
+        val packageId = bo.packageId ?: return 0
+
+        // 检查套餐是否存在
+        val existing = sqlClient.findById(SysTenantPackage::class, packageId)
+            ?: throw ServiceException("租户套餐不存在")
+
+        // 检查套餐名称唯一性
+        if (!checkPackageNameUnique(bo)) {
+            throw ServiceException("套餐名称已存在")
+        }
+
+        // 保存菜单id
+        val menuIdsStr = if (bo.menuIds.isNullOrBlank()) "" else bo.menuIds
+
+        val updated = SysTenantPackageDraft.`$`.produce(existing) {
+            bo.packageName?.let { packageName = it }
+            this.menuIds = menuIdsStr
+            bo.remark?.let { remark = it }
+            bo.status?.let { status = it }
+            updateTime = LocalDateTime.now()
+            bo.createBy?.let { createBy = it.toLong() }
+        }
+
+        val result = sqlClient.save(updated)
+        return if (result.isModified) 1 else 0
     }
 
+    @Transactional
     override fun deleteTenantPackageById(packageId: Long) {
-        // TODO: Implement delete using raw SQL or other method when Draft API is not available
+        // 检查套餐是否被租户使用
+        val tenantExists = sqlClient.createQuery(SysTenant::class) {
+            where(table.packageId eq packageId)
+            where(table.delFlag eq "0")
+            select(table.id)
+        }.fetchOneOrNull()
+
+        if (tenantExists != null) {
+            throw ServiceException("租户套餐已被使用")
+        }
+
+        sqlClient.deleteById(SysTenantPackage::class, packageId)
     }
 
+    @Transactional
     override fun deleteTenantPackageByIds(packageIds: Array<Long>) {
-        // TODO: Implement delete using raw SQL or other method when Draft API is not available
+        if (packageIds.isEmpty()) return
+
+        // 检查套餐是否被租户使用
+        val tenantExists = packageIds.any { packageId ->
+            sqlClient.createQuery(SysTenant::class) {
+                where(table.packageId eq packageId)
+                where(table.delFlag eq "0")
+                select(table.id)
+            }.fetchOneOrNull() != null
+        }
+
+        if (tenantExists != null) {
+            throw ServiceException("租户套餐已被使用")
+        }
+
+        sqlClient.deleteByIds(SysTenantPackage::class, packageIds.toList())
     }
 
     override fun changeStatus(bo: SysTenantPackageBo): Int {
-        // TODO: Implement status change using raw SQL or other method when Draft API is not available
-        return 0
+        val packageId = bo.packageId ?: return 0
+
+        val rows = sqlClient.createUpdate(SysTenantPackage::class) {
+            where(table.id eq packageId)
+            set(table.status, bo.status ?: "")
+            set(table.updateTime, LocalDateTime.now())
+        }.execute()
+
+        return rows
+    }
+
+    /**
+     * 构建查询条件
+     */
+    private fun buildQueryWrapper(bo: SysTenantPackageBo) = sqlClient.createQuery(SysTenantPackage::class) {
+            where(table.delFlag eq "0")
+            bo.packageName?.takeIf { it.isNotBlank() }?.let {
+                where(table.packageName like "%${it}%")
+            }
+            bo.status?.takeIf { it.isNotBlank() }?.let {
+                where(table.status eq it)
+            }
+            orderBy(table.id.asc())
+            select(table)
+        }
     }
 
     /**
@@ -74,5 +200,4 @@ class SysTenantPackageServiceImpl(
             status = pkg.status,
             createTime = pkg.createTime
         )
-    }
 }

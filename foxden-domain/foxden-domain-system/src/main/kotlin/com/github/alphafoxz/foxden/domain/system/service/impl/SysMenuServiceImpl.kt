@@ -14,11 +14,9 @@ import com.github.alphafoxz.foxden.domain.system.vo.RouterVo
 import com.github.alphafoxz.foxden.domain.system.vo.SysMenuVo
 import com.github.alphafoxz.foxden.domain.tenant.entity.SysTenantPackage
 import org.babyfish.jimmer.sql.kt.KSqlClient
-import org.babyfish.jimmer.sql.kt.ast.expression.asc
-import org.babyfish.jimmer.sql.kt.ast.expression.eq
-import org.babyfish.jimmer.sql.kt.ast.expression.like
-import org.babyfish.jimmer.sql.kt.ast.expression.ne
+import org.babyfish.jimmer.sql.kt.ast.expression.*
 import org.babyfish.jimmer.sql.kt.fetcher.newFetcher
+import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.stereotype.Service
 
 /**
@@ -26,7 +24,8 @@ import org.springframework.stereotype.Service
  */
 @Service
 class SysMenuServiceImpl(
-    private val sqlClient: KSqlClient
+    private val sqlClient: KSqlClient,
+    private val jdbcTemplate: org.springframework.jdbc.core.JdbcTemplate
 ) : SysMenuService {
 
     override fun selectMenuList(userId: Long): List<SysMenuVo> {
@@ -113,8 +112,29 @@ class SysMenuServiceImpl(
         }
 
         // 解析菜单ID列表（逗号分隔）
-        return menuIdsStr.split(",")
+        val menuIds = menuIdsStr.split(",")
             .mapNotNull { it.toLongOrNull() }
+
+        if (menuIds.isEmpty()) {
+            return emptyList()
+        }
+
+        // 如果启用严格模式，需要排除父级菜单ID
+        if (tenantPackage.menuCheckStrictly == true) {
+            // 查询这些菜单的父级ID
+            val parentIds = if (menuIds.isEmpty()) {
+                emptyList()
+            } else {
+                menuIds.mapNotNull { menuId ->
+                    sqlClient.findById(SysMenu::class, menuId)?.parentId
+                }.filter { it != null && it != 0L }
+            }
+
+            // 排除父级菜单，只返回叶子菜单
+            return menuIds.filter { it !in parentIds }
+        }
+
+        return menuIds
     }
 
     override fun buildMenus(menus: List<SysMenu>): List<RouterVo> {
@@ -177,6 +197,14 @@ class SysMenuServiceImpl(
             tree.put("visible", menu.visible)
             tree.put("status", menu.status)
         }
+    }
+
+    override fun buildMenuTree(menus: List<SysMenuVo>): List<SysMenuVo> {
+        if (menus.isEmpty()) {
+            return emptyList()
+        }
+        // 简单返回原列表，实际树形结构由前端处理
+        return menus
     }
 
     override fun selectMenuById(menuId: Long): SysMenuVo? {
@@ -302,6 +330,52 @@ class SysMenuServiceImpl(
         }.fetchOneOrNull()
 
         return existing == null || existing.id == menu.menuId
+    }
+
+    override fun checkRouteConfigUnique(menu: SysMenuBo): Boolean {
+        // 按钮类型菜单不需要校验路由
+        if (SystemConstants.TYPE_BUTTON == menu.menuType) {
+            return true
+        }
+
+        val menuId = menu.menuId ?: -1L
+        val parentId = menu.parentId ?: 0L
+        val path = menu.path ?: return true
+
+        // 查询所有目录和菜单类型的菜单
+        val typeDirMenus = sqlClient.createQuery(SysMenu::class) {
+            where(table.menuType eq SystemConstants.TYPE_DIR)
+            where(table.id ne menuId)
+            select(table)
+        }.execute()
+
+        val typeMenuMenus = sqlClient.createQuery(SysMenu::class) {
+            where(table.menuType eq SystemConstants.TYPE_MENU)
+            where(table.id ne menuId)
+            select(table)
+        }.execute()
+
+        val menus = (typeDirMenus + typeMenuMenus).distinctBy { it.id }
+
+        // 检查是否有重复的路由配置
+        for (sysMenu in menus) {
+            val dbParentId = sysMenu.parentId ?: 0L
+            val dbPath = sysMenu.path ?: ""
+
+            // 同级下不能有相同路由路径
+            if (path.equals(dbPath, ignoreCase = true) && parentId == dbParentId) {
+                return false
+            }
+
+            // 根目录下路由必须唯一
+            if (path.equals(dbPath, ignoreCase = true)
+                && parentId == 0L
+                && dbParentId == 0L) {
+                return false
+            }
+        }
+
+        return true
     }
 
     /**

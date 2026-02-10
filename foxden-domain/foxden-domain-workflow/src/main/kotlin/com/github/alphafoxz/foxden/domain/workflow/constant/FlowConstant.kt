@@ -1,7 +1,9 @@
 package com.github.alphafoxz.foxden.domain.workflow.constant
 
 /**
- * 工作流常量
+ * 流程常量
+ *
+ * @author AprilWind
  */
 object FlowConstant {
     /**
@@ -10,34 +12,19 @@ object FlowConstant {
     const val INITIATOR = "initiator"
 
     /**
-     * 业务id
+     * 业务ID
      */
     const val BUSINESS_ID = "businessId"
 
     /**
-     * 部门id
+     * 部门ID
      */
     const val INITIATOR_DEPT_ID = "initiatorDeptId"
 
     /**
-     * 委托
+     * 流程分类名称缓存key
      */
-    const val DELEGATE_TASK = "delegateTask"
-
-    /**
-     * 转办
-     */
-    const val TRANSFER_TASK = "transferTask"
-
-    /**
-     * 加签
-     */
-    const val ADD_SIGNATURE = "addSignature"
-
-    /**
-     * 减签
-     */
-    const val REDUCTION_SIGNATURE = "reductionSignature"
+    const val FLOW_CATEGORY_NAME = "flow_category_name#30d"
 
     /**
      * 流程分类Id转名称
@@ -45,14 +32,9 @@ object FlowConstant {
     const val CATEGORY_ID_TO_NAME = "category_id_to_name"
 
     /**
-     * 流程分类名称缓存
+     * 默认流程分类ID（租户OA申请分类）
      */
-    const val FLOW_CATEGORY_NAME = "flow_category_name#30d"
-
-    /**
-     * 默认租户OA申请分类id
-     */
-    const val FLOW_CATEGORY_ID = 100L
+    const val FLOW_CATEGORY_ID: Long = 100
 
     /**
      * 是否为申请人提交常量
@@ -103,4 +85,26 @@ object FlowConstant {
      * 忽略-会签票签处理（true：忽略，false：不忽略）
      */
     const val VAR_IGNORE_COOPERATE = "ignoreCooperate"
+
+    /**
+     * 流程状态常量
+     */
+    object FlowStatus {
+        const val CREATED = "created"        // 已创建
+        const val RUNNING = "running"         // 运行中
+        const val FINISHED = "finished"       // 已完成
+        const val TERMINATED = "terminated"   // 已终止
+        const val CANCELED = "canceled"       // 已取消
+    }
+
+    /**
+     * 任务操作常量
+     */
+    object TaskOperation {
+        const val DELEGATE = "delegateTask"        // 委派
+        const val TRANSFER = "transferTask"        // 转办
+        const val ADD_SIGN = "addSignature"        // 加签
+        const val SUB_SIGN = "reductionSignature"  // 减签
+    }
 }
+

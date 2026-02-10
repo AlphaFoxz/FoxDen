@@ -87,6 +87,14 @@ interface SysMenuService {
     fun buildMenuTreeSelect(menus: List<SysMenuVo>): List<Tree<Long>>
 
     /**
+     * 构建前端菜单树
+     *
+     * @param menus 菜单列表
+     * @return 菜单树列表
+     */
+    fun buildMenuTree(menus: List<SysMenuVo>): List<SysMenuVo>
+
+    /**
      * 根据菜单ID查询信息
      *
      * @param menuId 菜单ID
@@ -156,4 +164,12 @@ interface SysMenuService {
      * @return 结果
      */
     fun checkMenuNameUnique(menu: SysMenuBo): Boolean
+
+    /**
+     * 校验路由配置是否唯一
+     *
+     * @param menu 菜单信息
+     * @return 结果 true 唯一 false 不唯一
+     */
+    fun checkRouteConfigUnique(menu: SysMenuBo): Boolean
 }

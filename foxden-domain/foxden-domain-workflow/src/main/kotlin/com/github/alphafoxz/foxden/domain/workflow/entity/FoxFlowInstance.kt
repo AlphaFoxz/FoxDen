@@ -8,9 +8,9 @@ import org.babyfish.jimmer.sql.*
  */
 @Entity
 @Table(name = "flow_instance")
-interface FlowInstance : CommDelFlag, CommId {
+interface FoxFlowInstance : CommDelFlag, CommId {
     /**
-     * 流程定义ID
+     * 流程定义ID（对应 flow_definition 表的 id）
      */
     val definitionId: Long
 

@@ -1,59 +1,59 @@
 package com.github.alphafoxz.foxden.domain.system.service
 
+import com.github.alphafoxz.foxden.common.jimmer.core.page.PageQuery
+import com.github.alphafoxz.foxden.common.jimmer.core.page.TableDataInfo
 import com.github.alphafoxz.foxden.domain.system.bo.SysOssConfigBo
 import com.github.alphafoxz.foxden.domain.system.vo.SysOssConfigVo
 
 /**
- * 对象存储配置 服务层
+ * 对象存储配置Service接口
  *
  * @author Lion Li
  */
 interface SysOssConfigService {
 
     /**
-     * 查询对象存储配置列表
-     *
-     * @param bo 对象存储配置信息
-     * @return 对象存储配置集合
+     * 初始化OSS配置
      */
-    fun selectOssConfigList(bo: SysOssConfigBo): List<SysOssConfigVo>
+    fun init()
 
     /**
-     * 根据OssConfigId查询对象存储配置
-     *
-     * @param ossConfigId 对象存储配置ID
-     * @return 对象存储配置
+     * 查询单个
      */
-    fun selectOssConfigById(ossConfigId: Long): SysOssConfigVo?
+    fun queryById(ossConfigId: Long): SysOssConfigVo?
 
     /**
-     * 新增对象存储配置
+     * 查询列表
+     */
+    fun queryPageList(bo: SysOssConfigBo, pageQuery: PageQuery): TableDataInfo<SysOssConfigVo>
+
+    /**
+     * 根据新增业务对象插入对象存储配置
      *
-     * @param bo 对象存储配置信息
+     * @param bo 对象存储配置新增业务对象
      * @return 结果
      */
-    fun insertOssConfig(bo: SysOssConfigBo): Int
+    fun insertByBo(bo: SysOssConfigBo): Boolean
 
     /**
-     * 修改对象存储配置
+     * 根据编辑业务对象修改对象存储配置
      *
-     * @param bo 对象存储配置信息
+     * @param bo 对象存储配置编辑业务对象
      * @return 结果
      */
-    fun updateOssConfig(bo: SysOssConfigBo): Int
+    fun updateByBo(bo: SysOssConfigBo): Boolean
 
     /**
-     * 批量删除对象存储配置
+     * 校验并删除数据
      *
-     * @param ossConfigIds 需要删除的对象存储配置ID
-     */
-    fun deleteOssConfigByIds(ossConfigIds: Array<Long>)
-
-    /**
-     * 校验对象存储配置是否唯一
-     *
-     * @param bo 对象存储配置信息
+     * @param ids     主键集合
+     * @param isValid 是否校验,true-删除前校验,false-不校验
      * @return 结果
      */
-    fun checkConfigKeyUnique(bo: SysOssConfigBo): Boolean
+    fun deleteWithValidByIds(ids: Collection<Long>, isValid: Boolean): Boolean
+
+    /**
+     * 启用停用状态
+     */
+    fun updateOssConfigStatus(bo: SysOssConfigBo): Int
 }

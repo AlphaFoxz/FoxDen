@@ -22,6 +22,7 @@ include("foxden-common:foxden-common-ratelimiter")
 include("foxden-common:foxden-common-social")
 include("foxden-common:foxden-common-sse")
 include("foxden-common:foxden-common-encrypt")
+include("foxden-common:foxden-common-job")
 
 // Domain modules
 include("foxden-domain")
@@ -31,8 +32,10 @@ include("foxden-domain:foxden-domain-infrastructure")
 include("foxden-domain:foxden-domain-workflow")
 include("foxden-domain:foxden-domain-gen")
 include("foxden-domain:foxden-domain-test")
+include("foxden-domain:foxden-domain-job")
 
 // Application modules
 include("foxden-app:foxden-app-admin")
 include("foxden-app:foxden-app-system")
 include("foxden-app:foxden-app-workflow")
+include("foxden-app:foxden-app-job")

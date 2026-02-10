@@ -2,19 +2,19 @@
 
 ## 项目概述
 
-FoxDen 是一个多租户 SaaS 系统，正从 Java 迁移至 Kotlin。项目采用**等效重写**策略，使用 Kotlin 最佳实践和现代技术栈。
+FoxDen 是一个多租户 SaaS 系统，从若依（RuoYi）框架迁移至 Kotlin + Jimmer ORM 架构。项目采用**等效重写**策略，使用 Kotlin 最佳实践和现代技术栈。
 
 ### 技术栈
 
 | 技术 | 版本 | 说明 |
 |------|------|------|
-| Kotlin | 2.3.0 | ✅ 已迁移 |
-| Gradle | Kotlin DSL | ✅ 已迁移 |
-| Jimmer | 0.10.6 | ORM框架 |
-| Spring Boot | 3.4.1 | Web框架 |
-| Database | PostgreSQL | 数据库 |
-| Redis | Redisson 3.35.0 | 缓存 |
-| Sa-Token | 1.44.0 | 安全框架 |
+| Kotlin | 2.3.0 | 主要开发语言 |
+| Gradle | Kotlin DSL | 构建工具 |
+| Jimmer | 0.10.6 | Kotlin 优先的 ORM 框架 |
+| Spring Boot | 3.5.10 | Web 框架 |
+| Database | PostgreSQL | 主数据库 |
+| Redis | Redisson 3.35.0 | 缓存和分布式锁 |
+| Sa-Token | 1.44.0 | 认证授权框架 |
 
 ---
 
@@ -25,8 +25,8 @@ foxden/
 ├── foxden-bom/                      # BOM 依赖管理
 ├── foxden-common/                   # 通用模块
 │   ├── foxden-common-core/         # 核心工具、常量、异常
-│   ├── foxden-common-jimmer/       # Jimmer ORM 公共工具
-│   ├── foxden-common-web/          # Web 工具（验证码、XSS等）
+│   ├── foxden-common-jimmer/       # Jimmer ORM 公共工具和 Traits
+│   ├── foxden-common-web/          # Web 工具（验证码、XSS、i18n）
 │   ├── foxden-common-security/     # Sa-Token 集成
 │   ├── foxden-common-redis/        # Redis 缓存（Redisson）
 │   ├── foxden-common-log/          # 日志注解和事件
@@ -39,13 +39,18 @@ foxden/
 │   ├── foxden-common-oss/          # 对象存储
 │   ├── foxden-common-doc/          # SpringDoc API文档
 │   ├── foxden-common-json/         # JSON 配置
-│   └── foxden-common-encrypt/      # API 加密/解密 ✅ 新增
+│   └── foxden-common-encrypt/      # API 加密/解密（RSA+AES）
 ├── foxden-domain/                   # 领域模块
 │   ├── foxden-domain-system/       # 系统域（用户、角色、菜单等）
-│   └── foxden-domain-tenant/       # 租户域
+│   ├── foxden-domain-tenant/       # 租户域
+│   ├── foxden-domain-workflow/     # 工作流域
+│   ├── foxden-domain-gen/          # 代码生成域
+│   ├── foxden-domain-test/         # 测试域
+│   └── foxden-domain-infrastructure/ # 基础设施服务
 └── foxden-app/                      # 应用模块
     ├── foxden-app-admin/           # 管理端应用（端口12003）
-    └── foxden-app-system/          # 系统管理控制器
+    ├── foxden-app-system/          # 系统管理控制器
+    └── foxden-app-workflow/        # 工作流控制器
 ```
 
 ---
@@ -63,6 +68,9 @@ foxden/
 
 # 清理构建
 ./gradlew clean
+
+# 停止 Gradle 守护进程
+./gradlew --stop
 ```
 
 ### 运行应用
@@ -70,12 +78,6 @@ foxden/
 ```bash
 # 启动管理端应用
 ./gradlew :foxden-app:foxden-app-admin:bootRun
-
-# 停止应用
-pkill -f "foxden-app-admin"
-
-# 停止 Gradle 守护进程
-./gradlew --stop
 ```
 
 ### 应用访问
@@ -94,289 +96,135 @@ pkill -f "foxden-app-admin"
 
 **开发环境数据源**:
 - 数据库: PostgreSQL `localhost:12001/postgres`
-- Redis: `localhost:11002` (Docker容器名: kangbao-redis)
-- 端口: 12003
+- Redis: `localhost:11002`
+- 管理端端口: 12003
 
-### 关键配置修复
+### 关键配置项
 
-#### 1. Redisson配置
+#### 1. Jimmer ORM 配置
 
-**问题**: `RedissonClient` bean 未初始化
-
-**解决方案**: 在 `application.yaml` 中移除 `RedissonAutoConfigurationV2` 排除项
+**application.yaml** 和 **application-dev.yaml**:
 
 ```yaml
-spring:
-  autoconfigure:
-    exclude:
-      - org.springframework.boot.autoconfigure.data.redis.RedisRepositoriesAutoConfiguration
-      # 移除了 org.redisson.spring.starter.RedissonAutoConfigurationV2
+jimmer:
+  dialect: org.babyfish.jimmer.sql.dialect.PostgresDialect
+  language: kotlin              # 重要：指示创建 KSqlClient
+  show-sql: true                # 开发环境打印SQL
+  pretty-sql: true              # 美化SQL输出
+  executor-context-cache-enabled: true
 ```
 
-#### 2. 组件扫描配置
-
-**问题**: `foxden-app-system` 的 Controller 未被扫描
-
-**解决方案**: 在 `FoxdenAdminApplication.kt` 中添加 system 包扫描
+**使用方式** - 直接注入 `KSqlClient`:
 
 ```kotlin
-@ComponentScan(basePackages = [
-    "com.github.alphafoxz.foxden.app.admin",
-    "com.github.alphafoxz.foxden.app.system",  // 添加此行
-    "com.github.alphafoxz.foxden.domain",
-    "com.github.alphafoxz.foxden.common"
-])
-```
-
-#### 3. 模块依赖配置
-
-**问题**: `foxden-app-system` 未包含在项目中
-
-**解决方案**:
-1. 在 `settings.gradle.kts` 中声明模块:
-```kotlin
-include("foxden-app:foxden-app-system")
-```
-
-2. 在 `foxden-app-admin/build.gradle.kts` 中添加依赖:
-```kotlin
-implementation(project(":foxden-app:foxden-app-system"))
-```
-
----
-
-## API 测试记录
-
-### 正常工作的 API
-
-| 端点 | 方法 | 状态 | 说明 |
-|------|------|------|------|
-| `/actuator/health` | GET | ✅ | 健康检查 |
-| `/auth/code` | GET | ✅ | 获取验证码 |
-| `/auth/tenant/list` | GET | ✅ | 租户列表（已禁用限流） |
-| `/system/user/list` | GET | ✅ | 用户列表 |
-| `/system/role/list` | GET | ✅ | 角色列表 |
-| `/system/tenant/list` | GET | ✅ | 租户管理 |
-| `/monitor/cache` | GET | ✅ | 缓存监控 |
-| `/v3/api-docs` | GET | ✅ | OpenAPI 文档 |
-| `/swagger-ui.html` | GET | ✅ | Swagger UI |
-
-### 已知问题
-
-#### 登录 API - 加密请求配置
-
-**端点**: `POST /auth/login`
-
-**状态**: ✅ 加密模块已迁移，需要配置 RSA 密钥
-
-**使用方式**:
-1. 配置 `api-decrypt.publicKey` 和 `api-decrypt.privateKey`
-2. 前端使用 RSA 公钥加密 AES 密钥
-3. 前端使用 AES 密钥加密请求体
-4. 将加密后的 AES 密钥放在 `Encrypt-Flag` 请求头中
-5. 将加密后的请求体放在请求 body 中
-
-**示例密钥生成**:
-```kotlin
-val keyPair = EncryptUtils.generateRsaKey()
-val publicKey = keyPair["publicKey"]   // 配置到 api-decrypt.publicKey
-val privateKey = keyPair["privateKey"] // 配置到 api-decrypt.privateKey
-```
-
----
-
-## 最近修复的问题
-
-### 1. 限流异常修复 (2025-02-09)
-
-**问题**: 频繁触发限流，导致API无法访问
-
-**解决方案**:
-- 禁用 `AuthController.tenantList()` 的 `@RateLimiter` 注解（开发环境）
-- 清除Redis中的限流记录
-
-**修改文件**: `foxden-app-admin/src/main/kotlin/.../controller/AuthController.kt:99`
-
-```kotlin
-// 开发环境禁用限流
-// @RateLimiter(time = 60, count = 100, limitType = LimitType.IP)
-@GetMapping("/tenant/list")
-fun tenantList(request: HttpServletRequest): R<LoginTenantVo>
-```
-
-### 2. 登录接口JSON反序列化修复 (2025-02-09)
-
-**问题**:
-```
-Cannot construct instance of LoginBody: no String-argument constructor
-```
-
-**解决方案**: 修改登录接口参数类型
-
-**修改前**:
-```kotlin
-@PostMapping("/login")
-fun login(@RequestBody body: String): R<LoginVo> {
-    val loginBody = JsonUtils.parseObject(body, LoginBody::class.java)
-    // ...
-}
-```
-
-**修改后** (`AuthController.kt:47-70`):
-```kotlin
-@PostMapping("/login")
-fun login(@RequestBody loginBody: LoginBody): R<LoginVo> {
-    ValidatorUtils.validate(loginBody)
-
-    val clientId = loginBody.clientId!!
-    val grantType = loginBody.grantType!!
-
-    // ... 业务逻辑 ...
-
-    // 登录 - 将对象序列化回JSON传给策略
-    val bodyJson = JsonUtils.toJsonString(loginBody)!!
-    val loginVo = AuthStrategy.login(bodyJson, client, grantType)
-
-    return R.ok(loginVo)
-}
-```
-
-**新增导入**:
-```kotlin
-import com.github.alphafoxz.foxden.common.json.utils.JsonUtils
-```
-
-### 3. 模块集成完成 (2025-02-09)
-
-**完成的配置**:
-- ✅ `foxden-app-system` 添加到 `settings.gradle.kts`
-- ✅ `foxden-app-system` 添加到 `foxden-app-admin` 依赖
-- ✅ `foxden-app-system` 添加到 `@ComponentScan`
-- ✅ System 模块 Controller 正常加载
-
-### 4. Redisson 初始化修复 (2025-02-09)
-
-**问题**: `RedissonClient` bean 未创建
-
-**解决方案**: 移除 `application.yaml` 中的 `RedissonAutoConfigurationV2` 排除项
-
-**结果**:
-- ✅ Redis 连接成功（8个连接初始化）
-- ✅ 限流功能可用
-- ✅ 缓存功能可用
-
-### 5. 加密模块迁移完成 (2025-02-09)
-
-**背景**: 前端发送的登录请求使用 RSA+AES 混合加密，需要迁移 `ruoyi-common-encrypt` 模块
-
-**迁移内容**:
-- ✅ 注解：`@ApiEncrypt`、`@EncryptField`
-- ✅ 配置：`ApiDecryptProperties`、`EncryptAutoConfiguration`
-- ✅ 工具：`EncryptUtils`（支持 AES、RSA、SM2、SM3、SM4）
-- ✅ 过滤器：`CryptoFilter`、`DecryptRequestBodyWrapper`、`EncryptResponseBodyWrapper`
-
-**加密流程**:
-```
-前端 → [AES加密请求体] → [RSA加密AES密钥] → 后端
-     ↓
-[CryptoFilter拦截]
-     ↓
-[RSA解密AES密钥] → [AES解密请求体] → [Controller处理]
-```
-
-**配置示例** (`application.yaml`):
-```yaml
-api-decrypt:
-  enabled: true
-  headerFlag: encrypt-key  # 请求头标识（与前端一致）
-  publicKey: <RSA公钥>      # 响应加密公钥
-  privateKey: <RSA私钥>     # 请求解密私钥
-```
-
-**使用示例** (`AuthController.kt`):
-```kotlin
-@PostMapping("/login")
-fun login(@RequestBody body: String): R<LoginVo> {
-    // body 已被 CryptoFilter 自动解密（如果是加密请求）
-    val loginBody = JsonUtils.parseObject(body, LoginBody::class.java)
-    // ...
-}
-```
-
-**修改文件**:
-- `foxden-common/foxden-common-encrypt/` (新建模块)
-- `foxden-app-admin/src/main/resources/application.yaml` (添加配置)
-- `foxden-app-admin/.../AuthController.kt` (支持混合加密/明文请求)
-
-### 6. Jimmer KSqlClient 配置修复 (2025-02-09) ✅
-
-**问题**: 启动时报错 `ConnectionManagerDsl has not be proceeded`
-
-**根本原因**: 手动创建了 KSqlClient Bean，与 Spring Boot Starter 自动配置冲突
-
-**错误配置**:
-```kotlin
-// ❌ JimmerKSqlClientConfig.kt (已删除)
-@Configuration
-class JimmerKSqlClientConfig {
-    @Bean
-    fun kSqlClient(dataSource: DataSource): KSqlClient {
-        return newKSqlClient {
-            setConnectionManager {
-                dataSource.connection  // ❌ ConnectionManagerDsl 错误
-            }
-        }
+@Service
+class UserService(
+    private val sqlClient: KSqlClient  // Spring Boot Starter 自动注入
+) {
+    fun findAll(): List<User> {
+        return sqlClient.createQuery(User::class) {
+            where(table.delFlag eq "0")
+            select(table)
+        }.execute()
     }
 }
 ```
 
-**解决方案**:
+#### 2. 数据库连接池配置
 
-1. **删除手动配置文件**
-   ```bash
-   rm foxden-app-admin/src/main/.../config/JimmerKSqlClientConfig.kt
-   ```
+```yaml
+spring:
+  datasource:
+    type: com.zaxxer.hikari.HikariDataSource
+    driver-class-name: org.postgresql.Driver
+    url: jdbc:postgresql://localhost:12001/postgres
+    username: postgres
+    password: postgres
+    hikari:
+      minimum-idle: 5
+      maximum-pool-size: 20
+      auto-commit: false
+      idle-timeout: 600000
+      max-lifetime: 1800000
+```
 
-2. **添加 Jimmer 语言配置**
-   ```yaml
-   # application.yaml 和 application-dev.yaml
-   jimmer:
-     language: kotlin  # 关键配置！指示创建 KSqlClient
-   ```
+#### 3. Redisson 配置
 
-3. **直接注入使用**
-   ```kotlin
-   @RestController
-   class UserController(
-       private val sqlClient: KSqlClient  // ✅ Spring Boot Starter 自动注入
-   ) {
-       @GetMapping("/users")
-       fun getUsers(): List<User> {
-           return sqlClient.createQuery(User::class) {
-               select(table)
-           }.execute()
-       }
-   }
-   ```
+```yaml
+spring:
+  data:
+    redis:
+      host: localhost
+      port: 11002
+      database: 0
+      timeout: 10s
+      lettuce:
+        pool:
+          min-idle: 0
+          max-idle: 8
+          max-active: 8
+```
 
-**技术原理**:
+#### 4. API 加密配置（可选）
 
-`jimmer-spring-boot-starter` 根据 `jimmer.language` 自动配置：
+```yaml
+api-decrypt:
+  enabled: true
+  headerFlag: encrypt-key    # 请求头标识
+  publicKey: <RSA公钥>      # 响应加密公钥
+  privateKey: <RSA私钥>     # 请求解密私钥
+```
 
-| 配置值 | 创建的 Bean | 支持的语言特性 |
-|--------|-------------|----------------|
-| `kotlin` | `KSqlClient` | Kotlin DSL、协程 |
-| `java` 或未配置 | `JSqlClient` | Java API |
+---
 
-**参考文档**:
-- 官方文档: https://babyfish-ct.github.io/jimmer-doc/
-- Spring Boot 集成: https://www.cnblogs.com/poifa/p/16667568.html
-- 详细指南: `.claude/jimmer-dsl-guide.md`
+## Jimmer 实体定义规范
 
-**修改文件**:
-- ✅ 删除 `JimmerKSqlClientConfig.kt`
-- ✅ 更新 `application.yaml` (添加 `jimmer.language: kotlin`)
-- ✅ 更新 `application-dev.yaml` (添加 `jimmer.language: kotlin`)
+### Trait 组合模式
+
+所有实体都由可复用的 Trait 组合而成：
+
+| Trait | 提供字段 | 说明 |
+|-------|---------|------|
+| `CommId` | `id: Long` | 主键（自增） |
+| `CommTenant` | `tenantId: String` | 多租户支持 |
+| `CommInfo` | `createDept`, `createBy`, `createTime`, `updateBy`, `updateTime` | 审计字段 |
+| `CommDelFlag` | `delFlag: String` | 逻辑删除（"0"存在/"1"删除） |
+
+### 实体定义示例
+
+```kotlin
+@Entity
+@Table(name = "sys_user")
+interface SysUser : CommDelFlag, CommId, CommInfo, CommTenant {
+    val userName: String
+    val nickName: String
+    val email: String?
+
+    @OnDissociate(DissociateAction.DELETE)
+    val password: String?
+
+    @ManyToMany
+    @JoinTable(name = "sys_user_role")
+    val roles: List<SysRole>
+}
+```
+
+### 主键列名映射
+
+对于非标准主键列名，使用 `@Column` 注解：
+
+```kotlin
+@Entity
+@Table(name = "flow_category")
+interface FlowCategory : CommDelFlag, CommInfo, CommTenant {
+    @Column(name = "category_id")
+    @Id
+    @GeneratedValue
+    val id: Long
+
+    val categoryName: String
+}
+```
 
 ---
 
@@ -389,7 +237,6 @@ class JimmerKSqlClientConfig {
 **解决方案**:
 ```bash
 # 停止所有 Gradle 进程
-pkill -9 -f gradle
 ./gradlew --stop
 
 # 清理并重建
@@ -402,83 +249,53 @@ pkill -9 -f gradle
 
 ### Kotlin 代码规范
 
-- ✅ 使用 `data class`
+- ✅ 使用 `data class` for DTO/VO
 - ✅ 明确可空性标注（`String?`）
 - ✅ 默认使用 `val`，必要时使用 `var`
 - ✅ 使用扩展函数增强可读性
 - ✅ 使用属性赋值而非 setter 方法
+- ✅ 避免使用 `!!` 非空断言
+
+### Jimmer DSL 类型推断
+
+部分 Jimmer DSL 查询可能存在类型推断问题，解决方案：
+
+```kotlin
+// ✅ 明确指定类型
+val users: List<User> = sqlClient.createQuery(User::class) {
+    select(table)
+}.execute()
+
+// ✅ 或者使用 fetchOneOrNull
+val user = sqlClient.findById(User::class, id)
+```
 
 ---
 
-## 待办事项
+## 迁移文档
 
-### 高优先级
-
-#### 1. Jimmer KSqlClient 配置完善 ✅ 已解决 (2025-02-09)
-
-**问题**: `ConnectionManagerDsl has not be proceeded`
-
-**根本原因**: 手动创建了 KSqlClient Bean，但 `jimmer-spring-boot-starter` 已自动配置
-
-**解决方案**: 删除手动配置，使用 Spring Boot Starter 自动配置
-
-**关键发现** (参考 https://www.cnblogs.com/poifa/p/16667568.html):
-
-```yaml
-# application.yaml
-jimmer:
-  language: kotlin    # 关键配置：指示starter创建KSqlClient而非JSqlClient
-  show-sql: true
-```
-
-```kotlin
-// 直接注入使用，无需手动创建Bean
-class UserController(
-    private val sqlClient: KSqlClient  // Spring Boot Starter自动创建
-) { }
-
-// ❌ 错误：手动创建Bean导致冲突
-// @Bean
-// fun kSqlClient(dataSource: DataSource): KSqlClient { ... }
-```
-
-**修改文件**:
-- 删除 `JimmerKSqlClientConfig.kt` (已废弃)
-- 确保配置文件中设置 `jimmer.language: kotlin`
-
-#### 2. 登录功能完整实现
-
-**依赖**: Jimmer 配置修复后
-
-**包含**:
-- 用户名密码登录
-- 验证码验证
-- Token 生成
-
-### 中优先级
-
-#### 3. 数据库初始化
-
-**PostgreSQL 数据库**:
-- 表结构初始化脚本
-- 初始数据导入
-- 数据库迁移脚本
-- 数据备份恢复
-
-#### 4. 完善业务逻辑
-
-**Service 层实现**:
-- 从 Java 迁移完整业务逻辑
-- 实现 Jimmer DSL 查询
-- 数据权限、缓存等功能
+- **[Jimmer 使用指南](./JIMMER_GUIDE.md)** - Jimmer ORM 详细使用说明
+- **[迁移状态](./MIGRATION_STATUS.md)** - 当前迁移进度
+- **[旧版本指南](./OLD_VERSION_GUIDE.md)** - 旧项目结构说明
+- **[工作流迁移](./WORKFLOW_MIGRATION.md)** - 工作流模块迁移文档
 
 ---
 
 ## 参考资源
 
+### 官方文档
 - [Kotlin 官方文档](https://kotlinlang.org/docs/)
 - [Jimmer 官方文档](https://babyfish-ct.github.io/jimmer-doc/)
 - [Spring Boot 3.x 文档](https://docs.spring.io/spring-boot/)
 - [Gradle Kotlin DSL 指南](https://docs.gradle.org/current/userguide/kotlin_dsl.html)
+
+### 框架文档
 - [Sa-Token 文档](https://sa-token.cc/)
 - [Redisson 文档](https://github.com/redisson/redisson/wiki)
+- [WarmFlow 文档](https://warm-flow.github.io/warm-flow-docs/)
+
+---
+
+## 许可证
+
+Copyright © 2025 FoxDen Team

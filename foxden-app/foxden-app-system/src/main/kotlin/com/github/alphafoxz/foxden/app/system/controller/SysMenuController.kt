@@ -3,6 +3,7 @@ package com.github.alphafoxz.foxden.app.system.controller
 import cn.dev33.satoken.annotation.SaCheckPermission
 import cn.dev33.satoken.annotation.SaCheckRole
 import cn.dev33.satoken.annotation.SaMode
+import cn.hutool.core.lang.tree.Tree
 import com.github.alphafoxz.foxden.common.core.constant.TenantConstants
 import com.github.alphafoxz.foxden.common.core.domain.R
 import com.github.alphafoxz.foxden.common.idempotent.annotation.RepeatSubmit
@@ -12,10 +13,10 @@ import com.github.alphafoxz.foxden.common.security.utils.LoginHelper
 import com.github.alphafoxz.foxden.common.web.core.BaseController
 import com.github.alphafoxz.foxden.domain.system.bo.SysMenuBo
 import com.github.alphafoxz.foxden.domain.system.service.SysMenuService
+import com.github.alphafoxz.foxden.domain.system.service.SysTenantPackageService
 import com.github.alphafoxz.foxden.domain.system.service.extensions.deleteMenu
 import com.github.alphafoxz.foxden.domain.system.vo.RouterVo
 import com.github.alphafoxz.foxden.domain.system.vo.SysMenuVo
-import cn.hutool.core.lang.tree.Tree
 import org.springframework.validation.annotation.Validated
 import org.springframework.web.bind.annotation.*
 
@@ -28,7 +29,8 @@ import org.springframework.web.bind.annotation.*
 @RestController
 @RequestMapping("/system/menu")
 class SysMenuController(
-    private val menuService: SysMenuService
+    private val menuService: SysMenuService,
+    private val tenantPackageService: SysTenantPackageService
 ) : BaseController() {
 
     /**
@@ -110,6 +112,9 @@ class SysMenuController(
         if (!menuService.checkMenuNameUnique(menu)) {
             return R.fail("新增菜单'" + menu.menuName + "'失败，菜单名称已存在")
         }
+        if (!menuService.checkRouteConfigUnique(menu)) {
+            return R.fail("新增菜单'" + menu.menuName + "'失败，路由名称或地址已存在")
+        }
         return toAjax(menuService.insertMenu(menu))
     }
 
@@ -127,6 +132,9 @@ class SysMenuController(
     fun edit(@Validated @RequestBody menu: SysMenuBo): R<Void> {
         if (!menuService.checkMenuNameUnique(menu)) {
             return R.fail("修改菜单'" + menu.menuName + "'失败，菜单名称已存在")
+        }
+        if (!menuService.checkRouteConfigUnique(menu)) {
+            return R.fail("修改菜单'" + menu.menuName + "'失败，路由名称或地址已存在")
         }
         return toAjax(menuService.updateMenu(menu))
     }
@@ -150,4 +158,50 @@ class SysMenuController(
         }
         return toAjax(menuService.deleteMenu(menuId))
     }
+
+    /**
+     * 获取租户套餐菜单树下拉列表
+     */
+    @GetMapping("/tenantPackageMenuTreeselect/{packageId}")
+    fun tenantPackageMenuTreeselect(@PathVariable packageId: Long): R<MenuTreeSelectVo> {
+        val userId = LoginHelper.getUserId() ?: 0L
+        val menus = menuService.selectMenuList(userId)
+        val list = menuService.buildMenuTreeSelect(menus)
+
+        // 删除租户管理菜单（菜单ID=6）
+        val filteredList = list.filter { it.id != 6L }
+
+        val ids = if (packageId > 0L) {
+            menuService.selectMenuListByPackageId(packageId)
+        } else {
+            emptyList()
+        }
+
+        return R.ok(MenuTreeSelectVo(ids, filteredList))
+    }
+
+    /**
+     * 批量级联删除菜单
+     */
+    @SaCheckPermission("system:menu:remove")
+    @Log(title = "菜单管理", businessType = BusinessType.DELETE)
+    @DeleteMapping("/cascade/{menuIds}")
+    fun removeCascade(@PathVariable menuIds: Array<Long>): R<Void> {
+        val menuIdList = menuIds.toList()
+
+        if (menuService.hasChildByMenuId(menuIdList)) {
+            return R.warn("存在子菜单,不允许删除")
+        }
+
+        menuService.deleteMenuById(menuIdList)
+        return R.ok()
+    }
+
+    /**
+     * 菜单树选择VO
+     */
+    data class MenuTreeSelectVo(
+        val checkedKeys: List<Long>,
+        val menus: List<Tree<Long>>
+    )
 }

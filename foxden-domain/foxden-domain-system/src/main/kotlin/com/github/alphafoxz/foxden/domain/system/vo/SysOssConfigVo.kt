@@ -82,5 +82,10 @@ data class SysOssConfigVo(
     /**
      * 创建时间
      */
-    var createTime: java.time.LocalDateTime? = null
+    var createTime: java.time.LocalDateTime? = null,
+
+    /**
+     * 桶权限类型(0private 1public 2custom)
+     */
+    var accessPolicy: String? = null
 )

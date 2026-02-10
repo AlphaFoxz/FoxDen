@@ -79,5 +79,10 @@ data class SysOssConfigBo(
     /**
      * 备注
      */
-    var remark: String? = null
+    var remark: String? = null,
+
+    /**
+     * 桶权限类型(0private 1public 2custom)
+     */
+    var accessPolicy: String? = null
 )

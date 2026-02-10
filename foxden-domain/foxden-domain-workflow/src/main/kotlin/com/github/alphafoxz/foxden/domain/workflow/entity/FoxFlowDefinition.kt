@@ -5,12 +5,14 @@ import org.babyfish.jimmer.sql.*
 
 /**
  * 流程定义表 flow_definition
+ *
+ * 存储工作流的基本定义信息，包括流程的版本、状态、表单配置等
  */
 @Entity
 @Table(name = "flow_definition")
-interface FlowDefinition : CommDelFlag, CommId {
+interface FoxFlowDefinition : CommDelFlag, CommId {
     /**
-     * 流程编码
+     * 流程编码（唯一标识）
      */
     val flowCode: String
 
@@ -25,7 +27,7 @@ interface FlowDefinition : CommDelFlag, CommId {
     val modelValue: String?
 
     /**
-     * 流程分类
+     * 流程分类（对应 flow_category 表的 category_id）
      */
     val category: String?
 
