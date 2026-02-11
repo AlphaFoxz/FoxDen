@@ -55,12 +55,6 @@ interface SysDictData : CommInfo, CommTenant {
     val defaultFlag: String?
 
     /**
-     * 字典类型对象（关联查询，非持久化字段）
-     */
-    @ManyToOne
-    val dictTypeObj: SysDictType?
-
-    /**
      * 备注
      */
     val remark: String?

@@ -31,10 +31,4 @@ interface SysDictType : CommInfo, CommTenant {
      * 备注
      */
     val remark: String?
-
-    /**
-     * 字典数据
-     */
-    @OneToMany(mappedBy = "dictTypeObj")
-    val dictData: List<SysDictData>
 }

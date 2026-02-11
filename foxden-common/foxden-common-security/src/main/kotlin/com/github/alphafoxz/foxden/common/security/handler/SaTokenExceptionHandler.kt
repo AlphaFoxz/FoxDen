@@ -7,13 +7,17 @@ import cn.hutool.http.HttpStatus
 import com.github.alphafoxz.foxden.common.core.domain.R
 import jakarta.servlet.http.HttpServletRequest
 import org.slf4j.LoggerFactory
+import org.springframework.core.Ordered
+import org.springframework.core.annotation.Order
 import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.bind.annotation.RestControllerAdvice
 
 /**
  * Sa-Token 异常处理器
+ * 设置最高优先级，确保在 GlobalExceptionHandler 之前处理 Sa-Token 相关异常
  */
 @RestControllerAdvice
+@Order(Ordered.HIGHEST_PRECEDENCE)
 class SaTokenExceptionHandler {
     private val log = LoggerFactory.getLogger(SaTokenExceptionHandler::class.java)
 

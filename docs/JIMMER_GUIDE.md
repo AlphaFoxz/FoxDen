@@ -309,6 +309,129 @@ val password: String?
 val roles: List<SysRole>
 ```
 
+### 关联映射限制（重要）
+
+**Jimmer 不支持通过非主键列进行关联**
+
+与 JPA/Hibernate 不同，Jimmer 的 `@ManyToOne` 和 `@OneToMany` 关联**必须**通过外键ID引用目标实体的主键。
+
+#### ❌ 不支持的模式
+
+```kotlin
+// 错误：Jimmer 不支持这种关联方式
+@Entity
+interface SysDictData {
+    val dictType: String  // 字符串字段，存储字典类型代码
+
+    // ❌ 错误：试图通过 dictType 字段关联 SysDictType
+    // Jimmer 会尝试查询 dict_type_obj_id 列（不存在）
+    @ManyToOne
+    @JoinColumn(name = "dict_type")  // ❌ 不会像 JPA 那样引用 dictType 列
+    val dictTypeObj: SysDictType?
+}
+
+@Entity
+interface SysDictType {
+    @Id
+    val id: Long
+    val dictType: String  // 字符串字段
+
+    // ❌ 错误：反向引用也会失败
+    @OneToMany(mappedBy = "dictTypeObj")
+    val dictData: List<SysDictData>
+}
+```
+
+#### ✅ 正确的做法
+
+**方案 1：删除关联，使用字符串字段（推荐）**
+
+```kotlin
+@Entity
+interface SysDictData {
+    val dictType: String  // 保留字符串字段
+    // 删除 dictTypeObj 关联
+}
+
+@Entity
+interface SysDictType {
+    @Id
+    val id: Long
+    val dictType: String
+    // 删除 dictData 关联
+}
+```
+
+在需要关联查询时，手动通过 `dictType` 字段查询：
+
+```kotlin
+@Service
+class SysDictDataServiceImpl(
+    private val sqlClient: KSqlClient
+) {
+    fun selectDictDataWithType(dictType: String): List<SysDictData> {
+        return sqlClient.createQuery(SysDictData::class) {
+            where(table.dictType eq dictType)
+            select(table)
+        }.execute()
+    }
+
+    // 如果需要同时查询字典类型信息
+    fun selectDictDataWithTypeInfo(dictType: String): Pair<List<SysDictData>, SysDictType?> {
+        val dataList = sqlClient.createQuery(SysDictData::class) {
+            where(table.dictType eq dictType)
+            select(table)
+        }.execute()
+
+        val typeInfo = sqlClient.createQuery(SysDictType::class) {
+            where(table.dictType eq dictType)
+            select(table)
+        }.fetchOneOrNull()
+
+        return Pair(dataList, typeInfo)
+    }
+}
+```
+
+**方案 2：修改数据库表结构，添加外键（仅当必要时）**
+
+如果确实需要 ORM 关联，可以修改数据库表结构，添加外键列：
+
+```sql
+-- 修改 sys_dict_data 表，添加外键列
+ALTER TABLE sys_dict_data
+ADD COLUMN dict_type_id BIGINT REFERENCES sys_dict_type(dict_id);
+```
+
+```kotlin
+@Entity
+interface SysDictData {
+    val dictType: String      // 保留原有字段
+    val dictTypeId: Long?     // 新增外键列
+
+    @ManyToOne
+    @JoinColumn(name = "dict_type_id")
+    val dictTypeObj: SysDictType?  // ✅ 现在可以正确关联
+}
+```
+
+#### 与 JPA/Hibernate 的对比
+
+| 特性 | JPA/Hibernate | Jimmer |
+|------|--------------|--------|
+| `@ManyToOne` 引用非主键列 | ✅ 支持 `referencedColumnName` | ❌ 不支持 |
+| `@OneToMany(mappedBy = "非ID字段")` | ✅ 支持 | ❌ 不支持 |
+| 强制外键ID关联 | ❌ 不强制 | ✅ 强制 |
+
+#### 迁移建议
+
+从 MyBatis/JPA 迁移到 Jimmer 时：
+
+1. **审查所有关联定义**：确保所有 `@ManyToOne` 关联都有对应的外键列
+2. **删除无效关联**：如果数据库表没有外键列，删除实体中的关联定义
+3. **使用手动关联查询**：通过 Service 层代码手动组合关联数据
+4. **参考老项目实现**：保持与老项目（如 ruoyi）的数据结构一致
+
 ### Trait 复用（FoxDen 项目）
 
 ```kotlin
