@@ -32,7 +32,17 @@ class SysRoleServiceImpl(
             role.roleName?.takeIf { it.isNotBlank() }?.let { where(table.roleName like "%${it}%") }
             role.roleKey?.takeIf { it.isNotBlank() }?.let { where(table.roleKey like "%${it}%") }
             role.status?.takeIf { it.isNotBlank() }?.let { where(table.status eq it) }
-            orderBy(table.roleSort.asc())
+            // 时间范围查询
+            role.beginTime?.let { beginTime ->
+                role.endTime?.let { endTime ->
+                    where(table.createTime.between(beginTime, endTime))
+                }
+            }
+            // 双重排序：roleSort + createTime
+            orderBy(
+                table.roleSort.asc(),
+                table.createTime.asc()
+            )
             select(table)
         }.fetchPage(
             pageQuery.getPageNumOrDefault() - 1,  // Jimmer fetchPage expects 0-based index
@@ -50,7 +60,17 @@ class SysRoleServiceImpl(
             role.roleName?.takeIf { it.isNotBlank() }?.let { where(table.roleName like "%${it}%") }
             role.roleKey?.takeIf { it.isNotBlank() }?.let { where(table.roleKey like "%${it}%") }
             role.status?.takeIf { it.isNotBlank() }?.let { where(table.status eq it) }
-            orderBy(table.roleSort.asc())
+            // 时间范围查询
+            role.beginTime?.let { beginTime ->
+                role.endTime?.let { endTime ->
+                    where(table.createTime.between(beginTime, endTime))
+                }
+            }
+            // 双重排序：roleSort + createTime
+            orderBy(
+                table.roleSort.asc(),
+                table.createTime.asc()
+            )
             select(table)
         }.execute()
 
@@ -493,11 +513,14 @@ class SysRoleServiceImpl(
             status = role.status
             remark = role.remark
             createTime = role.createTime
+            updateTime = role.updateTime
+            // 从CommDelFlag trait获取delFlag
+            delFlag = (role as? com.github.alphafoxz.foxden.common.jimmer.entity.comm.CommDelFlag)?.delFlag?.toString()
+            // flag字段默认为false
+            flag = false
             // Note: createBy/updateBy in entity are Long (user ID), but VO expects String (username)
             // This needs to be resolved by looking up username from user ID
             // For now, skip setting these fields
-            updateTime = role.updateTime
-            delFlag = role.delFlag.toString()
 
             // menuIds and deptIds should be set by calling methods using raw SQL queries
             // to avoid lazy loading issues

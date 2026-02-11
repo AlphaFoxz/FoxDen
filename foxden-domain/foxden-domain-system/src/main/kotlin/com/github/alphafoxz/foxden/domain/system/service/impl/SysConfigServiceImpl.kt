@@ -1,13 +1,18 @@
 package com.github.alphafoxz.foxden.domain.system.service.impl
 
-import com.github.alphafoxz.foxden.domain.system.service.SysConfigService
-import com.github.alphafoxz.foxden.domain.system.entity.*
-import com.github.alphafoxz.foxden.domain.system.bo.SysConfigBo
-import com.github.alphafoxz.foxden.domain.system.vo.SysConfigVo
+import com.github.alphafoxz.foxden.common.core.constant.CacheNames
 import com.github.alphafoxz.foxden.common.core.constant.SystemConstants
 import com.github.alphafoxz.foxden.common.core.exception.ServiceException
+import com.github.alphafoxz.foxden.common.redis.utils.CacheUtils
+import com.github.alphafoxz.foxden.domain.system.bo.SysConfigBo
+import com.github.alphafoxz.foxden.domain.system.entity.*
+import com.github.alphafoxz.foxden.domain.system.service.SysConfigService
+import com.github.alphafoxz.foxden.domain.system.vo.SysConfigVo
 import org.babyfish.jimmer.sql.kt.ast.expression.*
 import org.babyfish.jimmer.sql.kt.*
+import org.springframework.cache.annotation.CacheEvict
+import org.springframework.cache.annotation.CachePut
+import org.springframework.cache.annotation.Cacheable
 import org.springframework.stereotype.Service
 
 /**
@@ -31,6 +36,7 @@ class SysConfigServiceImpl(
         return configs.map { entityToVo(it) }
     }
 
+    @Cacheable(cacheNames = [CacheNames.SYS_CONFIG], key = "#configKey")
     override fun selectConfigByKey(configKey: String): String? {
         val config = sqlClient.createQuery(SysConfig::class) {
             where(table.configKey eq configKey)
@@ -63,6 +69,7 @@ class SysConfigServiceImpl(
         return selectConfigByKey(configKey) ?: defaultValue
     }
 
+    @CachePut(cacheNames = [CacheNames.SYS_CONFIG], key = "#bo.configKey")
     override fun insertConfig(bo: SysConfigBo): Int {
         val newConfig = com.github.alphafoxz.foxden.domain.system.entity.SysConfigDraft.`$`.produce {
             configName = bo.configName ?: throw ServiceException("参数名称不能为空")
@@ -77,8 +84,17 @@ class SysConfigServiceImpl(
         return if (result.isModified) 1 else 0
     }
 
+    @CachePut(cacheNames = [CacheNames.SYS_CONFIG], key = "#bo.configKey")
     override fun updateConfig(bo: SysConfigBo): Int {
         val configIdVal = bo.configId ?: return 0
+
+        // 如果configKey发生变化，需要清除旧的缓存
+        if (bo.configKey != null && configIdVal > 0) {
+            val oldConfig = sqlClient.findById(SysConfig::class, configIdVal)
+            if (oldConfig != null && oldConfig.configKey != bo.configKey) {
+                CacheUtils.evict(CacheNames.SYS_CONFIG, oldConfig.configKey)
+            }
+        }
 
         val result = sqlClient.createUpdate(SysConfig::class) {
             where(table.id eq configIdVal)
@@ -97,7 +113,7 @@ class SysConfigServiceImpl(
     }
 
     override fun resetConfigCache() {
-        // TODO: Implement cache reset logic when cache is integrated
+        CacheUtils.clear(CacheNames.SYS_CONFIG)
     }
 
     override fun checkConfigKeyUnique(config: SysConfigBo): Boolean {

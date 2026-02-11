@@ -39,6 +39,16 @@ data class SysRoleBo(
     var roleSort: Int? = null,
 
     /**
+     * 开始时间
+     */
+    var beginTime: java.time.LocalDateTime? = null,
+
+    /**
+     * 结束时间
+     */
+    var endTime: java.time.LocalDateTime? = null,
+
+    /**
      * 数据范围（1：全部数据权限 2：自定数据权限 3：本部门数据权限 4：本部门及以下数据权限 5：仅本人数据权限 6：部门及以下或本人数据权限）
      */
     var dataScope: String? = null,

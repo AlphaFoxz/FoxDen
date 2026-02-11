@@ -7,6 +7,7 @@ import com.github.alphafoxz.foxden.common.core.utils.StringUtils
 import com.github.alphafoxz.foxden.common.core.utils.StreamUtils
 import com.github.alphafoxz.foxden.common.excel.utils.ExcelUtil
 import com.github.alphafoxz.foxden.common.idempotent.annotation.RepeatSubmit
+import com.github.alphafoxz.foxden.common.encrypt.annotation.ApiEncrypt
 import com.github.alphafoxz.foxden.common.jimmer.core.page.PageQuery
 import com.github.alphafoxz.foxden.common.jimmer.helper.DataPermissionHelper
 import com.github.alphafoxz.foxden.common.jimmer.helper.TenantHelper
@@ -15,6 +16,7 @@ import com.github.alphafoxz.foxden.common.log.annotation.Log
 import com.github.alphafoxz.foxden.common.log.enums.BusinessType
 import com.github.alphafoxz.foxden.common.security.utils.LoginHelper
 import com.github.alphafoxz.foxden.common.web.core.BaseController
+import cn.hutool.crypto.digest.BCrypt
 import com.github.alphafoxz.foxden.domain.system.bo.SysUserBo
 import com.github.alphafoxz.foxden.domain.system.service.SysDeptService
 import com.github.alphafoxz.foxden.domain.system.service.SysPostService
@@ -151,9 +153,16 @@ class SysUserController(
     @PostMapping
     fun add(@Validated @RequestBody user: SysUserBo): R<Void> {
         userService.checkUserAllowed(user.userId ?: 0L)
+        deptService.checkDeptDataScope(user.deptId!!)
         userService.checkUserNameUnique(user)
         userService.checkEmailUnique(user)
         userService.checkPhoneUnique(user)
+        // TODO: 检查租户余额（如果启用租户功能）- 需要实现 checkAccountBalance 方法
+        // if (TenantHelper.isEnable()) {
+        //     if (!tenantService.checkAccountBalance(TenantHelper.getTenantId())) {
+        //         return R.fail("当前租户下用户名额不足，请联系管理员")
+        //     }
+        // }
         return toAjax(userService.insertUser(user))
     }
 
@@ -166,6 +175,7 @@ class SysUserController(
     @PutMapping
     fun edit(@Validated @RequestBody user: SysUserBo): R<Void> {
         userService.checkUserAllowed(user.userId!!)
+        deptService.checkDeptDataScope(user.deptId!!)
         userService.checkUserDataScope(user.userId!!)
         userService.checkUserNameUnique(user)
         userService.checkEmailUnique(user)
@@ -189,13 +199,17 @@ class SysUserController(
     /**
      * 重置密码
      */
+    @ApiEncrypt
     @SaCheckPermission("system:user:resetPwd")
     @Log(title = "用户管理", businessType = BusinessType.UPDATE)
+    @RepeatSubmit
     @PutMapping("/resetPwd")
     fun resetPwd(@RequestBody user: SysUserBo): R<Void> {
         userService.checkUserAllowed(user.userId!!)
         userService.checkUserDataScope(user.userId!!)
-        return toAjax(userService.resetUserPwd(user.userId!!, user.password ?: ""))
+        // Controller 层使用 BCrypt 加密密码（与老版本一致）
+        val encryptedPassword = BCrypt.hashpw(user.password ?: "")
+        return toAjax(userService.resetUserPwd(user.userId!!, encryptedPassword))
     }
 
     /**
@@ -221,6 +235,16 @@ class SysUserController(
     }
 
     /**
+     * 获取部门树列表
+     */
+    @SaCheckPermission("system:user:list")
+    @GetMapping("/deptTree")
+    fun deptTree(@RequestParam(required = false) deptId: Long?): R<List<Tree<Long>>> {
+        val depts = deptService.selectDeptTreeList(com.github.alphafoxz.foxden.domain.system.bo.SysDeptBo())
+        return R.ok(depts)
+    }
+
+    /**
      * 根据部门ID查询用户列表
      */
     @SaCheckPermission("system:user:list")
@@ -230,13 +254,31 @@ class SysUserController(
     }
 
     /**
-     * 获取部门树列表
+     * 根据用户ID串批量获取用户基础信息
      */
     @SaCheckPermission("system:user:list")
-    @GetMapping("/deptTree")
-    fun deptTree(@RequestParam(required = false) deptId: Long?): R<List<Tree<Long>>> {
-        val depts = deptService.selectDeptTreeList(com.github.alphafoxz.foxden.domain.system.bo.SysDeptBo())
-        return R.ok(depts)
+    @GetMapping("/optionselect")
+    fun optionselect(
+        @RequestParam(required = false) userIds: Array<Long>?,
+        @RequestParam(required = false) deptId: Long?
+    ): R<List<SysUserVo>> {
+        return R.ok(userService.selectUserByIds(userIds?.toList() ?: emptyList(), deptId))
+    }
+
+    /**
+     * 用户授权角色
+     */
+    @SaCheckPermission("system:user:edit")
+    @Log(title = "用户管理", businessType = BusinessType.GRANT)
+    @RepeatSubmit
+    @PutMapping("/authRole")
+    fun insertAuthRole(
+        @RequestParam userId: Long,
+        @RequestParam roleIds: Array<Long>
+    ): R<Void> {
+        userService.checkUserDataScope(userId)
+        userService.insertUserAuth(userId, roleIds)
+        return R.ok()
     }
 
     /**

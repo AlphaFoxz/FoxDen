@@ -7,6 +7,7 @@ import com.github.alphafoxz.foxden.common.core.utils.StringUtils
 import com.github.alphafoxz.foxden.common.core.enums.UserType
 import com.github.alphafoxz.foxden.common.jimmer.core.page.PageQuery
 import com.github.alphafoxz.foxden.common.jimmer.core.page.TableDataInfo
+import com.github.alphafoxz.foxden.common.security.utils.LoginHelper
 import com.github.alphafoxz.foxden.domain.system.bo.SysUserBo
 import com.github.alphafoxz.foxden.domain.system.entity.*
 import com.github.alphafoxz.foxden.domain.system.service.SysUserService
@@ -270,11 +271,53 @@ class SysUserServiceImpl(
     }
 
     override fun checkUserAllowed(userId: Long) {
-        // TODO: 实现 super admin 检查
+        if (LoginHelper.isSuperAdmin(userId)) {
+            throw ServiceException("不允许操作超级管理员用户")
+        }
     }
 
     override fun checkUserDataScope(userId: Long) {
-        // TODO: 实现数据权限检查
+        // 超级管理员不检查数据权限
+        if (LoginHelper.isSuperAdmin()) {
+            return
+        }
+        // 检查用户是否存在
+        val user = sqlClient.findById(SysUser::class, userId)
+        if (user == null) {
+            throw ServiceException("没有权限访问用户数据！")
+        }
+    }
+
+    override fun insertUserAuth(userId: Long, roleIds: Array<Long>) {
+        if (roleIds.isEmpty()) {
+            return
+        }
+
+        val roleList = roleIds.toMutableList()
+
+        // 非超级管理员，禁止包含超级管理员角色
+        if (!LoginHelper.isSuperAdmin(userId)) {
+            roleList.remove(SystemConstants.SUPER_ADMIN_ID)
+        }
+
+        // 先删除该用户的所有角色关联
+        jdbcTemplate.update("DELETE FROM sys_user_role WHERE user_id = ?", userId)
+
+        // 插入新的角色关联
+        if (roleList.isNotEmpty()) {
+            val insertValues = roleList.joinToString(",") { "(?,?)" }
+            val insertArgs = mutableListOf<Any?>()
+
+            for (roleId in roleList) {
+                insertArgs.add(userId)
+                insertArgs.add(roleId)
+            }
+
+            jdbcTemplate.update(
+                "INSERT INTO sys_user_role (user_id, role_id) VALUES $insertValues",
+                *insertArgs.toTypedArray()
+            )
+        }
     }
 
     override fun insertUser(user: SysUserBo): Int {
@@ -338,16 +381,6 @@ class SysUserServiceImpl(
             set(table.updateTime, LocalDateTime.now())
         }.execute()
         return result
-    }
-
-    override fun insertUserAuth(userId: Long, roleIds: Array<Long>) {
-        val existing = sqlClient.findById(SysUser::class, userId)
-            ?: throw ServiceException("用户不存在")
-
-        // TODO: Need to research proper Jimmer API for many-to-many association updates
-        // The Draft API's roles() list expects SysRoleDraft objects, but produce() returns immutable SysRole
-        // This requires further investigation into Jimmer's association handling
-        throw ServiceException("角色分配功能待实现 - 需要 Jimmer 多对多关联的正确用法")
     }
 
     override fun updateUserStatus(userId: Long, status: String): Int {

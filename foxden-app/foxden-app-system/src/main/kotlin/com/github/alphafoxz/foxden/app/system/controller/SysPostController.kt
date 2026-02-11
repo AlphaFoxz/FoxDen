@@ -1,12 +1,18 @@
 package com.github.alphafoxz.foxden.app.system.controller
 
 import cn.dev33.satoken.annotation.SaCheckPermission
+import cn.hutool.core.util.ObjectUtil
+import com.github.alphafoxz.foxden.common.core.constant.SystemConstants
 import com.github.alphafoxz.foxden.common.core.domain.R
 import com.github.alphafoxz.foxden.common.idempotent.annotation.RepeatSubmit
+import com.github.alphafoxz.foxden.common.jimmer.core.page.PageQuery
+import com.github.alphafoxz.foxden.common.jimmer.core.page.TableDataInfo
 import com.github.alphafoxz.foxden.common.log.annotation.Log
 import com.github.alphafoxz.foxden.common.log.enums.BusinessType
 import com.github.alphafoxz.foxden.common.web.core.BaseController
+import com.github.alphafoxz.foxden.domain.system.bo.SysDeptBo
 import com.github.alphafoxz.foxden.domain.system.bo.SysPostBo
+import com.github.alphafoxz.foxden.domain.system.service.SysDeptService
 import com.github.alphafoxz.foxden.domain.system.service.SysPostService
 import com.github.alphafoxz.foxden.domain.system.vo.SysPostVo
 import org.springframework.validation.annotation.Validated
@@ -21,7 +27,8 @@ import org.springframework.web.bind.annotation.*
 @RestController
 @RequestMapping("/system/post")
 class SysPostController(
-    private val postService: SysPostService
+    private val postService: SysPostService,
+    private val deptService: SysDeptService
 ) : BaseController() {
 
     /**
@@ -29,8 +36,8 @@ class SysPostController(
      */
     @SaCheckPermission("system:post:list")
     @GetMapping("/list")
-    fun list(post: SysPostBo): R<List<SysPostVo>> {
-        return R.ok(postService.selectPostList(post))
+    fun list(post: SysPostBo, pageQuery: PageQuery): TableDataInfo<SysPostVo> {
+        return postService.selectPagePostList(post, pageQuery)
     }
 
     /**
@@ -50,7 +57,9 @@ class SysPostController(
     @RepeatSubmit
     @PostMapping
     fun add(@Validated @RequestBody post: SysPostBo): R<Void> {
-        if (!postService.checkPostCodeUnique(post)) {
+        if (!postService.checkPostNameUnique(post)) {
+            return R.fail("新增岗位'" + post.postName + "'失败，岗位名称已存在")
+        } else if (!postService.checkPostCodeUnique(post)) {
             return R.fail("新增岗位'" + post.postName + "'失败，岗位编码已存在")
         }
         return toAjax(postService.insertPost(post))
@@ -64,8 +73,12 @@ class SysPostController(
     @RepeatSubmit
     @PutMapping
     fun edit(@Validated @RequestBody post: SysPostBo): R<Void> {
-        if (!postService.checkPostCodeUnique(post)) {
+        if (!postService.checkPostNameUnique(post)) {
+            return R.fail("修改岗位'" + post.postName + "'失败，岗位名称已存在")
+        } else if (!postService.checkPostCodeUnique(post)) {
             return R.fail("修改岗位'" + post.postName + "'失败，岗位编码已存在")
+        } else if (SystemConstants.DISABLE == post.status && postService.countUserPostById(post.postId!!) > 0) {
+            return R.fail("该岗位下存在已分配用户，不能禁用!")
         }
         return toAjax(postService.updatePost(post))
     }
@@ -79,5 +92,37 @@ class SysPostController(
     fun remove(@PathVariable postIds: Array<Long>): R<Void> {
         postService.deletePostByIds(postIds)
         return R.ok()
+    }
+
+    /**
+     * 获取岗位选择框列表
+     *
+     * @param postIds 岗位ID串
+     * @param deptId  部门id
+     */
+    @SaCheckPermission("system:post:query")
+    @GetMapping("/optionselect")
+    fun optionselect(
+        @RequestParam(required = false) postIds: Array<Long>?,
+        @RequestParam(required = false) deptId: Long?
+    ): R<List<SysPostVo>> {
+        val list = if (ObjectUtil.isNotNull(deptId)) {
+            val post = SysPostBo(deptId = deptId)
+            postService.selectPostList(post)
+        } else if (postIds != null) {
+            postService.selectPostByIds(postIds.toList())
+        } else {
+            emptyList()
+        }
+        return R.ok(list)
+    }
+
+    /**
+     * 获取部门树列表
+     */
+    @SaCheckPermission("system:post:list")
+    @GetMapping("/deptTree")
+    fun deptTree(dept: SysDeptBo): R<List<com.github.alphafoxz.foxden.common.core.domain.Tree<Long>>> {
+        return R.ok(deptService.selectDeptTreeList(dept))
     }
 }

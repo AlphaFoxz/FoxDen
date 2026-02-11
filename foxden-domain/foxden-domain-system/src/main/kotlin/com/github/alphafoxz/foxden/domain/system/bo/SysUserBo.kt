@@ -69,6 +69,26 @@ data class SysUserBo(
     var sex: String? = null,
 
     /**
+     * 用户ID列表（逗号分隔，用于批量查询）
+     */
+    var userIds: String? = null,
+
+    /**
+     * 排除的用户ID（逗号分隔）
+     */
+    var excludeUserIds: String? = null,
+
+    /**
+     * 开始时间
+     */
+    var beginTime: java.time.LocalDateTime? = null,
+
+    /**
+     * 结束时间
+     */
+    var endTime: java.time.LocalDateTime? = null,
+
+    /**
      * 密码
      */
     var password: String? = null,

@@ -37,7 +37,15 @@ class SysDeptServiceImpl(
 
     override fun selectDeptById(deptId: Long): SysDeptVo? {
         val dept = sqlClient.findById(SysDept::class, deptId) ?: return null
-        return entityToVo(dept)
+        val vo = entityToVo(dept)
+
+        // 单独查询父部门名称（参照老系统实现，避免懒加载关联导致 UnloadedException）
+        if (dept.parentId != null && dept.parentId != 0L) {
+            val parentDept = sqlClient.findById(SysDept::class, dept.parentId!!)
+            vo.parentName = parentDept?.deptName
+        }
+
+        return vo
     }
 
     override fun selectNormalChildrenDeptById(deptId: Long): Int {
@@ -200,6 +208,22 @@ class SysDeptServiceImpl(
         return buildDeptTreeSelect(depts.map { entityToVo(it) })
     }
 
+    override fun selectDeptAndChildById(parentId: Long): List<Long> {
+        // 查询该部门下的所有子部门
+        val childDepts = sqlClient.createQuery(SysDept::class) {
+            where(table.parentId eq parentId)
+            where(table.delFlag eq "0")
+            select(table.id)
+        }.execute()
+
+        // 收集所有部门ID（包括父部门自身）
+        // 注意：select(table.id)返回的是List<Long>，不是List<SysDept>
+        val deptIds = mutableListOf<Long>(parentId)
+        deptIds.addAll(childDepts)
+
+        return deptIds
+    }
+
     /**
      * 递归查询所有子部门ID
      */
@@ -230,11 +254,16 @@ class SysDeptServiceImpl(
             deptCategory = dept.deptCategory,
             orderNum = dept.orderNum,
             leader = dept.leader,
+            parentName = null, // 由调用方单独查询，避免懒加载关联导致 UnloadedException
             phone = dept.phone,
             email = dept.email,
             status = dept.status,
             delFlag = dept.delFlag.toString(),
-            createTime = dept.createTime
+            createTime = dept.createTime,
+            // leaderName 需要通过用户ID查询用户名，这里留空由调用方按需查询
+            leaderName = null,
+            // 子部门列表留空，避免递归导致的性能问题
+            children = emptyList()
         )
     }
 

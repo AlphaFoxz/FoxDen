@@ -23,7 +23,11 @@ class SysDictDataServiceImpl(
             dictData.dictCode?.let { where(table.id eq it) }
             dictData.dictType?.takeIf { it.isNotBlank() }?.let { where(table.dictType eq it) }
             dictData.dictLabel?.takeIf { it.isNotBlank() }?.let { where(table.dictLabel like "%${it}%") }
-            orderBy(table.dictSort.asc())
+            // 双重排序：dictSort + id (dict_code)
+            orderBy(
+                table.dictSort.asc(),
+                table.id.asc()
+            )
             select(table)
         }.execute()
 

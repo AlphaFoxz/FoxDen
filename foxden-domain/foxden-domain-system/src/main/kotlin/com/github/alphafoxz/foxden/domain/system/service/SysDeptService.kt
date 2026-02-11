@@ -67,6 +67,14 @@ interface SysDeptService : DeptService {
     fun checkDeptDataScope(deptId: Long)
 
     /**
+     * 查询某个部门及其所有子部门ID（含自身）
+     *
+     * @param parentId 父部门ID
+     * @return 部门ID集合
+     */
+    fun selectDeptAndChildById(parentId: Long): List<Long>
+
+    /**
      * 新增保存部门信息
      *
      * @param bo 部门信息

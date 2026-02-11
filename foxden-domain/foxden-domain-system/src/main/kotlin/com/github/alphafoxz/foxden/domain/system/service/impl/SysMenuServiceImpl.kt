@@ -46,11 +46,16 @@ class SysMenuServiceImpl(
     override fun selectMenuList(menu: SysMenuBo, userId: Long): List<SysMenuVo> {
         val menus = sqlClient.createQuery(SysMenu::class) {
             menu.menuId?.let { where(table.id eq it) }
+            menu.parentId?.let { where(table.parentId eq it) }
             menu.menuName?.takeIf { it.isNotBlank() }?.let { where(table.menuName like "%${it}%") }
             menu.visible?.takeIf { it.isNotBlank() }?.let { where(table.visible eq it) }
             menu.status?.takeIf { it.isNotBlank() }?.let { where(table.status eq it) }
             menu.menuType?.takeIf { it.isNotBlank() }?.let { where(table.menuType eq it) }
-            orderBy(table.orderNum.asc())
+            // 双重排序：parentId + orderNum
+            orderBy(
+                table.parentId.asc(),
+                table.orderNum.asc()
+            )
             select(table)
         }.execute()
 
@@ -97,8 +102,12 @@ class SysMenuServiceImpl(
     }
 
     override fun selectMenuListByRoleId(roleId: Long): List<Long> {
-        val role = sqlClient.findById(SysRole::class, roleId) ?: return emptyList()
-        return role.menus.map { it.id }
+        // 直接查询 sys_role_menu 关联表获取菜单ID列表
+        // 与老版本方式一致：baseMapper.selectMenuListByRoleId(roleId, ...)
+        return jdbcTemplate.query(
+            "SELECT menu_id FROM sys_role_menu WHERE role_id = ? ORDER BY menu_id ASC",
+            arrayOf(roleId)
+        ) { rs, _ -> rs.getLong("menu_id") }
     }
 
     override fun selectMenuListByPackageId(packageId: Long): List<Long> {
@@ -515,7 +524,9 @@ class SysMenuServiceImpl(
             status = menu.status,
             perms = menu.perms,
             icon = menu.icon,
-            createTime = menu.createTime
+            createTime = menu.createTime,
+            createDept = menu.createDept,
+            remark = menu.remark
         )
     }
 }
