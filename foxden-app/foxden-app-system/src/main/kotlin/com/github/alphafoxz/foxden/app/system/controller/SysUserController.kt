@@ -224,8 +224,8 @@ class SysUserController(
      * 根据部门ID查询用户列表
      */
     @SaCheckPermission("system:user:list")
-    @GetMapping("/dept/{deptId}")
-    fun listByDeptId(@PathVariable deptId: Long): R<List<SysUserVo>> {
+    @GetMapping("/list/dept/{deptId}")
+    fun listByDept(@PathVariable deptId: Long): R<List<SysUserVo>> {
         return R.ok(userService.selectUserListByDept(deptId))
     }
 

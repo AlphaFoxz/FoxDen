@@ -33,8 +33,22 @@ class SysUserServiceImpl(
 ) : SysUserService {
 
     override fun selectPageUserList(user: SysUserBo, pageQuery: PageQuery): TableDataInfo<SysUserVo> {
-        // TODO: 使用 fetchPage 实现分页查询
-        return TableDataInfo.build()
+        val pager = sqlClient.createQuery(SysUser::class) {
+            where(table.delFlag eq "0")
+            user.userId?.let { where(table.id eq it) }
+            user.userName?.takeIf { it.isNotBlank() }?.let { where(table.userName like "%${it}%") }
+            user.nickName?.takeIf { it.isNotBlank() }?.let { where(table.nickName like "%${it}%") }
+            user.status?.takeIf { it.isNotBlank() }?.let { where(table.status eq it) }
+            user.phonenumber?.takeIf { it.isNotBlank() }?.let { where(table.phonenumber eq it) }
+            orderBy(table.id.asc())
+            select(table)
+        }.fetchPage(
+            pageQuery.getPageNumOrDefault(),
+            pageQuery.getPageSizeOrDefault()
+        )
+
+        val userVos = pager.rows.map { entityToVo(it) }
+        return TableDataInfo(userVos, pager.totalRowCount)
     }
 
     override fun selectUserExportList(user: SysUserBo): List<SysUserExportVo> {

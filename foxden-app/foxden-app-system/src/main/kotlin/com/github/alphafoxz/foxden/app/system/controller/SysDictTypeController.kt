@@ -4,6 +4,8 @@ import cn.dev33.satoken.annotation.SaCheckPermission
 import com.github.alphafoxz.foxden.common.core.domain.R
 import com.github.alphafoxz.foxden.common.excel.utils.ExcelUtil
 import com.github.alphafoxz.foxden.common.idempotent.annotation.RepeatSubmit
+import com.github.alphafoxz.foxden.common.jimmer.core.page.PageQuery
+import com.github.alphafoxz.foxden.common.jimmer.core.page.TableDataInfo
 import com.github.alphafoxz.foxden.common.log.annotation.Log
 import com.github.alphafoxz.foxden.common.log.enums.BusinessType
 import com.github.alphafoxz.foxden.common.web.core.BaseController
@@ -31,8 +33,8 @@ class SysDictTypeController(
      */
     @SaCheckPermission("system:dict:list")
     @GetMapping("/list")
-    fun list(dictType: SysDictTypeBo): R<List<SysDictTypeVo>> {
-        return R.ok(dictTypeService.selectDictTypeList(dictType))
+    fun list(dictType: SysDictTypeBo, pageQuery: PageQuery): TableDataInfo<SysDictTypeVo> {
+        return dictTypeService.selectPageDictTypeList(dictType, pageQuery)
     }
 
     /**
@@ -66,7 +68,8 @@ class SysDictTypeController(
         if (!dictTypeService.checkDictTypeUnique(dictType)) {
             return R.fail("新增字典'" + dictType.dictName + "'失败，字典类型已存在")
         }
-        return toAjax(dictTypeService.insertDictType(dictType))
+        dictTypeService.insertDictType(dictType)
+        return R.ok()
     }
 
     /**
@@ -80,7 +83,8 @@ class SysDictTypeController(
         if (!dictTypeService.checkDictTypeUnique(dictType)) {
             return R.fail("修改字典'" + dictType.dictName + "'失败，字典类型已存在")
         }
-        return toAjax(dictTypeService.updateDictType(dictType))
+        dictTypeService.updateDictType(dictType)
+        return R.ok()
     }
 
     /**

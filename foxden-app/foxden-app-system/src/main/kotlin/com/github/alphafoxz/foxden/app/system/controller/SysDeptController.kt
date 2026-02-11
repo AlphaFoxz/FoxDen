@@ -38,6 +38,25 @@ class SysDeptController(
     }
 
     /**
+     * 查询部门列表（排除节点）
+     *
+     * @param deptId 部门ID
+     */
+    @SaCheckPermission("system:dept:list")
+    @GetMapping("/list/exclude/{deptId}")
+    fun excludeChild(@PathVariable(required = false) deptId: Long?): R<List<SysDeptVo>> {
+        val depts = deptService.selectDeptList(SysDeptBo())
+        // 过滤掉指定部门及其子部门
+        val filteredDepts = depts.filter { dept ->
+            deptId == null || (
+                dept.deptId != deptId &&
+                !StringUtils.splitList(dept.ancestors).contains(deptId.toString())
+            )
+        }
+        return R.ok(filteredDepts)
+    }
+
+    /**
      * 根据部门编号获取详细信息
      */
     @SaCheckPermission("system:dept:query")

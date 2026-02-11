@@ -226,6 +226,7 @@ class SysDeptServiceImpl(
         return SysDeptVo(
             deptId = dept.id,
             parentId = dept.parentId,
+            ancestors = dept.ancestors,
             deptName = dept.deptName,
             deptCategory = dept.deptCategory,
             orderNum = dept.orderNum,

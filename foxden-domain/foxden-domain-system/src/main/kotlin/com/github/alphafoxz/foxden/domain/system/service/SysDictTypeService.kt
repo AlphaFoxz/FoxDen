@@ -1,6 +1,10 @@
 package com.github.alphafoxz.foxden.domain.system.service
 
+import com.github.alphafoxz.foxden.common.core.service.DictService
+import com.github.alphafoxz.foxden.common.jimmer.core.page.PageQuery
+import com.github.alphafoxz.foxden.common.jimmer.core.page.TableDataInfo
 import com.github.alphafoxz.foxden.domain.system.bo.SysDictTypeBo
+import com.github.alphafoxz.foxden.domain.system.vo.SysDictDataVo
 import com.github.alphafoxz.foxden.domain.system.vo.SysDictTypeVo
 
 /**
@@ -8,7 +12,16 @@ import com.github.alphafoxz.foxden.domain.system.vo.SysDictTypeVo
  *
  * @author Lion Li
  */
-interface SysDictTypeService {
+interface SysDictTypeService : DictService {
+
+    /**
+     * 分页查询字典类型列表
+     *
+     * @param dictType  查询条件
+     * @param pageQuery 分页参数
+     * @return 字典类型分页列表
+     */
+    fun selectPageDictTypeList(dictType: SysDictTypeBo, pageQuery: PageQuery): TableDataInfo<SysDictTypeVo>
 
     /**
      * 根据条件分页查询字典类型
@@ -31,7 +44,7 @@ interface SysDictTypeService {
      * @param dictType 字典类型
      * @return 字典数据集合
      */
-    fun selectDictDataByType(dictType: String): Map<String, List<SysDictTypeVo>>
+    fun selectDictDataByType(dictType: String): List<SysDictDataVo>?
 
     /**
      * 根据字典类型ID查询信息
@@ -57,11 +70,6 @@ interface SysDictTypeService {
     fun deleteDictTypeByIds(dictIds: Array<Long>)
 
     /**
-     * 清空缓存数据
-     */
-    fun clearDictCache()
-
-    /**
      * 重置字典缓存数据
      */
     fun resetDictCache()
@@ -70,17 +78,17 @@ interface SysDictTypeService {
      * 新增保存字典类型信息
      *
      * @param bo 字典类型信息
-     * @return 结果
+     * @return 字典数据集合
      */
-    fun insertDictType(bo: SysDictTypeBo): Int
+    fun insertDictType(bo: SysDictTypeBo): List<SysDictDataVo>
 
     /**
      * 修改保存字典类型信息
      *
      * @param bo 字典类型信息
-     * @return 结果
+     * @return 字典数据集合
      */
-    fun updateDictType(bo: SysDictTypeBo): Int
+    fun updateDictType(bo: SysDictTypeBo): List<SysDictDataVo>
 
     /**
      * 校验字典类型称是否唯一

@@ -1,23 +1,20 @@
 package com.github.alphafoxz.foxden.domain.system.service.impl
 
-import com.github.alphafoxz.foxden.domain.system.service.SysRoleService
-import com.github.alphafoxz.foxden.domain.system.entity.*
-import com.github.alphafoxz.foxden.domain.system.bo.SysRoleBo
-import com.github.alphafoxz.foxden.domain.system.vo.SysRoleVo
+import cn.dev33.satoken.stp.StpUtil
 import com.github.alphafoxz.foxden.common.core.constant.SystemConstants
 import com.github.alphafoxz.foxden.common.core.exception.ServiceException
-import com.github.alphafoxz.foxden.common.core.utils.SpringUtils
-import com.github.alphafoxz.foxden.common.security.utils.LoginHelper
 import com.github.alphafoxz.foxden.common.jimmer.core.page.PageQuery
 import com.github.alphafoxz.foxden.common.jimmer.core.page.TableDataInfo
-import cn.dev33.satoken.stp.StpUtil
-import com.github.alphafoxz.foxden.common.core.utils.StringUtils
-import org.babyfish.jimmer.sql.kt.ast.expression.*
+import com.github.alphafoxz.foxden.common.security.utils.LoginHelper
+import com.github.alphafoxz.foxden.domain.system.bo.SysRoleBo
+import com.github.alphafoxz.foxden.domain.system.entity.*
+import com.github.alphafoxz.foxden.domain.system.service.SysRoleService
+import com.github.alphafoxz.foxden.domain.system.vo.SysRoleVo
 import org.babyfish.jimmer.sql.kt.*
+import org.babyfish.jimmer.sql.kt.ast.expression.*
 import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
-import org.babyfish.jimmer.sql.ast.tuple.Tuple2
 
 /**
  * Role 业务层处理
@@ -29,8 +26,21 @@ class SysRoleServiceImpl(
 ) : SysRoleService {
 
     override fun selectPageRoleList(role: SysRoleBo, pageQuery: PageQuery): TableDataInfo<SysRoleVo> {
-        // TODO: 使用 fetchPage 实现分页查询
-        return TableDataInfo.build()
+        val pager = sqlClient.createQuery(SysRole::class) {
+            where(table.delFlag eq "0")
+            role.roleId?.let { where(table.id eq it) }
+            role.roleName?.takeIf { it.isNotBlank() }?.let { where(table.roleName like "%${it}%") }
+            role.roleKey?.takeIf { it.isNotBlank() }?.let { where(table.roleKey like "%${it}%") }
+            role.status?.takeIf { it.isNotBlank() }?.let { where(table.status eq it) }
+            orderBy(table.roleSort.asc())
+            select(table)
+        }.fetchPage(
+            pageQuery.getPageNumOrDefault(),
+            pageQuery.getPageSizeOrDefault()
+        )
+
+        val roleVos = pager.rows.map { entityToVo(it) }
+        return TableDataInfo(roleVos, pager.totalRowCount)
     }
 
     override fun selectRoleList(role: SysRoleBo): List<SysRoleVo> {

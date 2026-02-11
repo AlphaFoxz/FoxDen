@@ -20,6 +20,11 @@ data class SysDeptVo(
     var parentId: Long? = null,
 
     /**
+     * 祖级列表
+     */
+    var ancestors: String? = null,
+
+    /**
      * 部门名称
      */
     var deptName: String? = null,
