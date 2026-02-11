@@ -86,4 +86,16 @@ interface SysTenantService {
      * @param tenantIds 租户ID集合
      */
     fun syncTenantPackage(tenantIds: Array<String>)
+
+    /**
+     * 同步租户字典
+     * 将默认租户的字典同步到所有租户
+     */
+    fun syncTenantDict()
+
+    /**
+     * 同步租户配置
+     * 将默认租户的配置同步到所有租户
+     */
+    fun syncTenantConfig()
 }

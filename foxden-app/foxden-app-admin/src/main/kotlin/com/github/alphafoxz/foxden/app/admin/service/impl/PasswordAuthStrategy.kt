@@ -68,7 +68,7 @@ class PasswordAuthStrategy(
             validateCaptcha(tenantId, username, code, uuid)
         }
 
-        val loginUser = TenantHelper.dynamic(tenantId) {
+        val loginUser = TenantHelper.dynamicTenant(tenantId) {
             val user = loadUserByUsername(username)
 
             sysLoginService.checkLogin(LoginType.PASSWORD, tenantId, username) {

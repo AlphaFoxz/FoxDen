@@ -1,11 +1,13 @@
 package com.github.alphafoxz.foxden.domain.system.service.impl
 
+import com.github.alphafoxz.foxden.common.core.service.DeptService
 import com.github.alphafoxz.foxden.domain.system.service.SysDeptService
 import com.github.alphafoxz.foxden.domain.system.entity.*
 import com.github.alphafoxz.foxden.domain.system.bo.SysDeptBo
 import com.github.alphafoxz.foxden.domain.system.vo.SysDeptVo
 import com.github.alphafoxz.foxden.common.core.constant.SystemConstants
 import com.github.alphafoxz.foxden.common.core.exception.ServiceException
+import com.github.alphafoxz.foxden.common.core.utils.StringUtils
 import org.babyfish.jimmer.sql.kt.ast.expression.*
 import org.babyfish.jimmer.sql.kt.*
 import org.springframework.jdbc.core.JdbcTemplate
@@ -18,7 +20,7 @@ import org.springframework.stereotype.Service
 class SysDeptServiceImpl(
     private val sqlClient: KSqlClient,
     private val jdbcTemplate: JdbcTemplate
-) : SysDeptService {
+) : SysDeptService, DeptService {
 
     override fun selectDeptList(dept: SysDeptBo): List<SysDeptVo> {
         val depts = sqlClient.createQuery(SysDept::class) {
@@ -237,5 +239,30 @@ class SysDeptServiceImpl(
             delFlag = dept.delFlag.toString(),
             createTime = dept.createTime
         )
+    }
+
+    /**
+     * 根据部门ID字符串获取对应的部门名称列表（逗号分隔）
+     *
+     * @param deptIds 以逗号分隔的部门ID字符串
+     * @return 部门名称字符串（逗号分隔）
+     */
+    override fun selectDeptNameByIds(deptIds: String): String? {
+        if (deptIds.isBlank()) {
+            return null
+        }
+
+        val ids = deptIds.split(",")
+            .mapNotNull { it.toLongOrNull() }
+
+        val names = mutableListOf<String>()
+        for (id in ids) {
+            val vo = selectDeptById(id)
+            if (vo != null) {
+                names.add(vo.deptName ?: "")
+            }
+        }
+
+        return names.joinToString(",")
     }
 }

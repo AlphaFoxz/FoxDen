@@ -1,5 +1,7 @@
 package com.github.alphafoxz.foxden.domain.system.vo
 
+import com.alibaba.excel.annotation.ExcelIgnoreUnannotated
+import com.alibaba.excel.annotation.ExcelProperty
 import com.fasterxml.jackson.annotation.JsonInclude
 
 /**
@@ -8,30 +10,36 @@ import com.fasterxml.jackson.annotation.JsonInclude
  * @author Michelle.Chung
  */
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
+@ExcelIgnoreUnannotated
 data class SysRoleVo(
     /**
      * 角色ID
      */
+    @ExcelProperty(value = ["角色序号"])
     var roleId: Long? = null,
 
     /**
      * 角色名称
      */
+    @ExcelProperty(value = ["角色名称"])
     var roleName: String? = null,
 
     /**
      * 角色权限字符串
      */
+    @ExcelProperty(value = ["角色权限"])
     var roleKey: String? = null,
 
     /**
      * 显示顺序
      */
+    @ExcelProperty(value = ["角色排序"])
     var roleSort: Int? = null,
 
     /**
      * 数据范围（1：全部数据权限 2：自定数据权限 3：本部门数据权限 4：本部门及以下数据权限 5：仅本人数据权限）
      */
+    @ExcelProperty(value = ["数据范围"], converter = com.github.alphafoxz.foxden.common.excel.convert.ExcelDictConvert::class)
     var dataScope: String? = null,
 
     /**
@@ -52,17 +60,18 @@ data class SysRoleVo(
     /**
      * 备注
      */
+    @ExcelProperty(value = ["备注"])
     var remark: String? = null,
 
     /**
      * 菜单组
      */
-    var menuIds: Array<Long>? = null,
+    var menuIds: List<Long>? = null,
 
     /**
      * 部门组
      */
-    var deptIds: Array<Long>? = null,
+    var deptIds: List<Long>? = null,
 
     /**
      * 角色菜单列表
@@ -72,6 +81,7 @@ data class SysRoleVo(
     /**
      * 创建时间
      */
+    @ExcelProperty(value = ["创建时间"])
     var createTime: java.time.LocalDateTime? = null,
 
     /**

@@ -55,7 +55,7 @@ class UserActionListener(
         }
 
         val tenantId = loginParameter.getExtra(LoginHelper.TENANT_KEY) as? String
-        TenantHelper.dynamic(tenantId ?: "") {
+        TenantHelper.dynamicTenant(tenantId ?: "") {
             if (loginParameter.timeout == -1L) {
                 RedisUtils.setCacheObject(CacheConstants.ONLINE_TOKEN_KEY + tokenValue, dto)
             } else {
@@ -87,7 +87,7 @@ class UserActionListener(
      */
     override fun doLogout(loginType: String, loginId: Any, tokenValue: String) {
         val tenantId = Convert.toStr(StpUtil.getExtra(tokenValue, LoginHelper.TENANT_KEY))
-        TenantHelper.dynamic(tenantId ?: "") {
+        TenantHelper.dynamicTenant(tenantId ?: "") {
             RedisUtils.deleteObject(CacheConstants.ONLINE_TOKEN_KEY + tokenValue)
         }
         log.info("user doLogout, userId:{}, token:{}", loginId, tokenValue)
@@ -98,7 +98,7 @@ class UserActionListener(
      */
     override fun doKickout(loginType: String, loginId: Any, tokenValue: String) {
         val tenantId = Convert.toStr(StpUtil.getExtra(tokenValue, LoginHelper.TENANT_KEY))
-        TenantHelper.dynamic(tenantId ?: "") {
+        TenantHelper.dynamicTenant(tenantId ?: "") {
             RedisUtils.deleteObject(CacheConstants.ONLINE_TOKEN_KEY + tokenValue)
         }
         log.info("user doKickout, userId:{}, token:{}", loginId, tokenValue)
@@ -109,7 +109,7 @@ class UserActionListener(
      */
     override fun doReplaced(loginType: String, loginId: Any, tokenValue: String) {
         val tenantId = Convert.toStr(StpUtil.getExtra(tokenValue, LoginHelper.TENANT_KEY))
-        TenantHelper.dynamic(tenantId ?: "") {
+        TenantHelper.dynamicTenant(tenantId ?: "") {
             RedisUtils.deleteObject(CacheConstants.ONLINE_TOKEN_KEY + tokenValue)
         }
         log.info("user doReplaced, userId:{}, token:{}", loginId, tokenValue)

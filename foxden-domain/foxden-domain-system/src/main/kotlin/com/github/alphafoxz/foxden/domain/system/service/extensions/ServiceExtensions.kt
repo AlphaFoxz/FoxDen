@@ -82,7 +82,14 @@ fun com.github.alphafoxz.foxden.domain.system.service.SysUserService.updateByBo(
     val bo = com.github.alphafoxz.foxden.domain.system.bo.SysUserBo().apply {
         data["userId"]?.let { userId = it as Long }
         data["loginIp"]?.let { loginIp = it as String }
-        data["loginDate"]?.let { loginDate = it as java.util.Date }
+        data["loginDate"]?.let {
+            // Handle both Date and LocalDateTime
+            loginDate = when (it) {
+                is java.util.Date -> (it as java.util.Date).toInstant().atZone(java.time.ZoneId.systemDefault()).toLocalDateTime()
+                is java.time.LocalDateTime -> it as java.time.LocalDateTime
+                else -> null
+            }
+        }
     }
     return this.updateUserProfile(bo)
 }

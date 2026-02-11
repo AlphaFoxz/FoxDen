@@ -73,7 +73,7 @@ interface SysOssService : OssService {
      * @param ossIds 以逗号分隔的 ossId 字符串
      * @return 以逗号分隔的文件 URL 字符串
      */
-    fun selectUrlByIds(ossIds: String): String
+    override fun selectUrlByIds(ossIds: String): String
 
     /**
      * OssService 接口方法实现 - 根据ossIds获取DTO列表

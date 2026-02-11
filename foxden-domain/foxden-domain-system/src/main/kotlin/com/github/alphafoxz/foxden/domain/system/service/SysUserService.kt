@@ -1,5 +1,6 @@
 package com.github.alphafoxz.foxden.domain.system.service
 
+import com.github.alphafoxz.foxden.common.core.service.UserService
 import com.github.alphafoxz.foxden.common.jimmer.core.page.PageQuery
 import com.github.alphafoxz.foxden.common.jimmer.core.page.TableDataInfo
 import com.github.alphafoxz.foxden.domain.system.bo.SysUserBo
@@ -11,7 +12,7 @@ import com.github.alphafoxz.foxden.domain.system.vo.SysUserVo
  *
  * @author Lion Li
  */
-interface SysUserService {
+interface SysUserService : UserService {
 
     /**
      * 根据条件分页查询用户列表

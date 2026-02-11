@@ -34,6 +34,26 @@ data class SysTenantBo(
     var companyName: String? = null,
 
     /**
+     * 统一社会信用代码
+     */
+    var licenseNumber: String? = null,
+
+    /**
+     * 地址
+     */
+    var address: String? = null,
+
+    /**
+     * 域名
+     */
+    var domain: String? = null,
+
+    /**
+     * 企业简介
+     */
+    var intro: String? = null,
+
+    /**
      * 用户名（租户管理员账号）
      */
     var userName: String? = null,

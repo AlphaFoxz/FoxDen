@@ -475,4 +475,50 @@ class SysUserServiceImpl(
             }
         }
     }
+
+    /**
+     * 根据用户ID字符串获取对应的用户账号列表（逗号分隔）
+     *
+     * @param userIds 以逗号分隔的用户ID字符串
+     * @return 用户账号字符串（逗号分隔）
+     */
+    override fun selectUserNameByIds(userIds: String): String? {
+        if (userIds.isBlank()) {
+            return null
+        }
+
+        val ids = userIds.split(",").mapNotNull { it.toLongOrNull() }
+        val names = mutableListOf<String>()
+        for (id in ids) {
+            val vo = selectUserById(id)
+            if (vo != null) {
+                names.add(vo.userName ?: "")
+            }
+        }
+
+        return names.joinToString(",")
+    }
+
+    /**
+     * 根据用户ID字符串获取对应的用户昵称列表（逗号分隔）
+     *
+     * @param userIds 以逗号分隔的用户ID字符串
+     * @return 用户昵称字符串（逗号分隔）
+     */
+    override fun selectNicknameByIds(userIds: String): String? {
+        if (userIds.isBlank()) {
+            return null
+        }
+
+        val ids = userIds.split(",").mapNotNull { it.toLongOrNull() }
+        val names = mutableListOf<String>()
+        for (id in ids) {
+            val vo = selectUserById(id)
+            if (vo != null) {
+                names.add(vo.nickName ?: "")
+            }
+        }
+
+        return names.joinToString(",")
+    }
 }

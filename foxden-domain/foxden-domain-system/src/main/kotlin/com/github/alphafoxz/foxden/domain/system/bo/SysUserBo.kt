@@ -86,7 +86,7 @@ data class SysUserBo(
     /**
      * 最后登录时间
      */
-    var loginDate: java.util.Date? = null,
+    var loginDate: java.time.LocalDateTime? = null,
 
     /**
      * 备注
@@ -97,12 +97,12 @@ data class SysUserBo(
      * 角色组
      */
     @get:Size(min = 1, message = "用户角色不能为空")
-    var roleIds: Array<Long>? = null,
+    var roleIds: List<Long>? = null,
 
     /**
      * 岗位组
      */
-    var postIds: Array<Long>? = null,
+    var postIds: List<Long>? = null,
 
     /**
      * 创建者

@@ -1,6 +1,12 @@
 package com.github.alphafoxz.foxden.domain.system.vo
 
+import com.alibaba.excel.annotation.ExcelIgnoreUnannotated
+import com.alibaba.excel.annotation.ExcelProperty
 import com.fasterxml.jackson.annotation.JsonInclude
+import com.github.alphafoxz.foxden.common.sensitive.annotation.Sensitive
+import com.github.alphafoxz.foxden.common.sensitive.core.SensitiveStrategy
+import com.github.alphafoxz.foxden.common.translation.annotation.Translation
+import com.github.alphafoxz.foxden.common.translation.constant.TransConstant
 
 /**
  * 用户信息视图对象 sys_user
@@ -8,6 +14,7 @@ import com.fasterxml.jackson.annotation.JsonInclude
  * @author Michelle.Chung
  */
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
+@ExcelIgnoreUnannotated
 data class SysUserVo(
     /**
      * 用户ID
@@ -47,11 +54,13 @@ data class SysUserVo(
     /**
      * 用户邮箱
      */
+    @Sensitive(strategy = SensitiveStrategy.EMAIL, perms = ["system:user:edit"])
     var email: String? = null,
 
     /**
      * 手机号码
      */
+    @Sensitive(strategy = SensitiveStrategy.PHONE, perms = ["system:user:edit"])
     var phonenumber: String? = null,
 
     /**
@@ -108,17 +117,21 @@ data class SysUserVo(
 /**
  * 用户导出视图对象
  */
-@JsonInclude(JsonInclude.Include.NON_EMPTY)
+@ExcelIgnoreUnannotated
 data class SysUserExportVo(
     var userId: Long? = null,
     var deptId: Long? = null,
+    @ExcelProperty(value = ["用户账号"])
     var userName: String? = null,
+    @ExcelProperty(value = ["用户昵称"])
     var nickName: String? = null,
     var userType: String? = null,
     var email: String? = null,
     var phonenumber: String? = null,
     var sex: String? = null,
     var status: String? = null,
+    @ExcelProperty(value = ["部门名称"])
     var deptName: String? = null,
+    @ExcelProperty(value = ["负责人"])
     var leader: String? = null
 )

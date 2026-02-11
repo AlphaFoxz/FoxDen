@@ -48,19 +48,18 @@ class EmailAuthStrategy(
         val email = loginBody.email ?: ""
         val emailCode = loginBody.emailCode ?: ""
 
-        val loginUser = TenantHelper.dynamic(tenantId) {
-            val user = loadUserByEmail(email)
-            sysLoginService.checkLogin(LoginType.EMAIL, tenantId, user.userName ?: "") {
-                !validateEmailCode(tenantId, email, emailCode)
-            }
-            sysLoginService.buildLoginUser(user)
+        val user = loadUserByEmail(email)
+
+        sysLoginService.checkLogin(LoginType.EMAIL, tenantId, user.userName ?: "") {
+            !validateEmailCode(tenantId, email, emailCode)
         }
+
+        val loginUser = sysLoginService.buildLoginUser(user)
 
         loginUser.clientKey = client.clientKey
         loginUser.deviceType = client.deviceType
 
         val model = SaLoginParameter()
-        model.deviceType = client.deviceType
         model.setTimeout(client.timeout ?: -1L)
         model.setActiveTimeout(client.activeTimeout ?: -1L)
         model.setExtra(LoginHelper.CLIENT_KEY, client.clientId)

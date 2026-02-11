@@ -1,5 +1,7 @@
 package com.github.alphafoxz.foxden.domain.system.vo
 
+import com.alibaba.excel.annotation.ExcelIgnoreUnannotated
+import com.alibaba.excel.annotation.ExcelProperty
 import com.fasterxml.jackson.annotation.JsonInclude
 
 /**
@@ -8,10 +10,12 @@ import com.fasterxml.jackson.annotation.JsonInclude
  * @author Michelle.Chung
  */
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
+@ExcelIgnoreUnannotated
 data class SysDeptVo(
     /**
      * 部门id
      */
+    @ExcelProperty(value = ["部门id"])
     var deptId: Long? = null,
 
     /**
@@ -27,11 +31,13 @@ data class SysDeptVo(
     /**
      * 部门名称
      */
+    @ExcelProperty(value = ["部门名称"])
     var deptName: String? = null,
 
     /**
      * 部门类别编码
      */
+    @ExcelProperty(value = ["部门类别编码"])
     var deptCategory: String? = null,
 
     /**
@@ -47,16 +53,19 @@ data class SysDeptVo(
     /**
      * 负责人姓名
      */
+    @ExcelProperty(value = ["负责人"])
     var leaderName: String? = null,
 
     /**
      * 联系电话
      */
+    @ExcelProperty(value = ["联系电话"])
     var phone: String? = null,
 
     /**
      * 邮箱
      */
+    @ExcelProperty(value = ["邮箱"])
     var email: String? = null,
 
     /**
@@ -82,5 +91,6 @@ data class SysDeptVo(
     /**
      * 创建时间
      */
+    @ExcelProperty(value = ["创建时间"])
     var createTime: java.time.LocalDateTime? = null
 )

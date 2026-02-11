@@ -23,6 +23,8 @@ include("foxden-common:foxden-common-social")
 include("foxden-common:foxden-common-sse")
 include("foxden-common:foxden-common-encrypt")
 include("foxden-common:foxden-common-job")
+include("foxden-common:foxden-common-sensitive")
+include("foxden-common:foxden-common-translation")
 
 // Domain modules
 include("foxden-domain")

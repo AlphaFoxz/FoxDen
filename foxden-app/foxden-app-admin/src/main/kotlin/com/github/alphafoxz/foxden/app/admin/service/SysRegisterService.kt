@@ -56,9 +56,7 @@ class SysRegisterService(
             userType = userType
         )
 
-        val exist = TenantHelper.dynamic(tenantId) {
-            !userService.checkUserNameUnique(SysUserBo(userName = username))
-        }
+        val exist = TenantHelper.isEnable() && userService.checkUserNameUnique(SysUserBo(userName = username))
 
         if (exist) {
             throw UserException("user.register.save.error", username)

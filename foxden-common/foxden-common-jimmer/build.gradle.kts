@@ -7,6 +7,7 @@ dependencies {
     api(platform(project(":foxden-bom")))
     api(project(":foxden-common:foxden-common-core"))
     api(project(":foxden-common:foxden-common-web"))
+    api(project(":foxden-common:foxden-common-security"))
     api("org.babyfish.jimmer:jimmer-spring-boot-starter")
     api("org.babyfish.jimmer:jimmer-sql-kotlin")
     ksp("org.babyfish.jimmer:jimmer-ksp:${property("version.jimmer")}")

@@ -159,8 +159,8 @@ class SysRoleServiceImpl(
         )
 
         val vo = entityToVo(role, withMenus = false, withDepts = false)
-        vo.menuIds = menuIds.toTypedArray()
-        vo.deptIds = deptIds.toTypedArray()
+        vo.menuIds = menuIds.toList()
+        vo.deptIds = deptIds.toList()
         return vo
     }
 

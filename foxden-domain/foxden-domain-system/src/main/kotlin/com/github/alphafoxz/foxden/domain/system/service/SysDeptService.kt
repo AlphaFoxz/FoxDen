@@ -1,5 +1,6 @@
 package com.github.alphafoxz.foxden.domain.system.service
 
+import com.github.alphafoxz.foxden.common.core.service.DeptService
 import com.github.alphafoxz.foxden.domain.system.bo.SysDeptBo
 import com.github.alphafoxz.foxden.domain.system.vo.SysDeptVo
 
@@ -8,7 +9,7 @@ import com.github.alphafoxz.foxden.domain.system.vo.SysDeptVo
  *
  * @author Lion Li
  */
-interface SysDeptService {
+interface SysDeptService : DeptService {
 
     /**
      * 查询部门列表

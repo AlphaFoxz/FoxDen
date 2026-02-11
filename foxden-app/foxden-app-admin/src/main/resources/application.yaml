@@ -6,6 +6,19 @@ foxden:
   copyrightYear: 2025
   demoEnabled: true
 
+# 租户配置
+tenant:
+  # 是否启用多租户功能
+  enable: true
+  # 默认租户ID
+  default-tenant-id: '000000'
+  # 超级管理员角色key
+  super-admin-role-key: 'superadmin'
+  # 租户管理员角色key
+  tenant-admin-role-key: 'admin'
+  # 租户管理员角色名称
+  tenant-admin-role-name: '管理员'
+
 # 验证码配置
 captcha:
   # 是否启用验证码校验（开发环境可关闭）

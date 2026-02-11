@@ -1,10 +1,14 @@
 package com.github.alphafoxz.foxden.common.jimmer.helper
 
-import com.github.alphafoxz.foxden.common.core.utils.StringUtils
 import com.github.alphafoxz.foxden.common.core.constant.TenantConstants
+import com.github.alphafoxz.foxden.common.core.config.TenantProperties
+import com.github.alphafoxz.foxden.common.core.utils.SpringUtils
+import com.github.alphafoxz.foxden.common.core.utils.StringUtils
+import com.github.alphafoxz.foxden.common.security.utils.LoginHelper
 import com.github.alphafoxz.foxden.common.web.utils.ServletUtils
 import jakarta.servlet.http.HttpServletRequest
 import org.slf4j.LoggerFactory
+import java.util.function.Supplier
 
 /**
  * 租户助手类
@@ -15,18 +19,27 @@ object TenantHelper {
 
     private val log = LoggerFactory.getLogger(TenantHelper::class.java)
 
+    /** 动态租户上下文（线程本地） */
+    private val DYNAMIC_TENANT_CONTEXT = ThreadLocal<String>()
+
     /**
-     * 获取租户ID
+     * 获取租户ID（优先使用动态租户）
      *
      * @return 租户ID
      */
     @JvmStatic
     fun getTenantId(): String {
-        return getTenantId(ServletUtils.getRequest())
+        // 优先获取动态设置的租户
+        val dynamicTenant = DYNAMIC_TENANT_CONTEXT.get()
+        if (StringUtils.isNotBlank(dynamicTenant)) {
+            return dynamicTenant
+        }
+        // 从登录信息获取租户
+        return LoginHelper.getTenantId() ?: TenantConstants.DEFAULT_TENANT_ID
     }
 
     /**
-     * 获取租户ID
+     * 获取租户ID（从请求中）
      *
      * @param request 请求对象
      * @return 租户ID
@@ -41,6 +54,16 @@ object TenantHelper {
     }
 
     /**
+     * 设置动态租户
+     *
+     * @param tenantId 租户ID
+     */
+    @JvmStatic
+    private fun setDynamic(tenantId: String) {
+        DYNAMIC_TENANT_CONTEXT.set(tenantId)
+    }
+
+    /**
      * 动态切换租户
      *
      * @param tenantId 租户ID
@@ -48,14 +71,11 @@ object TenantHelper {
      */
     @JvmStatic
     fun dynamicTenant(tenantId: String, runnable: Runnable) {
-        val oldTenantId = getTenantId()
+        setDynamic(tenantId)
         try {
-            // TODO: 实现租户上下文设置
-            // 这里可以通过ThreadLocal或其他方式存储租户上下文
             runnable.run()
         } finally {
-            // 恢复原租户
-            // TODO: 实现租户上下文恢复
+            clearDynamic()
         }
     }
 
@@ -67,55 +87,44 @@ object TenantHelper {
      * @return 执行结果
      */
     @JvmStatic
-    fun <T> dynamicTenant(tenantId: String, supplier: java.util.function.Supplier<T>): T {
-        val oldTenantId = getTenantId()
+    fun <T> dynamicTenant(tenantId: String, supplier: Supplier<T>): T {
+        setDynamic(tenantId)
         try {
-            // TODO: 实现租户上下文设置
             return supplier.get()
         } finally {
-            // 恢复原租户
-            // TODO: 实现租户上下文恢复
+            clearDynamic()
         }
     }
 
     /**
-     * 动态切换租户（使用函数）
-     *
-     * @param tenantId 租户ID
-     * @param block 执行的代码块
-     * @return 执行结果
+     * 清除动态租户
      */
-    inline fun <T> dynamic(tenantId: String, block: () -> T): T {
-        val oldTenantId = getTenantId()
-        try {
-            // TODO: 实现租户上下文设置
-            return block()
-        } finally {
-            // 恢复原租户
-            // TODO: 实现租户上下文恢复
-        }
+    @JvmStatic
+    fun clearDynamic() {
+        DYNAMIC_TENANT_CONTEXT.remove()
     }
 
     /**
      * 是否为系统管理员
+     * 系统管理员指 userId == 1 的用户
      *
      * @return 是否为系统管理员
      */
     @JvmStatic
     fun isSystemAdmin(): Boolean {
-        // TODO: 实现系统管理员判断
-        return false
+        val userId = LoginHelper.getUserId() ?: return false
+        return TenantConstants.SUPER_ADMIN_ID == userId
     }
 
     /**
      * 是否为超级管理员
+     * 超级管理员拥有 superadmin 角色
      *
      * @return 是否为超级管理员
      */
     @JvmStatic
     fun isSuperAdmin(): Boolean {
-        // TODO: 实现超级管理员判断
-        return false
+        return LoginHelper.isSuperAdmin()
     }
 
     /**
@@ -125,24 +134,106 @@ object TenantHelper {
      */
     @JvmStatic
     fun isEnable(): Boolean {
-        // TODO: 从配置中读取租户开关，暂时返回true
-        return true
+        // 从配置读取租户开关
+        return SpringUtils.getBean(TenantProperties::class.java)?.enable ?: true
     }
 
     /**
-     * 动态租户 - 暂时返回默认值
+     * 获取租户配置
+     *
+     * @return 租户配置
      */
     @JvmStatic
-    fun dynamicTenant(block: () -> Unit) {
-        // TODO: 实现动态租户切换
-        block()
+    fun getTenantProperties(): TenantProperties? {
+        return SpringUtils.getBean(TenantProperties::class.java)
     }
 
     /**
-     * 清除动态租户
+     * 忽略租户过滤执行代码
+     * 用于需要跨租户操作的场景
+     *
+     * @param handle 执行的代码
      */
     @JvmStatic
-    fun clearDynamic() {
-        // TODO: 实现清除动态租户
+    fun ignore(handle: Runnable) {
+        // 清除动态租户上下文，暂时恢复到默认租户
+        val oldTenant = DYNAMIC_TENANT_CONTEXT.get()
+        try {
+            DYNAMIC_TENANT_CONTEXT.remove()
+            handle.run()
+        } finally {
+            if (StringUtils.isNotBlank(oldTenant)) {
+                DYNAMIC_TENANT_CONTEXT.set(oldTenant)
+            }
+        }
+    }
+
+    /**
+     * 忽略租户过滤执行代码（带返回值）
+     * 用于需要跨租户操作的场景
+     *
+     * @param handle 执行的代码
+     * @return 执行结果
+     */
+    @JvmStatic
+    fun <T> ignore(handle: Supplier<T>): T {
+        // 清除动态租户上下文，暂时恢复到默认租户
+        val oldTenant = DYNAMIC_TENANT_CONTEXT.get()
+        try {
+            DYNAMIC_TENANT_CONTEXT.remove()
+            return handle.get()
+        } finally {
+            if (StringUtils.isNotBlank(oldTenant)) {
+                DYNAMIC_TENANT_CONTEXT.set(oldTenant)
+            }
+        }
+    }
+
+    /**
+     * 忽略租户过滤执行代码（Kotlin 函数）
+     * 用于需要跨租户操作的场景
+     *
+     * @param block 执行的代码块
+     * @return 执行结果
+     */
+    @JvmStatic
+    fun <T> ignore(block: () -> T): T {
+        val oldTenant = DYNAMIC_TENANT_CONTEXT.get()
+        try {
+            DYNAMIC_TENANT_CONTEXT.remove()
+            return block()
+        } finally {
+            if (StringUtils.isNotBlank(oldTenant)) {
+                DYNAMIC_TENANT_CONTEXT.set(oldTenant)
+            }
+        }
+    }
+
+    /**
+     * 动态切换租户（Kotlin 函数）
+     *
+     * @param tenantId 租户ID
+     * @param block 执行的代码块
+     * @return 执行结果
+     */
+    @JvmStatic
+    fun <T> dynamicTenant(tenantId: String, block: () -> T): T {
+        setDynamic(tenantId)
+        try {
+            return block()
+        } finally {
+            clearDynamic()
+        }
+    }
+
+    /**
+     * 校验是否为默认租户
+     *
+     * @param tenantId 租户ID
+     * @return 是否为默认租户
+     */
+    @JvmStatic
+    fun isDefaultTenant(tenantId: String?): Boolean {
+        return TenantConstants.DEFAULT_TENANT_ID == tenantId
     }
 }
