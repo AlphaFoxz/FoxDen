@@ -52,20 +52,17 @@ class SysNoticeServiceImpl(
 
     override fun updateNotice(bo: SysNoticeBo): Int {
         val noticeIdVal = bo.noticeId ?: return 0
-        val existing = sqlClient.findById(SysNotice::class, noticeIdVal)
-            ?: throw ServiceException("公告信息不存在")
 
-        val updated = com.github.alphafoxz.foxden.domain.system.entity.SysNoticeDraft.`$`.produce(existing) {
-            bo.noticeTitle?.let { noticeTitle = it }
-            bo.noticeType?.let { noticeType = it }
-            bo.noticeContent?.let { noticeContent = it }
-            bo.status?.let { status = it }
-            bo.remark?.let { remark = it }
-            updateTime = java.time.LocalDateTime.now()
-        }
-
-        val result = sqlClient.save(updated)
-        return if (result.isModified) 1 else 0
+        val result = sqlClient.createUpdate(SysNotice::class) {
+            where(table.id eq noticeIdVal)
+            bo.noticeTitle?.let { set(table.noticeTitle, it) }
+            bo.noticeType?.let { set(table.noticeType, it) }
+            bo.noticeContent?.let { set(table.noticeContent, it) }
+            bo.status?.let { set(table.status, it) }
+            bo.remark?.let { set(table.remark, it) }
+            set(table.updateTime, java.time.LocalDateTime.now())
+        }.execute()
+        return result
     }
 
     override fun deleteNoticeById(noticeId: Long) {

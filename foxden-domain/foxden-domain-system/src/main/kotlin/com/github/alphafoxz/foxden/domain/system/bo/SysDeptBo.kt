@@ -24,6 +24,11 @@ data class SysDeptBo(
     var parentId: Long? = null,
 
     /**
+     * 所属部门ID
+     */
+    var belongDeptId: Long? = null,
+
+    /**
      * 部门名称
      */
     @get:NotBlank(message = "部门名称不能为空", groups = [AddGroup::class, EditGroup::class])

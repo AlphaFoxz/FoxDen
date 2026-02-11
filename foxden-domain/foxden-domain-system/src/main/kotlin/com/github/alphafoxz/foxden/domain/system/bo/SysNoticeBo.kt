@@ -1,5 +1,6 @@
 package com.github.alphafoxz.foxden.domain.system.bo
 
+import com.github.alphafoxz.foxden.common.core.xss.Xss
 import jakarta.validation.constraints.NotBlank
 import jakarta.validation.constraints.Size
 
@@ -17,6 +18,7 @@ data class SysNoticeBo(
     /**
      * 公告标题
      */
+    @field:Xss(message = "公告标题不能包含脚本字符")
     @get:NotBlank(message = "公告标题不能为空")
     @get:Size(min = 0, max = 50, message = "公告标题长度不能超过{max}个字符")
     var noticeTitle: String? = null,
@@ -40,6 +42,11 @@ data class SysNoticeBo(
      * 备注
      */
     var remark: String? = null,
+
+    /**
+     * 创建人名称
+     */
+    var createByName: String? = null,
 
     /**
      * 创建者

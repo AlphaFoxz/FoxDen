@@ -4,8 +4,10 @@ import cn.dev33.satoken.annotation.SaCheckPermission
 import cn.dev33.satoken.annotation.SaCheckRole
 import cn.dev33.satoken.annotation.SaMode
 import cn.hutool.core.lang.tree.Tree
+import com.github.alphafoxz.foxden.common.core.constant.SystemConstants
 import com.github.alphafoxz.foxden.common.core.constant.TenantConstants
 import com.github.alphafoxz.foxden.common.core.domain.R
+import com.github.alphafoxz.foxden.common.core.utils.StringUtils
 import com.github.alphafoxz.foxden.common.idempotent.annotation.RepeatSubmit
 import com.github.alphafoxz.foxden.common.log.annotation.Log
 import com.github.alphafoxz.foxden.common.log.enums.BusinessType
@@ -100,10 +102,7 @@ class SysMenuController(
     /**
      * 新增菜单
      */
-    @SaCheckRole(
-        value = [TenantConstants.SUPER_ADMIN_ROLE_KEY, TenantConstants.TENANT_ADMIN_ROLE_KEY],
-        mode = SaMode.OR
-    )
+    @SaCheckRole(TenantConstants.SUPER_ADMIN_ROLE_KEY)
     @SaCheckPermission("system:menu:add")
     @Log(title = "菜单管理", businessType = BusinessType.INSERT)
     @RepeatSubmit
@@ -111,8 +110,9 @@ class SysMenuController(
     fun add(@Validated @RequestBody menu: SysMenuBo): R<Void> {
         if (!menuService.checkMenuNameUnique(menu)) {
             return R.fail("新增菜单'" + menu.menuName + "'失败，菜单名称已存在")
-        }
-        if (!menuService.checkRouteConfigUnique(menu)) {
+        } else if (SystemConstants.YES_FRAME == menu.isFrame && !StringUtils.ishttp(menu.path)) {
+            return R.fail("新增菜单'" + menu.menuName + "'失败，地址必须以http(s)://开头")
+        } else if (!menuService.checkRouteConfigUnique(menu)) {
             return R.fail("新增菜单'" + menu.menuName + "'失败，路由名称或地址已存在")
         }
         return toAjax(menuService.insertMenu(menu))
@@ -121,10 +121,7 @@ class SysMenuController(
     /**
      * 修改菜单
      */
-    @SaCheckRole(
-        value = [TenantConstants.SUPER_ADMIN_ROLE_KEY, TenantConstants.TENANT_ADMIN_ROLE_KEY],
-        mode = SaMode.OR
-    )
+    @SaCheckRole(TenantConstants.SUPER_ADMIN_ROLE_KEY)
     @SaCheckPermission("system:menu:edit")
     @Log(title = "菜单管理", businessType = BusinessType.UPDATE)
     @RepeatSubmit
@@ -132,8 +129,11 @@ class SysMenuController(
     fun edit(@Validated @RequestBody menu: SysMenuBo): R<Void> {
         if (!menuService.checkMenuNameUnique(menu)) {
             return R.fail("修改菜单'" + menu.menuName + "'失败，菜单名称已存在")
-        }
-        if (!menuService.checkRouteConfigUnique(menu)) {
+        } else if (SystemConstants.YES_FRAME == menu.isFrame && !StringUtils.ishttp(menu.path)) {
+            return R.fail("修改菜单'" + menu.menuName + "'失败，地址必须以http(s)://开头")
+        } else if (menu.menuId == menu.parentId) {
+            return R.fail("修改菜单'" + menu.menuName + "'失败，上级菜单不能选择自己")
+        } else if (!menuService.checkRouteConfigUnique(menu)) {
             return R.fail("修改菜单'" + menu.menuName + "'失败，路由名称或地址已存在")
         }
         return toAjax(menuService.updateMenu(menu))
@@ -142,10 +142,7 @@ class SysMenuController(
     /**
      * 删除菜单
      */
-    @SaCheckRole(
-        value = [TenantConstants.SUPER_ADMIN_ROLE_KEY, TenantConstants.TENANT_ADMIN_ROLE_KEY],
-        mode = SaMode.OR
-    )
+    @SaCheckRole(TenantConstants.SUPER_ADMIN_ROLE_KEY)
     @SaCheckPermission("system:menu:remove")
     @Log(title = "菜单管理", businessType = BusinessType.DELETE)
     @DeleteMapping("/{menuId}")
@@ -162,6 +159,8 @@ class SysMenuController(
     /**
      * 获取租户套餐菜单树下拉列表
      */
+    @SaCheckRole(TenantConstants.SUPER_ADMIN_ROLE_KEY)
+    @SaCheckPermission("system:menu:query")
     @GetMapping("/tenantPackageMenuTreeselect/{packageId}")
     fun tenantPackageMenuTreeselect(@PathVariable packageId: Long): R<MenuTreeSelectVo> {
         val userId = LoginHelper.getUserId() ?: 0L
@@ -183,6 +182,7 @@ class SysMenuController(
     /**
      * 批量级联删除菜单
      */
+    @SaCheckRole(TenantConstants.SUPER_ADMIN_ROLE_KEY)
     @SaCheckPermission("system:menu:remove")
     @Log(title = "菜单管理", businessType = BusinessType.DELETE)
     @DeleteMapping("/cascade/{menuIds}")

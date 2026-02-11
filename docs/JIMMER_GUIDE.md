@@ -415,7 +415,7 @@ fun selectPageUserList(bo: SysUserBo, pageQuery: PageQuery): TableDataInfo<SysUs
 
         select(table)
     }.fetchPage(
-        pageQuery.getPageNumOrDefault(),
+        pageQuery.getPageNumOrDefault() - 1,  // Jimmer fetchPage expects 0-based index
         pageQuery.getPageSizeOrDefault()
     )
 

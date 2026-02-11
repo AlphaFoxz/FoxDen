@@ -157,19 +157,17 @@ class SysDictTypeServiceImpl(
             CacheUtils.evict(CacheNames.SYS_DICT_TYPE, oldDict.dictType)
         }
 
-        val updated = com.github.alphafoxz.foxden.domain.system.entity.SysDictTypeDraft.`$`.produce(oldDict) {
-            bo.dictName?.let { dictName = it }
-            bo.dictType?.let { dictType = it }
-            bo.remark?.let { remark = it }
-            updateTime = java.time.LocalDateTime.now()
-        }
+        // Update SysDictType using createUpdate
+        sqlClient.createUpdate(SysDictType::class) {
+            where(table.id eq dictIdVal)
+            bo.dictName?.let { set(table.dictName, it) }
+            bo.dictType?.let { set(table.dictType, it) }
+            bo.remark?.let { set(table.remark, it) }
+            set(table.updateTime, java.time.LocalDateTime.now())
+        }.execute()
 
-        val result = sqlClient.save(updated)
-        if (result.isModified) {
-            // 返回更新后的字典数据列表
-            return selectDictDataByType(bo.dictType ?: oldDict.dictType) ?: emptyList()
-        }
-        throw ServiceException("操作失败")
+        // 返回更新后的字典数据列表
+        return selectDictDataByType(bo.dictType ?: oldDict.dictType) ?: emptyList()
     }
 
     override fun checkDictTypeUnique(dictType: SysDictTypeBo): Boolean {

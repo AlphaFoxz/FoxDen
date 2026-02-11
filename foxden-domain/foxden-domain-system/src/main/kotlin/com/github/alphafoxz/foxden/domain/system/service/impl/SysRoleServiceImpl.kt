@@ -35,7 +35,7 @@ class SysRoleServiceImpl(
             orderBy(table.roleSort.asc())
             select(table)
         }.fetchPage(
-            pageQuery.getPageNumOrDefault(),
+            pageQuery.getPageNumOrDefault() - 1,  // Jimmer fetchPage expects 0-based index
             pageQuery.getPageSizeOrDefault()
         )
 
@@ -234,32 +234,30 @@ class SysRoleServiceImpl(
         val existing = sqlClient.findById(SysRole::class, roleIdVal)
             ?: throw ServiceException("角色不存在")
 
-        val updated = com.github.alphafoxz.foxden.domain.system.entity.SysRoleDraft.`$`.produce(existing) {
-            bo.roleName?.let { roleName = it }
-            bo.roleKey?.let { roleKey = it }
-            bo.roleSort?.let { roleSort = it }
-            bo.dataScope?.let { dataScope = it }
-            bo.menuCheckStrictly?.let { menuCheckStrictly = it }
-            bo.deptCheckStrictly?.let { deptCheckStrictly = it }
-            bo.status?.let { status = it }
-            bo.remark?.let { remark = it }
-            updateTime = java.time.LocalDateTime.now()
-        }
+        // Use createUpdate instead of save to avoid upsert behavior
+        // and get accurate affected row count
+        val rows = sqlClient.createUpdate(SysRole::class) {
+            where(table.id eq roleIdVal)
+            bo.roleName?.let { set(table.roleName, it) }
+            bo.roleKey?.let { set(table.roleKey, it) }
+            bo.roleSort?.let { set(table.roleSort, it) }
+            bo.dataScope?.let { set(table.dataScope, it) }
+            bo.menuCheckStrictly?.let { set(table.menuCheckStrictly, it) }
+            bo.deptCheckStrictly?.let { set(table.deptCheckStrictly, it) }
+            bo.status?.let { set(table.status, it) }
+            bo.remark?.let { set(table.remark, it) }
+            set(table.updateTime, java.time.LocalDateTime.now())
+        }.execute()
 
-        val result = sqlClient.save(updated)
-        return if (result.isModified) 1 else 0
+        return rows
     }
 
     override fun updateRoleStatus(roleId: Long, status: String): Int {
-        val existing = sqlClient.findById(SysRole::class, roleId)
-            ?: throw ServiceException("角色不存在")
-
-        val updated = com.github.alphafoxz.foxden.domain.system.entity.SysRoleDraft.`$`.produce(existing) {
-            this.status = status
-        }
-
-        val result = sqlClient.save(updated)
-        return if (result.isModified) 1 else 0
+        val result = sqlClient.createUpdate(SysRole::class) {
+            where(table.id eq roleId)
+            set(table.status, status)
+        }.execute()
+        return result
     }
 
     override fun deleteRoleById(roleId: Long): Int {

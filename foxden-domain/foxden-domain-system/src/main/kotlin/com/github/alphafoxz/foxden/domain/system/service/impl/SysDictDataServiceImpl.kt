@@ -78,23 +78,20 @@ class SysDictDataServiceImpl(
 
     override fun updateDictData(bo: SysDictDataBo): Int {
         val dictCodeVal = bo.dictCode ?: return 0
-        val existing = sqlClient.findById(SysDictData::class, dictCodeVal)
-            ?: throw ServiceException("字典数据不存在")
 
-        val updated = com.github.alphafoxz.foxden.domain.system.entity.SysDictDataDraft.`$`.produce(existing) {
-            bo.dictSort?.let { dictSort = it }
-            bo.dictLabel?.let { dictLabel = it }
-            bo.dictValue?.let { dictValue = it }
-            bo.dictType?.let { dictType = it }
-            bo.cssClass?.let { cssClass = it }
-            bo.listClass?.let { listClass = it }
-            bo.isDefault?.let { defaultFlag = it }
-            bo.remark?.let { remark = it }
-            updateTime = java.time.LocalDateTime.now()
-        }
-
-        val result = sqlClient.save(updated)
-        return if (result.isModified) 1 else 0
+        val result = sqlClient.createUpdate(SysDictData::class) {
+            where(table.id eq dictCodeVal)
+            bo.dictSort?.let { set(table.dictSort, it) }
+            bo.dictLabel?.let { set(table.dictLabel, it) }
+            bo.dictValue?.let { set(table.dictValue, it) }
+            bo.dictType?.let { set(table.dictType, it) }
+            bo.cssClass?.let { set(table.cssClass, it) }
+            bo.listClass?.let { set(table.listClass, it) }
+            bo.isDefault?.let { set(table.defaultFlag, it) }
+            bo.remark?.let { set(table.remark, it) }
+            set(table.updateTime, java.time.LocalDateTime.now())
+        }.execute()
+        return result
     }
 
     override fun checkDictDataUnique(dictData: SysDictDataBo): Boolean {

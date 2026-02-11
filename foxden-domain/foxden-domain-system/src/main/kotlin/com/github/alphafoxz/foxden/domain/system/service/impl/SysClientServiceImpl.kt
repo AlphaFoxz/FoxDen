@@ -66,17 +66,19 @@ class SysClientServiceImpl(
         val existing = sqlClient.findById(SysClient::class, idVal)
             ?: throw ServiceException("客户端信息不存在")
 
-        val updated = com.github.alphafoxz.foxden.domain.system.entity.SysClientDraft.`$`.produce(existing) {
-            bo.clientId?.let { clientId = it }
-            bo.clientKey?.let { clientKey = it }
-            bo.grantType?.let { grantType = it }
-            bo.clientType?.let { deviceType = it } // Map clientType to deviceType
-            bo.status?.let { status = it }
-            updateTime = java.time.LocalDateTime.now()
-        }
+        // Use createUpdate instead of save to avoid upsert behavior
+        // and get accurate affected row count
+        val rows = sqlClient.createUpdate(SysClient::class) {
+            where(table.id eq idVal)
+            bo.clientId?.let { set(table.clientId, it) }
+            bo.clientKey?.let { set(table.clientKey, it) }
+            bo.grantType?.let { set(table.grantType, it) }
+            bo.clientType?.let { set(table.deviceType, it) } // Map clientType to deviceType
+            bo.status?.let { set(table.status, it) }
+            set(table.updateTime, java.time.LocalDateTime.now())
+        }.execute()
 
-        val result = sqlClient.save(updated)
-        return if (result.isModified) 1 else 0
+        return rows
     }
 
     override fun checkClientIdUnique(bo: SysClientBo): Boolean {

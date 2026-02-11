@@ -281,44 +281,57 @@ class SysMenuServiceImpl(
         val existing = sqlClient.findById(SysMenu::class, menuIdVal)
             ?: throw ServiceException("菜单不存在")
 
-        val updated = com.github.alphafoxz.foxden.domain.system.entity.SysMenuDraft.`$`.produce(existing) {
-            bo.parentId?.let { parentId = it }
-            bo.menuName?.let { menuName = it }
-            bo.orderNum?.let { orderNum = it }
-            bo.path?.let { path = it }
-            bo.component?.let { component = it }
-            bo.queryParam?.let { queryParam = it }
+        // Use createUpdate instead of save to avoid upsert behavior
+        // and get accurate affected row count
+        val rows = sqlClient.createUpdate(SysMenu::class) {
+            where(table.id eq menuIdVal)
+            bo.parentId?.let { set(table.parentId, it) }
+            bo.menuName?.let { set(table.menuName, it) }
+            bo.orderNum?.let { set(table.orderNum, it) }
+            bo.path?.let { set(table.path, it) }
+            bo.component?.let { set(table.component, it) }
+            bo.queryParam?.let { set(table.queryParam, it) }
             bo.isFrame?.let {
-                frameFlag = when (it) {
+                set(table.frameFlag, when (it) {
                     "1" -> "1"
                     else -> "0"
-                }
+                })
             }
             bo.isCache?.let {
-                cacheFlag = when (it) {
+                set(table.cacheFlag, when (it) {
                     "0" -> "0"
                     else -> "1"
-                }
+                })
             }
-            bo.menuType?.let { menuType = it }
-            bo.visible?.let { visible = it }
-            bo.status?.let { status = it }
-            bo.perms?.let { perms = it }
-            bo.icon?.let { icon = it }
-            updateTime = java.time.LocalDateTime.now()
-        }
+            bo.menuType?.let { set(table.menuType, it) }
+            bo.visible?.let { set(table.visible, it) }
+            bo.status?.let { set(table.status, it) }
+            bo.perms?.let { set(table.perms, it) }
+            bo.icon?.let { set(table.icon, it) }
+            bo.remark?.let { set(table.remark, it) }
+            set(table.updateTime, java.time.LocalDateTime.now())
+        }.execute()
 
-        val result = sqlClient.save(updated)
-        return if (result.isModified) 1 else 0
+        return rows
     }
 
     override fun deleteMenuById(menuId: Long): Int {
+        // Delete menu first
         val result = sqlClient.deleteById(SysMenu::class, menuId)
+        // Delete role-menu associations (sys_role_menu)
+        jdbcTemplate.update("DELETE FROM sys_role_menu WHERE menu_id = ?", menuId)
         return result.totalAffectedRowCount
     }
 
     override fun deleteMenuById(menuIds: List<Long>) {
+        // Delete menus first
         sqlClient.deleteByIds(SysMenu::class, menuIds)
+        // Delete role-menu associations (sys_role_menu)
+        // This is required because Jimmer doesn't auto-delete join table records
+        // without @OnDissociate(DissociateAction.DELETE) on the association
+        menuIds.forEach { menuId ->
+            jdbcTemplate.update("DELETE FROM sys_role_menu WHERE menu_id = ?", menuId)
+        }
     }
 
     override fun checkMenuNameUnique(menu: SysMenuBo): Boolean {

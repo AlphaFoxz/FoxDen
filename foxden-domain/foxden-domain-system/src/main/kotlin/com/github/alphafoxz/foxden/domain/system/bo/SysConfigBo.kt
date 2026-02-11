@@ -36,7 +36,7 @@ data class SysConfigBo(
     var configValue: String? = null,
 
     /**
-     * 系统内置（0是 1否）
+     * 系统内置（Y是 N否）
      */
     var configType: String? = null,
 

@@ -103,23 +103,20 @@ class SysDeptServiceImpl(
 
     override fun updateDept(bo: SysDeptBo): Int {
         val deptIdVal = bo.deptId ?: return 0
-        val existing = sqlClient.findById(SysDept::class, deptIdVal)
-            ?: throw ServiceException("部门不存在")
 
-        val updated = com.github.alphafoxz.foxden.domain.system.entity.SysDeptDraft.`$`.produce(existing) {
-            bo.parentId?.let { parentId = it }
-            bo.deptName?.let { deptName = it }
-            bo.deptCategory?.let { deptCategory = it }
-            bo.orderNum?.let { orderNum = it }
-            bo.leader?.let { leader = it }
-            bo.phone?.let { phone = it }
-            bo.email?.let { email = it }
-            bo.status?.let { status = it }
-            updateTime = java.time.LocalDateTime.now()
-        }
-
-        val result = sqlClient.save(updated)
-        return if (result.isModified) 1 else 0
+        val result = sqlClient.createUpdate(SysDept::class) {
+            where(table.id eq deptIdVal)
+            bo.parentId?.let { set(table.parentId, it) }
+            bo.deptName?.let { set(table.deptName, it) }
+            bo.deptCategory?.let { set(table.deptCategory, it) }
+            bo.orderNum?.let { set(table.orderNum, it) }
+            bo.leader?.let { set(table.leader, it) }
+            bo.phone?.let { set(table.phone, it) }
+            bo.email?.let { set(table.email, it) }
+            bo.status?.let { set(table.status, it) }
+            set(table.updateTime, java.time.LocalDateTime.now())
+        }.execute()
+        return result
     }
 
     override fun deleteDeptById(deptId: Long): Int {

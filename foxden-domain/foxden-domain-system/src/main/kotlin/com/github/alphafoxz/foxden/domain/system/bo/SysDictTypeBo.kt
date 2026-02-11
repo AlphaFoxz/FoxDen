@@ -1,6 +1,7 @@
 package com.github.alphafoxz.foxden.domain.system.bo
 
 import jakarta.validation.constraints.NotBlank
+import jakarta.validation.constraints.Pattern
 import jakarta.validation.constraints.Size
 
 /**
@@ -26,6 +27,7 @@ data class SysDictTypeBo(
      */
     @get:NotBlank(message = "字典类型不能为空")
     @get:Size(min = 0, max = 100, message = "字典类型类型长度不能超过{max}个字符")
+    @get:Pattern(regexp = "^[a-z][a-z0-9_]*$", message = "字典类型必须以小写字母开头")
     var dictType: String? = null,
 
     /**
@@ -48,3 +50,4 @@ data class SysDictTypeBo(
      */
     var createTime: java.time.LocalDateTime? = null
 )
+

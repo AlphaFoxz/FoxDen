@@ -19,6 +19,14 @@ interface SysTenantService {
     fun selectTenantList(bo: SysTenantBo): List<SysTenantVo>
 
     /**
+     * 根据ID查询租户信息
+     *
+     * @param id 租户主键ID
+     * @return 租户信息
+     */
+    fun queryById(id: Long): SysTenantVo?
+
+    /**
      * 根据租户ID查询租户信息
      *
      * @param tenantId 租户ID
@@ -66,12 +74,13 @@ interface SysTenantService {
     fun updateTenant(bo: SysTenantBo): Int
 
     /**
-     * 异步修改租户状态
+     * 修改租户状态
      *
      * @param tenantId 租户ID
      * @param status 租户状态
+     * @return 影响的行数
      */
-    fun updateTenantStatus(tenantId: String, status: String)
+    fun updateTenantStatus(tenantId: String, status: String): Int
 
     /**
      * 删除租户
@@ -81,7 +90,25 @@ interface SysTenantService {
     fun deleteTenantById(tenantId: String)
 
     /**
-     * 同步租户套餐
+     * 批量删除租户（带校验）
+     *
+     * @param ids 租户主键ID集合
+     * @param isValid 是否进行校验
+     * @return 结果
+     */
+    fun deleteWithValidByIds(ids: Collection<Long>, isValid: Boolean): Boolean
+
+    /**
+     * 同步租户套餐（单个租户）
+     *
+     * @param tenantId 租户ID
+     * @param packageId 套餐ID
+     * @return 结果
+     */
+    fun syncTenantPackage(tenantId: String, packageId: Long): Boolean
+
+    /**
+     * 同步租户套餐（批量）
      *
      * @param tenantIds 租户ID集合
      */
@@ -98,4 +125,16 @@ interface SysTenantService {
      * 将默认租户的配置同步到所有租户
      */
     fun syncTenantConfig()
+
+    /**
+     * 动态切换租户
+     *
+     * @param tenantId 租户ID
+     */
+    fun dynamicTenant(tenantId: String)
+
+    /**
+     * 清除动态租户
+     */
+    fun clearDynamic()
 }

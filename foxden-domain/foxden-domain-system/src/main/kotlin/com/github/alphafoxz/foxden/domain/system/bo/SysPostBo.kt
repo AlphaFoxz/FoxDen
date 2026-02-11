@@ -16,9 +16,15 @@ data class SysPostBo(
     var postId: Long? = null,
 
     /**
-     * 部门ID
+     * 部门id（单部门）
      */
+    @get:NotNull(message = "部门id不能为空")
     var deptId: Long? = null,
+
+    /**
+     * 归属部门id（部门树）
+     */
+    var belongDeptId: Long? = null,
 
     /**
      * 岗位编码
@@ -33,6 +39,12 @@ data class SysPostBo(
     @get:NotBlank(message = "岗位名称不能为空")
     @get:Size(min = 0, max = 50, message = "岗位名称长度不能超过{max}个字符")
     var postName: String? = null,
+
+    /**
+     * 岗位类别编码
+     */
+    @get:Size(min = 0, max = 100, message = "类别编码长度不能超过{max}个字符")
+    var postCategory: String? = null,
 
     /**
      * 显示顺序

@@ -73,6 +73,18 @@ class SysTenantServiceImpl(
         return args
     }
 
+    override fun queryById(id: Long): SysTenantVo? {
+        val sql = """
+            SELECT t.* FROM sys_tenant t
+            WHERE t.id = ? AND t.del_flag = '0'
+            ORDER BY t.id ASC
+        """.trimIndent()
+
+        return jdbcTemplate.query(sql, arrayOf(id)) { rs, _ ->
+            entityToVo(rs)
+        }.firstOrNull()
+    }
+
     override fun queryByTenantId(tenantId: String): SysTenantVo? {
         val sql = """
             SELECT t.* FROM sys_tenant t
@@ -171,8 +183,8 @@ class SysTenantServiceImpl(
         // 6. 创建管理员用户
         val user = com.github.alphafoxz.foxden.domain.system.entity.SysUserDraft.`$`.produce {
             this.tenantId = tenantId
-            userName = bo.userName ?: throw ServiceException("用户名不能为空")
-            nickName = bo.nickName ?: bo.userName
+            userName = bo.username ?: throw ServiceException("用户名不能为空")
+            nickName = bo.nickName ?: bo.username
             password = BCrypt.hashpw(bo.password ?: throw ServiceException("密码不能为空"))
             this.deptId = deptId
             status = "0"
@@ -388,8 +400,8 @@ class SysTenantServiceImpl(
         return jdbcTemplate.update(sql, *values.toTypedArray())
     }
 
-    override fun updateTenantStatus(tenantId: String, status: String) {
-        jdbcTemplate.update(
+    override fun updateTenantStatus(tenantId: String, status: String): Int {
+        return jdbcTemplate.update(
             "UPDATE sys_tenant SET status = ?, update_time = ? WHERE tenant_id = ?",
             status, java.time.LocalDateTime.now(), tenantId
         )
@@ -406,6 +418,102 @@ class SysTenantServiceImpl(
             "UPDATE sys_tenant SET del_flag = '1', update_time = ? WHERE tenant_id = ?",
             java.time.LocalDateTime.now(), tenantId
         )
+    }
+
+    override fun deleteWithValidByIds(ids: Collection<Long>, isValid: Boolean): Boolean {
+        if (isValid) {
+            // 校验是否包含超管租户（id为1）
+            if (ids.contains(1L)) {
+                throw ServiceException("超管租户不能删除")
+            }
+        }
+        // 批量软删除
+        val placeholders = ids.joinToString(",") { "?" }
+        jdbcTemplate.update(
+            "UPDATE sys_tenant SET del_flag = '1', update_time = ? WHERE id IN ($placeholders)",
+            mutableListOf<Any>(java.time.LocalDateTime.now()).apply { addAll(ids) }.toTypedArray()
+        )
+        return true
+    }
+
+    @Transactional
+    override fun syncTenantPackage(tenantId: String, packageId: Long): Boolean {
+        // 使用 TenantHelper.ignore 忽略租户过滤
+        return TenantHelper.ignore {
+            val tenant = jdbcTemplate.query(
+                "SELECT * FROM sys_tenant WHERE tenant_id = ? AND del_flag = '0'",
+                arrayOf(tenantId)
+            ) { rs, _ ->
+                com.github.alphafoxz.foxden.domain.tenant.entity.SysTenantDraft.`$`.produce {
+                    this.tenantId = rs.getString("tenant_id")
+                    this.packageId = rs.getLong("package_id").takeIf { !rs.wasNull() }
+                }
+            }.firstOrNull() ?: throw ServiceException("租户不存在")
+
+            // 获取套餐信息
+            val tenantPackage = tenantPackageService.selectTenantPackageById(packageId)
+                ?: throw ServiceException("套餐不存在")
+
+            // 获取套餐菜单id
+            val menuIdsStr = tenantPackage.menuIds ?: ""
+            val menuIds = if (menuIdsStr.isNullOrBlank()) {
+                emptyList()
+            } else {
+                menuIdsStr.split(",").mapNotNull { it.toLongOrNull() }
+            }
+
+            // 使用JdbcTemplate获取租户的所有角色
+            val roles: List<Pair<Long, String>> = jdbcTemplate.query(
+                "SELECT * FROM sys_role WHERE tenant_id = ? AND del_flag = '0'",
+                arrayOf(tenantId)
+            ) { rs, _ ->
+                Pair(rs.getLong("id"), rs.getString("role_key"))
+            }
+
+            val otherRoleIds = mutableListOf<Long>()
+
+            for (role in roles) {
+                val roleId = role.first
+                val roleKey = role.second
+                if (roleKey == TenantConstants.TENANT_ADMIN_ROLE_KEY) {
+                    // 租户管理员：完全替换菜单权限
+                    // 先删除旧的菜单关联
+                    jdbcTemplate.update(
+                        "DELETE FROM sys_role_menu WHERE role_id = ?",
+                        roleId
+                    )
+
+                    // 创建新的菜单关联
+                    if (menuIds.isNotEmpty()) {
+                        val placeholders = menuIds.joinToString(",") { "(?, ?)" }
+                        val args = mutableListOf<Any>(roleId)
+                        menuIds.forEach { args.add(it) }
+                        jdbcTemplate.update(
+                            "INSERT INTO sys_role_menu (role_id, menu_id) VALUES $placeholders",
+                            *args.toTypedArray()
+                        )
+                    }
+                } else {
+                    // 其他角色：移除不在套餐中的菜单
+                    otherRoleIds.add(roleId)
+                }
+            }
+
+            // 对于其他角色，移除不在套餐中的菜单
+            if (otherRoleIds.isNotEmpty() && menuIds.isNotEmpty()) {
+                val menuPlaceholders = menuIds.joinToString(",") { "?" }
+                val rolePlaceholders = otherRoleIds.joinToString(",") { "?" }
+
+                jdbcTemplate.update(
+                    "DELETE FROM sys_role_menu WHERE role_id IN ($rolePlaceholders) " +
+                            "AND menu_id NOT IN ($menuPlaceholders)",
+                    *otherRoleIds.toTypedArray(),
+                    *menuIds.toTypedArray()
+                )
+            }
+
+            true
+        } ?: false
     }
 
     @Transactional
@@ -676,6 +784,20 @@ class SysTenantServiceImpl(
         return tenantId
     }
 
+    override fun dynamicTenant(tenantId: String) {
+        // 校验租户是否存在
+        val tenant = jdbcTemplate.query(
+            "SELECT tenant_id FROM sys_tenant WHERE tenant_id = ? AND del_flag = '0'",
+            arrayOf(tenantId)
+        ) { rs, _ -> rs.getString("tenant_id") }.firstOrNull()
+            ?: throw ServiceException("租户不存在")
+        TenantHelper.setDynamic(tenantId, true)
+    }
+
+    override fun clearDynamic() {
+        TenantHelper.clearDynamic()
+    }
+
     /**
      * ResultSet 转换为 VO
      */
@@ -698,7 +820,7 @@ class SysTenantServiceImpl(
             packageId = if (!rs.wasNull()) packageId else null,
             packageName = packageName,
             expireTime = rs.getTimestamp("expire_time")?.toLocalDateTime(),
-            accountCount = rs.getInt("account_count").takeIf { !rs.wasNull() },
+            accountCount = rs.getLong("account_count").takeIf { !rs.wasNull() },
             status = rs.getString("status"),
             remark = rs.getString("remark"),
             createTime = rs.getTimestamp("create_time")?.toLocalDateTime()

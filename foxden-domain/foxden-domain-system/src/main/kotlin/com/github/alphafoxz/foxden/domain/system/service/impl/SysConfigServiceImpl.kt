@@ -79,20 +79,17 @@ class SysConfigServiceImpl(
 
     override fun updateConfig(bo: SysConfigBo): Int {
         val configIdVal = bo.configId ?: return 0
-        val existing = sqlClient.findById(SysConfig::class, configIdVal)
-            ?: throw ServiceException("参数配置不存在")
 
-        val updated = com.github.alphafoxz.foxden.domain.system.entity.SysConfigDraft.`$`.produce(existing) {
-            bo.configName?.let { configName = it }
-            bo.configKey?.let { configKey = it }
-            bo.configValue?.let { configValue = it }
-            bo.configType?.let { configType = it }
-            bo.remark?.let { remark = it }
-            updateTime = java.time.LocalDateTime.now()
-        }
-
-        val result = sqlClient.save(updated)
-        return if (result.isModified) 1 else 0
+        val result = sqlClient.createUpdate(SysConfig::class) {
+            where(table.id eq configIdVal)
+            bo.configName?.let { set(table.configName, it) }
+            bo.configKey?.let { set(table.configKey, it) }
+            bo.configValue?.let { set(table.configValue, it) }
+            bo.configType?.let { set(table.configType, it) }
+            bo.remark?.let { set(table.remark, it) }
+            set(table.updateTime, java.time.LocalDateTime.now())
+        }.execute()
+        return result
     }
 
     override fun deleteConfigByIds(configIds: Array<Long>) {

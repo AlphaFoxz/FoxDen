@@ -51,7 +51,7 @@ data class SysDictDataBo(
     var listClass: String? = null,
 
     /**
-     * 是否默认（0是 1否）
+     * 是否默认（Y是 N否）
      */
     var isDefault: String? = null,
 
@@ -64,6 +64,11 @@ data class SysDictDataBo(
      * 备注
      */
     var remark: String? = null,
+
+    /**
+     * 创建部门
+     */
+    var createDept: Long? = null,
 
     /**
      * 创建者

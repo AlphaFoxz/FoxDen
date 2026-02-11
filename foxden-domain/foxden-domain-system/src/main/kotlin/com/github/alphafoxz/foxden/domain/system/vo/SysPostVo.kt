@@ -15,6 +15,11 @@ data class SysPostVo(
     var postId: Long? = null,
 
     /**
+     * 部门ID
+     */
+    var deptId: Long? = null,
+
+    /**
      * 岗位编码
      */
     var postCode: String? = null,
@@ -23,6 +28,11 @@ data class SysPostVo(
      * 岗位名称
      */
     var postName: String? = null,
+
+    /**
+     * 岗位类别编码
+     */
+    var postCategory: String? = null,
 
     /**
      * 显示顺序
@@ -57,5 +67,10 @@ data class SysPostVo(
     /**
      * 更新者
      */
-    var updateBy: String? = null
+    var updateBy: String? = null,
+
+    /**
+     * 部门名称
+     */
+    var deptName: String? = null
 )

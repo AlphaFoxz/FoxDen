@@ -255,7 +255,7 @@ fun SysTenantService.insertByBo(data: MutableMap<String, Any?>): Int {
         data["status"]?.let { status = it as String }
         data["packageId"]?.let { packageId = it as Long }
         data["expireTime"]?.let { expireTime = it as java.time.LocalDateTime }
-        data["accountCount"]?.let { accountCount = (it as Number).toInt() }
+        data["accountCount"]?.let { accountCount = (it as Number).toLong() }
     }
     return this.insertTenant(bo)
 }
@@ -273,7 +273,7 @@ fun SysTenantService.updateByBo(data: MutableMap<String, Any?>): Int {
         data["status"]?.let { status = it as String }
         data["packageId"]?.let { packageId = it as Long }
         data["expireTime"]?.let { expireTime = it as java.time.LocalDateTime }
-        data["accountCount"]?.let { accountCount = (it as Number).toInt() }
+        data["accountCount"]?.let { accountCount = (it as Number).toLong() }
     }
     return this.updateTenant(bo)
 }

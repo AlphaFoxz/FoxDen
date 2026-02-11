@@ -43,7 +43,7 @@ class SysUserServiceImpl(
             orderBy(table.id.asc())
             select(table)
         }.fetchPage(
-            pageQuery.getPageNumOrDefault(),
+            pageQuery.getPageNumOrDefault() - 1,  // Jimmer fetchPage expects 0-based index
             pageQuery.getPageSizeOrDefault()
         )
 
@@ -324,26 +324,20 @@ class SysUserServiceImpl(
 
     override fun updateUser(user: SysUserBo): Int {
         val userIdVal = user.userId ?: return 0
-        val existing = sqlClient.findById(SysUser::class, userIdVal)
-            ?: throw ServiceException("用户不存在")
 
-        val updated = com.github.alphafoxz.foxden.domain.system.entity.SysUserDraft.`$`.produce(existing) {
-            user.deptId?.let { deptId = it }
-            user.nickName?.let { nickName = it }
-            user.email?.let { email = it }
-            user.phonenumber?.let { phonenumber = it }
-            user.sex?.let { sex = it }
-            user.status?.let { status = it }
-            user.remark?.let { remark = it }
-            user.userType?.let { userType = it }
-            // Note: updateBy expects Long (user ID), but we only have String (username)
-            // This needs to be resolved by looking up the user ID from the username
-            // For now, skip setting updateBy
-            updateTime = LocalDateTime.now()
-        }
-
-        val result = sqlClient.save(updated)
-        return if (result.isModified) 1 else 0
+        val result = sqlClient.createUpdate(SysUser::class) {
+            where(table.id eq userIdVal)
+            user.deptId?.let { set(table.deptId, it) }
+            user.nickName?.let { set(table.nickName, it) }
+            user.email?.let { set(table.email, it) }
+            user.phonenumber?.let { set(table.phonenumber, it) }
+            user.sex?.let { set(table.sex, it) }
+            user.status?.let { set(table.status, it) }
+            user.remark?.let { set(table.remark, it) }
+            user.userType?.let { set(table.userType, it) }
+            set(table.updateTime, LocalDateTime.now())
+        }.execute()
+        return result
     }
 
     override fun insertUserAuth(userId: Long, roleIds: Array<Long>) {
@@ -357,59 +351,42 @@ class SysUserServiceImpl(
     }
 
     override fun updateUserStatus(userId: Long, status: String): Int {
-        val existing = sqlClient.findById(SysUser::class, userId)
-            ?: throw ServiceException("用户不存在")
-
-        val updated = com.github.alphafoxz.foxden.domain.system.entity.SysUserDraft.`$`.produce(existing) {
-            this.status = status
-        }
-
-        val result = sqlClient.save(updated)
-        return if (result.isModified) 1 else 0
+        val result = sqlClient.createUpdate(SysUser::class) {
+            where(table.id eq userId)
+            set(table.status, status)
+        }.execute()
+        return result
     }
 
     override fun updateUserProfile(user: SysUserBo): Int {
         val userIdVal = user.userId ?: return 0
-        val existing = sqlClient.findById(SysUser::class, userIdVal)
-            ?: throw ServiceException("用户不存在")
 
-        val updated = com.github.alphafoxz.foxden.domain.system.entity.SysUserDraft.`$`.produce(existing) {
-            user.nickName?.let { nickName = it }
-            user.email?.let { email = it }
-            user.phonenumber?.let { phonenumber = it }
-            user.sex?.let { sex = it }
-            user.remark?.let { remark = it }
-            // Note: updateBy expects Long (user ID), but we only have String (username)
-            // This needs to be resolved by looking up the user ID from the username
-            updateTime = LocalDateTime.now()
-        }
-
-        val result = sqlClient.save(updated)
-        return if (result.isModified) 1 else 0
+        val result = sqlClient.createUpdate(SysUser::class) {
+            where(table.id eq userIdVal)
+            user.nickName?.let { set(table.nickName, it) }
+            user.email?.let { set(table.email, it) }
+            user.phonenumber?.let { set(table.phonenumber, it) }
+            user.sex?.let { set(table.sex, it) }
+            user.remark?.let { set(table.remark, it) }
+            set(table.updateTime, LocalDateTime.now())
+        }.execute()
+        return result
     }
 
     override fun updateUserAvatar(userId: Long, avatar: Long): Boolean {
-        val existing = sqlClient.findById(SysUser::class, userId)
-            ?: throw ServiceException("用户不存在")
-
-        val updated = com.github.alphafoxz.foxden.domain.system.entity.SysUserDraft.`$`.produce(existing) {
-            this.avatar = avatar
-        }
-
-        val result = sqlClient.save(updated)
-        return result.isModified
+        val result = sqlClient.createUpdate(SysUser::class) {
+            where(table.id eq userId)
+            set(table.avatar, avatar)
+        }.execute()
+        return result > 0
     }
 
     override fun resetUserPwd(userId: Long, password: String): Int {
-        val existing = sqlClient.findById(SysUser::class, userId)
-            ?: throw ServiceException("用户不存在")
-
-        val updated = com.github.alphafoxz.foxden.domain.system.entity.SysUserDraft.`$`.produce(existing) {
-            this.password = password
-        }
-
-        val result = sqlClient.save(updated)
-        return if (result.isModified) 1 else 0
+        val result = sqlClient.createUpdate(SysUser::class) {
+            where(table.id eq userId)
+            set(table.password, password)
+        }.execute()
+        return result
     }
 
     override fun validatePassword(userName: String, password: String): Boolean {

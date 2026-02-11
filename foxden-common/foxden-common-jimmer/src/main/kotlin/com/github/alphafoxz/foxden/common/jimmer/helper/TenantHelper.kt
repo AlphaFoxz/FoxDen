@@ -57,9 +57,10 @@ object TenantHelper {
      * 设置动态租户
      *
      * @param tenantId 租户ID
+     * @param persist 是否持久化到Session
      */
     @JvmStatic
-    private fun setDynamic(tenantId: String) {
+    fun setDynamic(tenantId: String, persist: Boolean = false) {
         DYNAMIC_TENANT_CONTEXT.set(tenantId)
     }
 

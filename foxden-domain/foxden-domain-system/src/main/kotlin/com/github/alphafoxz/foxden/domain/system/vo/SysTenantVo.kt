@@ -10,6 +10,11 @@ import com.fasterxml.jackson.annotation.JsonInclude
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
 data class SysTenantVo(
     /**
+     * id
+     */
+    var id: Long? = null,
+
+    /**
      * 租户ID
      */
     var tenantId: String? = null,
@@ -32,7 +37,7 @@ data class SysTenantVo(
     /**
      * 用户名（租户管理员账号）
      */
-    var userName: String? = null,
+    var username: String? = null,
 
     /**
      * 用户昵称
@@ -43,6 +48,31 @@ data class SysTenantVo(
      * 用户邮箱
      */
     var email: String? = null,
+
+    /**
+     * 统一社会信用代码
+     */
+    var licenseNumber: String? = null,
+
+    /**
+     * 地址
+     */
+    var address: String? = null,
+
+    /**
+     * 域名
+     */
+    var domain: String? = null,
+
+    /**
+     * 企业简介
+     */
+    var intro: String? = null,
+
+    /**
+     * 备注
+     */
+    var remark: String? = null,
 
     /**
      * 租户套餐ID
@@ -62,17 +92,12 @@ data class SysTenantVo(
     /**
      * 用户数量
      */
-    var accountCount: Int? = null,
+    var accountCount: Long? = null,
 
     /**
      * 租户状态（0正常 1停用）
      */
     var status: String? = null,
-
-    /**
-     * 备注
-     */
-    var remark: String? = null,
 
     /**
      * 创建时间

@@ -1,12 +1,10 @@
 package com.github.alphafoxz.foxden.domain.system.bo
 
 import com.fasterxml.jackson.annotation.JsonInclude
-import com.github.alphafoxz.foxden.common.core.constant.RegexConstants
 import com.github.alphafoxz.foxden.common.core.validate.AddGroup
 import com.github.alphafoxz.foxden.common.core.validate.EditGroup
 import jakarta.validation.constraints.NotBlank
 import jakarta.validation.constraints.NotNull
-import jakarta.validation.constraints.Pattern
 import jakarta.validation.constraints.Size
 
 /**
@@ -92,6 +90,11 @@ data class SysMenuBo(
      * 菜单图标
      */
     var icon: String? = null,
+
+    /**
+     * 备注
+     */
+    var remark: String? = null,
 
     /**
      * 创建者

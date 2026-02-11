@@ -104,6 +104,21 @@ data class SysUserVo(
     var postIds: List<Long>? = null,
 
     /**
+     * 角色ID
+     */
+    var roleId: Long? = null,
+
+    /**
+     * 最后登录IP
+     */
+    var loginIp: String? = null,
+
+    /**
+     * 头像
+     */
+    var avatar: Long? = null,
+
+    /**
      * 创建时间
      */
     var createTime: java.time.LocalDateTime? = null,

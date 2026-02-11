@@ -85,6 +85,16 @@ data class SysMenuVo(
     var createTime: java.time.LocalDateTime? = null,
 
     /**
+     * 创建部门ID
+     */
+    var createDept: Long? = null,
+
+    /**
+     * 备注
+     */
+    var remark: String? = null,
+
+    /**
      * 子菜单
      */
     var children: List<SysMenuVo>? = null

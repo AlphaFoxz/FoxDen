@@ -130,16 +130,20 @@ class SysOssConfigServiceImpl(
             bo.accessKey?.let { accessKey = it }
             bo.secretKey?.let { secretKey = it }
             bo.bucketName?.let { bucketName = it }
-            bo.prefix?.let { prefix = it }
+            // null 值需要设置为空字符串（与老版本保持一致）
+            prefix = if (bo.prefix != null) bo.prefix else ""
             bo.endpoint?.let { endpoint = it }
             if (bo.isDomain == true) {
                 bo.endpoint?.let { domain = it }
             }
             bo.isHttps?.let { httpsFlag = if (it) "1" else "0" }
-            bo.region?.let { region = it }
+            // null 值需要设置为空字符串（与老版本保持一致）
+            region = if (bo.region != null) bo.region else ""
+            // null 值需要设置为空字符串（与老版本保持一致）
+            ext1 = if (bo.ext != null) bo.ext else ""
+            // null 值需要设置为空字符串（与老版本保持一致）
+            remark = if (bo.remark != null) bo.remark else ""
             bo.status?.let { status = it }
-            bo.ext?.let { ext1 = it }
-            bo.remark?.let { remark = it }
             bo.accessPolicy?.let { accessPolicy = it }
             updateTime = java.time.LocalDateTime.now()
         }

@@ -40,9 +40,14 @@ data class SysNoticeVo(
     var remark: String? = null,
 
     /**
+     * 创建人名称
+     */
+    var createByName: String? = null,
+
+    /**
      * 创建者
      */
-    var createBy: String? = null,
+    var createBy: Long? = null,
 
     /**
      * 创建时间

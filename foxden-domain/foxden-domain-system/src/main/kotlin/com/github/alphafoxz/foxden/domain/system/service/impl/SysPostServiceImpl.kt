@@ -79,20 +79,17 @@ class SysPostServiceImpl(
 
     override fun updatePost(post: SysPostBo): Int {
         val postIdVal = post.postId ?: return 0
-        val existing = sqlClient.findById(SysPost::class, postIdVal)
-            ?: throw ServiceException("岗位不存在")
 
-        val updated = com.github.alphafoxz.foxden.domain.system.entity.SysPostDraft.`$`.produce(existing) {
-            post.postCode?.let { postCode = it }
-            post.postName?.let { postName = it }
-            post.postSort?.let { postSort = it }
-            post.status?.let { status = it }
-            post.remark?.let { remark = it }
-            updateTime = java.time.LocalDateTime.now()
-        }
-
-        val result = sqlClient.save(updated)
-        return if (result.isModified) 1 else 0
+        val result = sqlClient.createUpdate(SysPost::class) {
+            where(table.id eq postIdVal)
+            post.postCode?.let { set(table.postCode, it) }
+            post.postName?.let { set(table.postName, it) }
+            post.postSort?.let { set(table.postSort, it) }
+            post.status?.let { set(table.status, it) }
+            post.remark?.let { set(table.remark, it) }
+            set(table.updateTime, java.time.LocalDateTime.now())
+        }.execute()
+        return result
     }
 
     override fun checkPostNameUnique(post: SysPostBo): Boolean {
