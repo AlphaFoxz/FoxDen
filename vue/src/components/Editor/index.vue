@@ -47,14 +47,14 @@ const props = defineProps({
   /* 上传文件大小限制(MB) */
   fileSize: propTypes.number.def(5),
   /* 类型（base64格式、url格式） */
-  type: propTypes.string.def('url')
+  type: propTypes.string.def('url'),
 });
 
 const { proxy } = getCurrentInstance() as ComponentInternalInstance;
 
 const upload = reactive<UploadOption>({
   headers: globalHeaders(),
-  url: import.meta.env.VITE_APP_BASE_API + '/resource/oss/upload'
+  url: import.meta.env.VITE_APP_BASE_API + '/resource/oss/upload',
 });
 const quillEditorRef = ref();
 const uploadRef = ref<HTMLDivElement>();
@@ -76,7 +76,7 @@ const options = ref<any>({
         [{ color: [] }, { background: [] }], // 字体颜色、字体背景颜色
         [{ align: [] }], // 对齐方式
         ['clean'], // 清除文本格式
-        ['link', 'image', 'video'] // 链接、图片、视频
+        ['link', 'image', 'video'], // 链接、图片、视频
       ],
       handlers: {
         image: (value: boolean) => {
@@ -86,12 +86,12 @@ const options = ref<any>({
           } else {
             Quill.format('image', true);
           }
-        }
-      }
-    }
+        },
+      },
+    },
   },
   placeholder: '请输入内容',
-  readOnly: props.readOnly
+  readOnly: props.readOnly,
 });
 
 const styles = computed(() => {
@@ -113,7 +113,7 @@ watch(
       content.value = v || '<p></p>';
     }
   },
-  { immediate: true }
+  { immediate: true },
 );
 
 // 图片上传成功返回图片地址

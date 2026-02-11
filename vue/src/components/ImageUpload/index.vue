@@ -50,7 +50,7 @@ import { compressAccurately } from 'image-conversion';
 const props = defineProps({
   modelValue: {
     type: [String, Object, Array],
-    default: () => []
+    default: () => [],
   },
   // 图片数量限制
   limit: propTypes.number.def(5),
@@ -61,15 +61,15 @@ const props = defineProps({
   // 是否显示提示
   isShowTip: {
     type: Boolean,
-    default: true
+    default: true,
   },
   // 是否支持压缩，默认否
   compressSupport: {
     type: Boolean,
-    default: false
+    default: false,
   },
   // 压缩目标大小，单位KB。默认300KB以上文件才压缩，并压缩至300KB以内
-  compressTargetSize: propTypes.number.def(300)
+  compressTargetSize: propTypes.number.def(300),
 });
 
 const { proxy } = getCurrentInstance() as ComponentInternalInstance;
@@ -120,7 +120,7 @@ watch(
       return [];
     }
   },
-  { deep: true, immediate: true }
+  { deep: true, immediate: true },
 );
 
 /** 上传前loading加载 */

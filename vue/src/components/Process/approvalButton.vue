@@ -1,10 +1,22 @@
 <template>
   <div style="display: flex; justify-content: space-between">
     <div>
-      <el-button v-if="submitButtonShow" :loading="props.buttonLoading" type="info" @click="submitForm('draft', mode)">暂存</el-button>
-      <el-button v-if="submitButtonShow" :loading="props.buttonLoading" type="primary" @click="submitForm('submit', mode)">提 交</el-button>
-      <el-button v-if="approvalButtonShow" :loading="props.buttonLoading" type="primary" @click="approvalVerifyOpen">审批</el-button>
-      <el-button v-if="props.id && props.status !== 'draft'" type="primary" @click="handleApprovalRecord">流程进度</el-button>
+      <el-button v-if="submitButtonShow" :loading="props.buttonLoading" type="info" @click="submitForm('draft', mode)"
+        >暂存</el-button
+      >
+      <el-button
+        v-if="submitButtonShow"
+        :loading="props.buttonLoading"
+        type="primary"
+        @click="submitForm('submit', mode)"
+        >提 交</el-button
+      >
+      <el-button v-if="approvalButtonShow" :loading="props.buttonLoading" type="primary" @click="approvalVerifyOpen"
+        >审批</el-button
+      >
+      <el-button v-if="props.id && props.status !== 'draft'" type="primary" @click="handleApprovalRecord"
+        >流程进度</el-button
+      >
       <slot />
     </div>
     <div>
@@ -14,13 +26,13 @@
 </template>
 <script setup lang="ts">
 import { propTypes } from '@/utils/propTypes';
-const { proxy } = getCurrentInstance() as ComponentInternalInstance;
+const { proxy } = getCurrentInstance();
 const props = defineProps({
   status: propTypes.string.def(''),
   pageType: propTypes.string.def(''),
   buttonLoading: propTypes.bool.def(false),
   id: propTypes.string.def('') || propTypes.number.def(),
-  mode: propTypes.bool.def(false)
+  mode: propTypes.bool.def(false),
 });
 const emits = defineEmits(['submitForm', 'approvalVerifyOpen', 'handleApprovalRecord']);
 //暂存，提交
@@ -40,7 +52,9 @@ const handleApprovalRecord = () => {
 const submitButtonShow = computed(() => {
   return (
     props.pageType === 'add' ||
-    (props.pageType === 'update' && props.status && (props.status === 'draft' || props.status === 'cancel' || props.status === 'back'))
+    (props.pageType === 'update' &&
+      props.status &&
+      (props.status === 'draft' || props.status === 'cancel' || props.status === 'back'))
   );
 });
 

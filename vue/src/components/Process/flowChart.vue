@@ -13,8 +13,8 @@ import { getToken } from '@/utils/auth';
 const props = defineProps({
   insId: {
     type: [String, Number],
-    default: null
-  }
+    default: null,
+  },
 });
 
 const iframeUrl = ref('');

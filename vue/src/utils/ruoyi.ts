@@ -137,8 +137,12 @@ export function sprintf(string_: string) {
 }
 
 // 转换字符串，undefined,null等转化为""
-export const parseStrEmpty = (string_: any) => {
-  if (!string_ || string_ == 'undefined' || string_ == 'null') {
+export const parseStringEmpty = (string_: string | number | null | undefined) => {
+  if (typeof string_ === 'number') {
+    return string_.toString();
+  }
+
+  if (!string_ || string_ === 'undefined' || string_ === 'null') {
     return '';
   }
 
@@ -243,6 +247,7 @@ export const getNormalPath = (p: string): string => {
 // 验证是否为blob格式
 export const blobValidate = (data: any) => data.type !== 'application/json';
 
-export default {
+const expose = {
   handleTree,
 };
+export default expose;

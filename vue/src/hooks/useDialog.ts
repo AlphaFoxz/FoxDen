@@ -9,7 +9,8 @@ interface Return {
   openDialog: () => void;
   closeDialog: () => void;
 }
-export default (ops?: Options): Return => {
+
+function expose(ops?: Options): Return {
   const visible = ref(false);
   const title = ref(ops.title || '');
 
@@ -28,4 +29,6 @@ export default (ops?: Options): Return => {
     openDialog,
     closeDialog,
   };
-};
+}
+
+export default expose;

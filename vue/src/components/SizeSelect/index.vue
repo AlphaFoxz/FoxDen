@@ -6,7 +6,12 @@
       </div>
       <template #dropdown>
         <el-dropdown-menu>
-          <el-dropdown-item v-for="item of sizeOptions" :key="item.value" :disabled="size === item.value" :command="item.value">
+          <el-dropdown-item
+            v-for="item of sizeOptions"
+            :key="item.value"
+            :disabled="size === item.value"
+            :command="item.value"
+          >
             {{ item.label }}
           </el-dropdown-item>
         </el-dropdown-menu>
@@ -24,7 +29,7 @@ const size = computed(() => appStore.size);
 const sizeOptions = ref([
   { label: '较大', value: 'large' },
   { label: '默认', value: 'default' },
-  { label: '稍小', value: 'small' }
+  { label: '稍小', value: 'small' },
 ]);
 
 const handleSetSize = (size: 'large' | 'default' | 'small') => {

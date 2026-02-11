@@ -9,12 +9,12 @@
 const props = defineProps({
   initTimeSecond: {
     type: Number,
-    default: 5
+    default: 5,
   },
   label: {
     type: String,
-    default: '倒计时'
-  }
+    default: '倒计时',
+  },
 });
 const emits = defineEmits(['timeOver']);
 
@@ -26,9 +26,12 @@ const timer = setInterval(() => {
     timer && clearInterval(timer);
   }
 }, 1000);
-watch(() => props.initTimeSecond, () => {
-  leftTime.value = props.initTimeSecond * 1000;
-})
+watch(
+  () => props.initTimeSecond,
+  () => {
+    leftTime.value = props.initTimeSecond * 1000;
+  },
+);
 onBeforeUnmount(() => {
   timer && clearInterval(timer);
 });

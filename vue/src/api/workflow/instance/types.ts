@@ -1,4 +1,4 @@
-import { FlowTaskVO } from '@/api/workflow/task/types';
+import {type FlowTaskVO} from '@/api/workflow/task/types';
 
 export interface FlowInstanceQuery extends PageQuery {
   category?: string | number;

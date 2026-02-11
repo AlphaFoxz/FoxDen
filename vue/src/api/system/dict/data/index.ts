@@ -47,7 +47,7 @@ export async function updateData(data: DictDataForm) {
 // 删除字典数据
 export async function delData(dictCode: string | number | Array<string | number>) {
   return request({
-    url: '/system/dict/data/' + dictCode,
+    url: '/system/dict/data/' + dictCode.toString(),
     method: 'delete',
   });
 }

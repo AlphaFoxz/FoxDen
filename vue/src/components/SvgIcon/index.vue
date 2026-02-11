@@ -10,7 +10,7 @@ import { propTypes } from '@/utils/propTypes';
 const props = defineProps({
   iconClass: propTypes.string.isRequired,
   className: propTypes.string.def(''),
-  color: propTypes.string.def('')
+  color: propTypes.string.def(''),
 });
 const iconName = computed(() => `#icon-${props.iconClass}`);
 const svgClass = computed(() => {

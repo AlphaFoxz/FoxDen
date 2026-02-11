@@ -1,5 +1,13 @@
 <template>
-  <el-dialog v-model="visible" :title="props.title" width="50%" draggable :before-close="cancel" center :close-on-click-modal="false">
+  <el-dialog
+    v-model="visible"
+    :title="props.title"
+    width="50%"
+    draggable
+    :before-close="cancel"
+    center
+    :close-on-click-modal="false"
+  >
     <el-form v-loading="loading" ref="ruleFormRef" :model="form" :rules="rules" label-width="120px">
       <el-form-item label="消息提醒" prop="messageType">
         <el-checkbox-group v-model="form.messageType">
@@ -22,15 +30,15 @@
 </template>
 <script setup lang="ts">
 import { ref } from 'vue';
-import { ComponentInternalInstance } from 'vue';
-import { ElForm, FormInstance } from 'element-plus';
+import { type ComponentInternalInstance } from 'vue';
+import { ElForm, type FormInstance } from 'element-plus';
 const { proxy } = getCurrentInstance() as ComponentInternalInstance;
 const emits = defineEmits(['submitCallback', 'cancelCallback']);
 const props = defineProps({
   title: {
     type: String,
-    default: '提示'
-  }
+    default: '提示',
+  },
 });
 const ruleFormRef = ref<FormInstance>();
 //遮罩层
@@ -39,23 +47,23 @@ const visible = ref(false);
 const buttonDisabled = ref(true);
 const form = ref<Record<string, any>>({
   message: undefined,
-  messageType: ['1']
+  messageType: ['1'],
 });
 const rules = reactive<Record<string, any>>({
   messageType: [
     {
       required: true,
       message: '请选择消息提醒',
-      trigger: 'change'
-    }
+      trigger: 'change',
+    },
   ],
   message: [
     {
       required: true,
       message: '请输入消息内容',
-      trigger: 'blur'
-    }
-  ]
+      trigger: 'blur',
+    },
+  ],
 });
 //确认
 //打开弹窗
@@ -95,6 +103,6 @@ const reset = async () => {
  */
 defineExpose({
   open,
-  close
+  close,
 });
 </script>

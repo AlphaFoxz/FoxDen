@@ -39,10 +39,11 @@ const logoAnimate = {
   leave: animatePrefix + 'animate__fadeOut',
 };
 
-export default {
+const expose = {
   animateList,
   defaultAnimate,
   searchAnimate,
   menuSearchAnimate,
   logoAnimate,
 };
+export default expose;

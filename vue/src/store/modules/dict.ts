@@ -12,7 +12,7 @@ export const useDictStore = defineStore('dict', () => {
       return null;
     }
 
-    return dict.value.get(_key) || null;
+    return dict.value.get(_key) ?? null;
   };
 
   /**

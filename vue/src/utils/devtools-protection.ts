@@ -34,17 +34,17 @@ function detectDevTools(): boolean {
     let devtoolsDetected = false;
     const element = document.createElement('div');
     Object.defineProperty(element, 'id', {
-      get: function () {
+      get() {
         devtoolsDetected = true;
         return '';
-      }
+      },
     });
 
     // 使用 console 来触发 getter（仅在开发者工具打开时）
     try {
       console.log(element);
       console.clear();
-    } catch (e) {
+    } catch {
       // 忽略错误
     }
 
@@ -59,12 +59,13 @@ function detectDevTools(): boolean {
       // @ts-expect-error - 动态添加属性
       this.opened = true;
     };
+
     console.log('%c', devtoolsRegex);
     // @ts-expect-error - 检查动态添加的属性
     if (devtoolsRegex.opened) {
       return true;
     }
-  } catch (e) {
+  } catch {
     // 如果检测过程中出错，默认返回 false
     return false;
   }
@@ -90,7 +91,7 @@ export function initDevToolsProtection(): void {
   const initialCheck = detectDevTools();
   if (initialCheck) {
     devToolsOpen = true;
-    debuggerInterval = window.setInterval(() => {
+    debuggerInterval = globalThis.setInterval(() => {
       debugger; // 循环执行 debugger
     }, 50); // 更频繁的 debugger，每 50ms 一次
   }
@@ -105,7 +106,7 @@ export function initDevToolsProtection(): void {
 
       // 开始循环执行 debugger（更频繁）
       if (debuggerInterval === null) {
-        debuggerInterval = window.setInterval(() => {
+        debuggerInterval = globalThis.setInterval(() => {
           debugger; // 循环执行 debugger
         }, 50); // 每 50ms 执行一次，更激进
       }
@@ -144,7 +145,7 @@ export function initDevToolsProtection(): void {
       if (isOpen && !devToolsOpen) {
         devToolsOpen = true;
         if (debuggerInterval === null) {
-          debuggerInterval = window.setInterval(() => {
+          debuggerInterval = globalThis.setInterval(() => {
             debugger; // 循环执行 debugger
           }, 50); // 更频繁的 debugger
         }

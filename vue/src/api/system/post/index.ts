@@ -1,69 +1,67 @@
+import {type AxiosPromise} from 'axios';
+import {type DeptTreeVO} from '../dept/types';
+import {type PostForm, type PostQuery, type PostVO} from './types';
 import request from '@/utils/request';
-import { PostForm, PostQuery, PostVO } from './types';
-import { AxiosPromise } from 'axios';
-import { DeptTreeVO } from '../dept/types';
 
 // 查询岗位列表
-export function listPost(query: PostQuery): AxiosPromise<PostVO[]> {
+export async function listPost(query: PostQuery): AxiosPromise<PostVO[]> {
   return request({
     url: '/system/post/list',
     method: 'get',
-    params: query
+    params: query,
   });
 }
 
 // 查询岗位详细
-export function getPost(postId: string | number): AxiosPromise<PostVO> {
+export async function getPost(postId: string | number): AxiosPromise<PostVO> {
   return request({
     url: '/system/post/' + postId,
-    method: 'get'
+    method: 'get',
   });
 }
 
 // 获取岗位选择框列表
-export function optionselect(deptId?: number | string, postIds?: (number | string)[]): AxiosPromise<PostVO[]> {
+export async function optionselect(deptId?: number | string, postIds?: Array<number | string>): AxiosPromise<PostVO[]> {
   return request({
     url: '/system/post/optionselect',
     method: 'get',
     params: {
-      postIds: postIds,
-      deptId: deptId
-    }
+      postIds,
+      deptId,
+    },
   });
 }
 
 // 新增岗位
-export function addPost(data: PostForm) {
+export async function addPost(data: PostForm) {
   return request({
     url: '/system/post',
     method: 'post',
-    data: data
+    data,
   });
 }
 
 // 修改岗位
-export function updatePost(data: PostForm) {
+export async function updatePost(data: PostForm) {
   return request({
     url: '/system/post',
     method: 'put',
-    data: data
+    data,
   });
 }
 
 // 删除岗位
-export function delPost(postId: string | number | (string | number)[]) {
+export async function delPost(postId: string | number | Array<string | number>) {
   return request({
-    url: '/system/post/' + postId,
-    method: 'delete'
+    url: '/system/post/' + postId.toString(),
+    method: 'delete',
   });
 }
 
 /**
  * 查询部门下拉树结构
  */
-export const deptTreeSelect = (): AxiosPromise<DeptTreeVO[]> => {
-  return request({
-    url: '/system/post/deptTree',
-    method: 'get'
-  });
-};
+export const deptTreeSelect = async (): AxiosPromise<DeptTreeVO[]> => request({
+  url: '/system/post/deptTree',
+  method: 'get',
+});

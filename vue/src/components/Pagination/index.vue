@@ -29,7 +29,7 @@ const props = defineProps({
   background: propTypes.bool.def(true),
   autoScroll: propTypes.bool.def(true),
   hidden: propTypes.bool.def(false),
-  float: propTypes.string.def('right')
+  float: propTypes.string.def('right'),
 });
 
 const emit = defineEmits(['update:page', 'update:limit', 'pagination']);
@@ -39,7 +39,7 @@ const currentPage = computed({
   },
   set(val) {
     emit('update:page', val);
-  }
+  },
 });
 const pageSize = computed({
   get() {
@@ -47,7 +47,7 @@ const pageSize = computed({
   },
   set(val) {
     emit('update:limit', val);
-  }
+  },
 });
 function handleSizeChange(val: number) {
   if (currentPage.value * val > props.total) {

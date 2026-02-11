@@ -1,6 +1,6 @@
 export interface ClientVO {
   /**
-   * id
+   * Id
    */
   id: string | number;
 
@@ -30,12 +30,12 @@ export interface ClientVO {
   deviceType: string;
 
   /**
-   * token活跃超时时间
+   * Token活跃超时时间
    */
   activeTimeout: number;
 
   /**
-   * token固定超时
+   * Token固定超时
    */
   timeout: number;
 
@@ -47,7 +47,7 @@ export interface ClientVO {
 
 export interface ClientForm extends BaseEntity {
   /**
-   * id
+   * Id
    */
   id?: string | number;
 
@@ -77,12 +77,12 @@ export interface ClientForm extends BaseEntity {
   deviceType?: string;
 
   /**
-   * token活跃超时时间
+   * Token活跃超时时间
    */
   activeTimeout?: number;
 
   /**
-   * token固定超时
+   * Token固定超时
    */
   timeout?: number;
 
@@ -119,12 +119,12 @@ export interface ClientQuery extends PageQuery {
   deviceType?: string;
 
   /**
-   * token活跃超时时间
+   * Token活跃超时时间
    */
   activeTimeout?: number;
 
   /**
-   * token固定超时
+   * Token固定超时
    */
   timeout?: number;
 

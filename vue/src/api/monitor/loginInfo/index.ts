@@ -1,36 +1,36 @@
+import {type AxiosPromise} from 'axios';
+import {type LoginInfoQuery, type LoginInfoVO} from './types';
 import request from '@/utils/request';
-import { LoginInfoQuery, LoginInfoVO } from './types';
-import { AxiosPromise } from 'axios';
 
 // 查询登录日志列表
-export function list(query: LoginInfoQuery): AxiosPromise<LoginInfoVO[]> {
+export async function list(query: LoginInfoQuery): AxiosPromise<LoginInfoVO[]> {
   return request({
     url: '/monitor/logininfor/list',
     method: 'get',
-    params: query
+    params: query,
   });
 }
 
 // 删除登录日志
-export function delLoginInfo(infoId: string | number | Array<string | number>) {
+export async function delLoginInfo(infoId: string | number | Array<string | number>) {
   return request({
-    url: '/monitor/logininfor/' + infoId,
-    method: 'delete'
+    url: '/monitor/logininfor/' + infoId.toString(),
+    method: 'delete',
   });
 }
 
 // 解锁用户登录状态
-export function unlockLoginInfo(userName: string | Array<string>) {
+export async function unlockLoginInfo(userName: string | string[]) {
   return request({
-    url: '/monitor/logininfor/unlock/' + userName,
-    method: 'get'
+    url: '/monitor/logininfor/unlock/' + userName.toString(),
+    method: 'get',
   });
 }
 
 // 清空登录日志
-export function cleanLoginInfo() {
+export async function cleanLoginInfo() {
   return request({
     url: '/monitor/logininfor/clean',
-    method: 'delete'
+    method: 'delete',
   });
 }

@@ -3,6 +3,7 @@ const sessionCache = {
     if (!sessionStorage) {
       return;
     }
+
     if (key != null && value != null) {
       sessionStorage.setItem(key, value);
     }
@@ -11,9 +12,11 @@ const sessionCache = {
     if (!sessionStorage) {
       return null;
     }
+
     if (key == null) {
       return null;
     }
+
     return sessionStorage.getItem(key);
   },
   setJSON(key: string, jsonValue: any) {
@@ -26,17 +29,19 @@ const sessionCache = {
     if (value != null) {
       return JSON.parse(value);
     }
+
     return null;
   },
   remove(key: string) {
     sessionStorage.removeItem(key);
-  }
+  },
 };
 const localCache = {
   set(key: string, value: any) {
     if (!localStorage) {
       return;
     }
+
     if (key != null && value != null) {
       localStorage.setItem(key, value);
     }
@@ -45,9 +50,11 @@ const localCache = {
     if (!localStorage) {
       return null;
     }
+
     if (key == null) {
       return null;
     }
+
     return localStorage.getItem(key);
   },
   setJSON(key: string, jsonValue: any) {
@@ -60,14 +67,15 @@ const localCache = {
     if (value != null) {
       return JSON.parse(value);
     }
+
     return null;
   },
   remove(key: string) {
     localStorage.removeItem(key);
-  }
+  },
 };
 
-export default {
+const expose = {
   /**
    * 会话级缓存
    */
@@ -75,5 +83,6 @@ export default {
   /**
    * 本地缓存
    */
-  local: localCache
+  local: localCache,
 };
+export default expose;

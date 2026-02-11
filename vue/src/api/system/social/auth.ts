@@ -1,28 +1,29 @@
 import request from '@/utils/request';
 
 // 获取跳转URL
-export function authRouterUrl(source: string, tenantId: string) {
+export async function authRouterUrl(source: string, tenantId: string) {
   return request({
     url: '/auth/binding/' + source,
     method: 'get',
     params: {
-      tenantId: tenantId,
-      domain: window.location.host
-    }
+      tenantId,
+      domain: globalThis.location.host,
+    },
   });
 }
 
 // 解绑账号
-export function authUnlock(authId: string) {
+export async function authUnlock(authId: string) {
   return request({
     url: '/auth/unlock/' + authId,
-    method: 'delete'
+    method: 'delete',
   });
 }
-//获取授权列表
-export function getAuthList() {
+
+// 获取授权列表
+export async function getAuthList() {
   return request({
     url: '/system/social/list',
-    method: 'get'
+    method: 'get',
   });
 }

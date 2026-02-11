@@ -31,7 +31,7 @@ const { readAll } = useNoticeStore();
 
 // 定义变量内容
 const state = reactive({
-  loading: false
+  loading: false,
 });
 const newsList = ref([]) as any;
 

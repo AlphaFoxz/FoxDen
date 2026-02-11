@@ -4,7 +4,7 @@
  */
 import {type DirectiveBinding} from 'vue';
 
-export default {
+const expose = {
   beforeMount(element: any, {value, arg}: DirectiveBinding) {
     if (arg === 'callback') {
       element.$copyCallback = value;
@@ -22,6 +22,8 @@ export default {
     }
   },
 };
+
+export default expose;
 
 function copyTextToClipboard(input: string, {target = document.body} = {}) {
   const element = document.createElement('textarea');

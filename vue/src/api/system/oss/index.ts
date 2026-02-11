@@ -1,28 +1,28 @@
+import {type AxiosPromise} from 'axios';
+import {type OssQuery, type OssVO} from './types';
 import request from '@/utils/request';
-import { OssQuery, OssVO } from './types';
-import { AxiosPromise } from 'axios';
 
 // 查询OSS对象存储列表
-export function listOss(query: OssQuery): AxiosPromise<OssVO[]> {
+export async function listOss(query: OssQuery): AxiosPromise<OssVO[]> {
   return request({
     url: '/resource/oss/list',
     method: 'get',
-    params: query
+    params: query,
   });
 }
 
 // 查询OSS对象基于id串
-export function listByIds(ossId: string | number): AxiosPromise<OssVO[]> {
+export async function listByIds(ossId: string | number): AxiosPromise<OssVO[]> {
   return request({
     url: '/resource/oss/listByIds/' + ossId,
-    method: 'get'
+    method: 'get',
   });
 }
 
 // 删除OSS对象存储
-export function delOss(ossId: string | number | Array<string | number>) {
+export async function delOss(ossId: string | number | Array<string | number>) {
   return request({
-    url: '/resource/oss/' + ossId,
-    method: 'delete'
+    url: '/resource/oss/' + ossId.toString(),
+    method: 'delete',
   });
 }

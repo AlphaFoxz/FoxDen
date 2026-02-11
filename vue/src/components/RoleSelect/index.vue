@@ -1,15 +1,28 @@
 <template>
   <div>
     <el-dialog v-model="roleDialog.visible.value" :title="roleDialog.title.value" width="80%" append-to-body>
-      <transition :enter-active-class="proxy?.animate.searchAnimate.enter" :leave-active-class="proxy?.animate.searchAnimate.leave">
+      <transition
+        :enter-active-class="proxy?.animate.searchAnimate.enter"
+        :leave-active-class="proxy?.animate.searchAnimate.leave"
+      >
         <div v-show="showSearch" class="mb-[10px]">
           <el-card shadow="hover">
             <el-form ref="queryFormRef" :model="queryParams" :inline="true">
               <el-form-item label="角色名称" prop="roleName">
-                <el-input v-model="queryParams.roleName" placeholder="请输入角色名称" clearable @keyup.enter="handleQuery" />
+                <el-input
+                  v-model="queryParams.roleName"
+                  placeholder="请输入角色名称"
+                  clearable
+                  @keyup.enter="handleQuery"
+                />
               </el-form-item>
               <el-form-item label="权限字符" prop="roleKey">
-                <el-input v-model="queryParams.roleKey" placeholder="请输入权限字符" clearable @keyup.enter="handleQuery" />
+                <el-input
+                  v-model="queryParams.roleKey"
+                  placeholder="请输入权限字符"
+                  clearable
+                  @keyup.enter="handleQuery"
+                />
               </el-form-item>
 
               <el-form-item>
@@ -23,7 +36,13 @@
 
       <el-card shadow="hover">
         <template #header>
-          <el-tag v-for="role in selectRoleList" :key="role.roleId" closable style="margin: 2px" @close="handleCloseTag(role)">
+          <el-tag
+            v-for="role in selectRoleList"
+            :key="role.roleId"
+            closable
+            style="margin: 2px"
+            @close="handleCloseTag(role)"
+          >
             {{ role.roleName }}
           </el-tag>
         </template>
@@ -75,8 +94,8 @@
 </template>
 
 <script setup lang="ts">
-import { RoleVO, RoleQuery } from '@/api/system/role/types';
-import { VxeTableInstance } from 'vxe-table';
+import type { RoleVO, RoleQuery } from '@/api/system/role/types';
+import { type VxeTableInstance } from 'vxe-table';
 import useDialog from '@/hooks/useDialog';
 import api from '@/api/system/role';
 interface PropType {
@@ -87,7 +106,7 @@ interface PropType {
 const prop = withDefaults(defineProps<PropType>(), {
   multiple: true,
   modelValue: undefined,
-  data: undefined
+  data: undefined,
 });
 const emit = defineEmits(['update:modelValue', 'confirmCallBack']);
 
@@ -103,7 +122,7 @@ const dateRange = ref<[DateModelType, DateModelType]>(['', '']);
 const selectRoleList = ref<RoleVO[]>([]);
 
 const roleDialog = useDialog({
-  title: '角色选择'
+  title: '角色选择',
 });
 
 const queryFormRef = ref<ElFormInstance>();
@@ -114,7 +133,7 @@ const queryParams = ref<RoleQuery>({
   pageSize: 10,
   roleName: '',
   roleKey: '',
-  status: ''
+  status: '',
 });
 
 const defaultSelectRoleIds = computed(() => computedIds(prop.data));
@@ -237,7 +256,7 @@ watch(
       resetQuery();
       selectRoleList.value = [];
     }
-  }
+  },
 );
 onMounted(() => {
   getList(); // 初始化列表数据
@@ -245,6 +264,6 @@ onMounted(() => {
 
 defineExpose({
   open: roleDialog.openDialog,
-  close: roleDialog.closeDialog
+  close: roleDialog.closeDialog,
 });
 </script>

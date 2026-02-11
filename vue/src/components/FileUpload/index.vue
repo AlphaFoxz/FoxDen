@@ -52,7 +52,7 @@ import { globalHeaders } from '@/utils/request';
 const props = defineProps({
   modelValue: {
     type: [String, Object, Array],
-    default: () => []
+    default: () => [],
   },
   // 数量限制
   limit: propTypes.number.def(5),
@@ -63,7 +63,7 @@ const props = defineProps({
   // 是否显示提示
   isShowTip: propTypes.bool.def(true),
   // 禁用组件（仅查看文件）
-  disabled: propTypes.bool.def(false)
+  disabled: propTypes.bool.def(false),
 });
 
 const { proxy } = getCurrentInstance() as ComponentInternalInstance;
@@ -98,7 +98,7 @@ watch(
           return {
             name: oss.originalName,
             url: oss.url,
-            ossId: oss.ossId
+            ossId: oss.ossId,
           };
         });
       }
@@ -113,7 +113,7 @@ watch(
       return [];
     }
   },
-  { deep: true, immediate: true }
+  { deep: true, immediate: true },
 );
 
 // 上传前校检格式和大小
@@ -162,7 +162,7 @@ const handleUploadSuccess = (res: any, file: UploadFile) => {
     uploadList.value.push({
       name: res.data.fileName,
       url: res.data.url,
-      ossId: res.data.ossId
+      ossId: res.data.ossId,
     });
     uploadedSuccessfully();
   } else {

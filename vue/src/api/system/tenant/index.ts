@@ -58,7 +58,7 @@ export async function changeTenantStatus(id: string | number, tenantId: string |
 // 删除租户
 export async function delTenant(id: string | number | Array<string | number>) {
   return request({
-    url: '/system/tenant/' + id,
+    url: '/system/tenant/' + id.toString(),
     method: 'delete',
   });
 }

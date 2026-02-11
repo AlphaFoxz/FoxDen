@@ -2,7 +2,7 @@ import {type RouteLocationMatched, type RouteLocationNormalized, type RouteLocat
 import router from '@/router';
 import {useTagsViewStore} from '@/store/modules/tagsView';
 
-export default {
+const expose = {
   /**
    * 刷新当前tab页签
    * @param obj 标签对象
@@ -96,3 +96,4 @@ export default {
     useTagsViewStore().updateVisitedView(object);
   },
 };
+export default expose;

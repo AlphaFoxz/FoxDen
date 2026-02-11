@@ -77,7 +77,7 @@ const init = async () => {
     tenantId: tenantId,
     source: source,
     clientId: import.meta.env.VITE_APP_CLIENT_ID,
-    grantType: 'social'
+    grantType: 'social',
   };
 
   if (!getToken()) {

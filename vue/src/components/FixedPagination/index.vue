@@ -5,7 +5,13 @@
     </Teleport>
     <div class="fixed-bar">
       <el-footer style="z-index: 1000; background: #fff">
-        <pagination v-show="total > 0" :total="total" v-model:page="page" v-model:limit="limit" @pagination="$emit('pagination')" />
+        <pagination
+          v-show="total > 0"
+          :total="total"
+          v-model:page="page"
+          v-model:limit="limit"
+          @pagination="$emit('pagination')"
+        />
       </el-footer>
     </div>
   </div>

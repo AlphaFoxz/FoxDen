@@ -1,4 +1,4 @@
-import { MenuTypeEnum } from '@/enums/MenuTypeEnum';
+import {type MenuTypeEnum} from '@/enums/MenuTypeEnum';
 
 /**
  * 菜单树形结构类型

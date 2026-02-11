@@ -3,7 +3,10 @@
     <template v-for="(item, index) in options">
       <template v-if="isValueMatch(item.value)">
         <span
-          v-if="(item.elTagType === 'default' || item.elTagType === '') && (item.elTagClass === '' || item.elTagClass == null)"
+          v-if="
+            (item.elTagType === 'default' || item.elTagType === '') &&
+            (item.elTagClass === '' || item.elTagClass == null)
+          "
           :key="item.value"
           :index="index"
           :class="item.elTagClass"
@@ -45,17 +48,18 @@ interface Props {
 }
 const props = withDefaults(defineProps<Props>(), {
   showValue: true,
-  separator: ','
+  separator: ',',
 });
 
 const values = computed(() => {
   if (props.value === '' || props.value === null || typeof props.value === 'undefined') return [];
-  if (typeof props.value === 'number' || typeof props.value === 'boolean') return [props.value]
+  if (typeof props.value === 'number' || typeof props.value === 'boolean') return [props.value];
   return Array.isArray(props.value) ? props.value.map((item) => '' + item) : String(props.value).split(props.separator);
 });
 
 const unmatch = computed(() => {
-  if (props.options?.length == 0 || props.value === '' || props.value === null || typeof props.value === 'undefined') return false;
+  if (props.options?.length == 0 || props.value === '' || props.value === null || typeof props.value === 'undefined')
+    return false;
   // 传入值为非数组
   let unmatch = false; // 添加一个标志来判断是否有未匹配项
   values.value.forEach((item) => {
@@ -88,8 +92,8 @@ const handleArray = (array: Array<string | number>) => {
 };
 
 const isValueMatch = (itemValue: any) => {
-  return values.value.some(val => val == itemValue)
-}
+  return values.value.some((val) => val == itemValue);
+};
 </script>
 
 <style lang="scss" scoped>

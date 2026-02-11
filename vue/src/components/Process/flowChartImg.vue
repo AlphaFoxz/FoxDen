@@ -21,8 +21,8 @@
 const props = defineProps({
   imgUrl: {
     type: String,
-    default: () => ''
-  }
+    default: () => '',
+  },
 });
 
 const imageWrapperRef = ref<HTMLElement | null>(null);
@@ -125,7 +125,7 @@ const getBounds = () => {
 };
 
 const transformStyle = computed(() => ({
-  transition: isDragging ? 'none' : 'transform 0.2s ease'
+  transition: isDragging ? 'none' : 'transform 0.2s ease',
 }));
 </script>
 

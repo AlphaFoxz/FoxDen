@@ -7,13 +7,20 @@
     <transition :enter-active-class="proxy?.animate.logoAnimate.enter" mode="out-in">
       <router-link v-if="collapse" key="collapse" class="sidebar-logo-link" to="/">
         <img v-if="logo" :src="logo" class="sidebar-logo" />
-        <h1 v-else class="sidebar-title" :style="{ color: sideTheme === 'theme-dark' ? variables.logoTitleColor : variables.logoLightTitleColor }">
+        <h1
+          v-else
+          class="sidebar-title"
+          :style="{ color: sideTheme === 'theme-dark' ? variables.logoTitleColor : variables.logoLightTitleColor }"
+        >
           {{ title }}
         </h1>
       </router-link>
       <router-link v-else key="expand" class="sidebar-logo-link" to="/">
         <img v-if="logo" :src="logo" class="sidebar-logo" />
-        <h1 class="sidebar-title" :style="{ color: sideTheme === 'theme-dark' ? variables.logoTitleColor : variables.logoLightTitleColor }">
+        <h1
+          class="sidebar-title"
+          :style="{ color: sideTheme === 'theme-dark' ? variables.logoTitleColor : variables.logoLightTitleColor }"
+        >
           {{ title }}
         </h1>
       </router-link>
@@ -30,8 +37,8 @@ const { proxy } = getCurrentInstance() as ComponentInternalInstance;
 defineProps({
   collapse: {
     type: Boolean,
-    required: true
-  }
+    required: true,
+  },
 });
 
 const title = import.meta.env.VITE_APP_LOGO_TITLE;

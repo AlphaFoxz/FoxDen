@@ -46,7 +46,7 @@ export async function updateConfig(data: ConfigForm) {
 }
 
 // 修改参数配置
-export async function updateConfigByKey(key: string, value: any) {
+export async function updateConfigByKey(key: string, value: boolean) {
   return request({
     url: '/system/config/updateByKey',
     method: 'put',
@@ -60,7 +60,7 @@ export async function updateConfigByKey(key: string, value: any) {
 // 删除参数配置
 export async function delConfig(configId: string | number | Array<string | number>) {
   return request({
-    url: '/system/config/' + configId,
+    url: '/system/config/' + configId.toString(),
     method: 'delete',
   });
 }

@@ -1,15 +1,17 @@
-import { RouterJumpVo } from '@/api/workflow/workflowCommon/types';
+import {type RouterJumpVo} from '@/api/workflow/workflowCommon/types';
 
-export default {
-  routerJump(routerJumpVo: RouterJumpVo, proxy) {
+const expose = {
+  routerJump(routerJumpVo: RouterJumpVo, proxy: globalThis.ComponentPublicInstance) {
     proxy.$tab.closePage(proxy.$route);
     proxy.$router.push({
       path: routerJumpVo.formPath,
       query: {
         id: routerJumpVo.businessId,
         type: routerJumpVo.type,
-        taskId: routerJumpVo.taskId
-      }
+        taskId: routerJumpVo.taskId,
+      },
     });
-  }
+  },
 };
+
+export default expose;

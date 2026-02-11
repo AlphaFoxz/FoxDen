@@ -2,7 +2,7 @@ import {type MessageBoxData} from 'element-plus';
 import {type LoadingInstance} from 'element-plus/es/components/loading/src/loading';
 
 let loadingInstance: LoadingInstance;
-export default {
+const expose = {
   // 消息提示
   msg(content: any) {
     ElMessage.info(content);
@@ -80,3 +80,4 @@ export default {
     loadingInstance.close();
   },
 };
+export default expose;

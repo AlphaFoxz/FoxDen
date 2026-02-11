@@ -20,7 +20,7 @@ export interface DemoVO {
   orderNum: number;
 
   /**
-   * key键
+   * Key键
    */
   testKey: string;
 
@@ -52,7 +52,7 @@ export interface DemoForm extends BaseEntity {
   orderNum?: number;
 
   /**
-   * key键
+   * Key键
    */
   testKey?: string;
 
@@ -79,7 +79,7 @@ export interface DemoQuery extends PageQuery {
   orderNum?: number;
 
   /**
-   * key键
+   * Key键
    */
   testKey?: string;
 

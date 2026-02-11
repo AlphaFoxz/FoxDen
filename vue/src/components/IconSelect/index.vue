@@ -1,5 +1,5 @@
 <template>
-  <div class="relative" :style="{ 'width': width }">
+  <div class="relative" :style="{ width: width }">
     <el-input v-model="modelValue" readonly placeholder="点击选择图标" @click="visible = !visible">
       <template #prepend>
         <svg-icon :icon-class="modelValue" />
@@ -8,7 +8,10 @@
 
     <el-popover shadow="none" :visible="visible" placement="bottom-end" trigger="click" :width="450">
       <template #reference>
-        <div class="cursor-pointer text-[#999] absolute right-[10px] top-0 height-[32px] leading-[32px]" @click="visible = !visible">
+        <div
+          class="cursor-pointer text-[#999] absolute right-[10px] top-0 height-[32px] leading-[32px]"
+          @click="visible = !visible"
+        >
           <i-ep-caret-top v-show="visible"></i-ep-caret-top>
           <i-ep-caret-bottom v-show="!visible"></i-ep-caret-bottom>
         </div>
@@ -18,7 +21,13 @@
 
       <el-scrollbar height="w-[200px]">
         <ul class="icon-list">
-          <el-tooltip v-for="(iconName, index) in iconNames" :key="index" :content="iconName" placement="bottom" effect="light">
+          <el-tooltip
+            v-for="(iconName, index) in iconNames"
+            :key="index"
+            :content="iconName"
+            placement="bottom"
+            effect="light"
+          >
             <li :class="['icon-item', { active: modelValue == iconName }]" @click="selectedIcon(iconName)">
               <svg-icon color="var(--el-text-color-regular)" :icon-class="iconName" />
             </li>
@@ -35,7 +44,7 @@ import { propTypes } from '@/utils/propTypes';
 
 const props = defineProps({
   modelValue: propTypes.string.isRequired,
-  width: propTypes.string.def('400px')
+  width: propTypes.string.def('400px'),
 });
 
 const emit = defineEmits(['update:modelValue']);

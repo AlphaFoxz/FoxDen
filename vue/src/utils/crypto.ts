@@ -11,6 +11,7 @@ const generateRandomString = () => {
   for (let i = 0; i < 32; i++) {
     result += characters.charAt(Math.floor(Math.random() * charactersLength));
   }
+
   return result;
 };
 
@@ -18,24 +19,18 @@ const generateRandomString = () => {
  * 随机生成aes 密钥
  * @returns {string}
  */
-export const generateAesKey = () => {
-  return CryptoJS.enc.Utf8.parse(generateRandomString());
-};
+export const generateAesKey = () => CryptoJS.enc.Utf8.parse(generateRandomString());
 
 /**
  * 加密base64
  * @returns {string}
  */
-export const encryptBase64 = (str: CryptoJS.lib.WordArray) => {
-  return CryptoJS.enc.Base64.stringify(str);
-};
+export const encryptBase64 = (string_: CryptoJS.lib.WordArray) => CryptoJS.enc.Base64.stringify(string_);
 
 /**
  * 解密base64
  */
-export const decryptBase64 = (str: string) => {
-  return CryptoJS.enc.Base64.parse(str);
-};
+export const decryptBase64 = (string_: string) => CryptoJS.enc.Base64.parse(string_);
 
 /**
  * 使用密钥对数据进行加密
@@ -46,7 +41,7 @@ export const decryptBase64 = (str: string) => {
 export const encryptWithAes = (message: string, aesKey: CryptoJS.lib.WordArray) => {
   const encrypted = CryptoJS.AES.encrypt(message, aesKey, {
     mode: CryptoJS.mode.ECB,
-    padding: CryptoJS.pad.Pkcs7
+    padding: CryptoJS.pad.Pkcs7,
   });
   return encrypted.toString();
 };
@@ -60,7 +55,7 @@ export const encryptWithAes = (message: string, aesKey: CryptoJS.lib.WordArray) 
 export const decryptWithAes = (message: string, aesKey: CryptoJS.lib.WordArray) => {
   const decrypted = CryptoJS.AES.decrypt(message, aesKey, {
     mode: CryptoJS.mode.ECB,
-    padding: CryptoJS.pad.Pkcs7
+    padding: CryptoJS.pad.Pkcs7,
   });
   return decrypted.toString(CryptoJS.enc.Utf8);
 };

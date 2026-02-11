@@ -141,7 +141,7 @@ export interface DbColumnForm extends BaseEntity {
   required: boolean;
 }
 
-export interface DbParamForm {
+export interface DbParameterForm {
   treeCode?: any;
   treeName?: any;
   treeParentCode?: any;
@@ -150,7 +150,7 @@ export interface DbParamForm {
 
 export interface DbTableForm extends BaseEntity {
   createDept?: any;
-  tableId: string | string;
+  tableId: string;
   tableName: string;
   tableComment: string;
   subTableName?: any;
@@ -176,5 +176,5 @@ export interface DbTableForm extends BaseEntity {
   parentMenuName?: any;
   tree: boolean;
   crud: boolean;
-  params: DbParamForm;
+  params: DbParameterForm;
 }

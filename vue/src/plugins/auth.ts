@@ -20,7 +20,7 @@ const authRole = (role: string): boolean => {
   return false;
 };
 
-export default {
+const expose = {
   // 验证用户是否具备某权限
   hasPermi(permission: string): boolean {
     return authPermission(permission);
@@ -46,3 +46,4 @@ export default {
     return roles.every(item => authRole(item));
   },
 };
+export default expose;

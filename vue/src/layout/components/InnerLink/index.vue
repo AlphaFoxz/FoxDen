@@ -9,7 +9,7 @@ import { propTypes } from '@/utils/propTypes';
 
 const props = defineProps({
   src: propTypes.string.def('/'),
-  iframeId: propTypes.string.isRequired
+  iframeId: propTypes.string.isRequired,
 });
 const height = ref(document.documentElement.clientHeight - 94.5 + 'px');
 </script>

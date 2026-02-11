@@ -1,4 +1,4 @@
-export default {
+const expose = {
   // 路由国际化
   route: {
     dashboard: '首页',
@@ -83,3 +83,5 @@ export default {
     logout: '退出登录',
   },
 };
+
+export default expose;

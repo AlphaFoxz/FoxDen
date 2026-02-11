@@ -101,11 +101,9 @@ export interface SpelQuery extends PageQuery {
    */
   status?: string;
 
-    /**
+  /**
      * 日期范围参数
      */
-    params?: any;
+  params?: any;
 }
-
-
 

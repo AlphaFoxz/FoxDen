@@ -21,15 +21,28 @@
           </el-card>
         </el-col>
         <el-col :lg="20" :xs="24">
-          <transition :enter-active-class="proxy?.animate.searchAnimate.enter" :leave-active-class="proxy?.animate.searchAnimate.leave">
+          <transition
+            :enter-active-class="proxy?.animate.searchAnimate.enter"
+            :leave-active-class="proxy?.animate.searchAnimate.leave"
+          >
             <div v-show="showSearch" class="mb-[10px]">
               <el-card shadow="hover">
                 <el-form ref="queryFormRef" :model="queryParams" :inline="true">
                   <el-form-item label="用户名称" prop="userName">
-                    <el-input v-model="queryParams.userName" placeholder="请输入用户名称" clearable @keyup.enter="handleQuery" />
+                    <el-input
+                      v-model="queryParams.userName"
+                      placeholder="请输入用户名称"
+                      clearable
+                      @keyup.enter="handleQuery"
+                    />
                   </el-form-item>
                   <el-form-item label="手机号码" prop="phonenumber">
-                    <el-input v-model="queryParams.phonenumber" placeholder="请输入手机号码" clearable @keyup.enter="handleQuery" />
+                    <el-input
+                      v-model="queryParams.phonenumber"
+                      placeholder="请输入手机号码"
+                      clearable
+                      @keyup.enter="handleQuery"
+                    />
                   </el-form-item>
                   <el-form-item>
                     <el-button type="primary" icon="Search" @click="handleQuery">搜索</el-button>
@@ -42,7 +55,13 @@
 
           <el-card shadow="hover">
             <template v-if="prop.multiple" #header>
-              <el-tag v-for="user in selectUserList" :key="user.userId" closable style="margin: 2px" @close="handleCloseTag(user)">
+              <el-tag
+                v-for="user in selectUserList"
+                :key="user.userId"
+                closable
+                style="margin: 2px"
+                @close="handleCloseTag(user)"
+              >
                 {{ user.nickName }}
               </el-tag>
             </template>
@@ -99,9 +118,9 @@
 
 <script setup lang="ts">
 import api from '@/api/system/user';
-import { UserQuery, UserVO } from '@/api/system/user/types';
-import { DeptTreeVO, DeptVO } from '@/api/system/dept/types';
-import { VxeTableInstance } from 'vxe-table';
+import type { UserQuery, UserVO } from '@/api/system/user/types';
+import type { DeptTreeVO, DeptVO } from '@/api/system/dept/types';
+import { type VxeTableInstance } from 'vxe-table';
 import useDialog from '@/hooks/useDialog';
 
 interface PropType {
@@ -114,7 +133,7 @@ const prop = withDefaults(defineProps<PropType>(), {
   multiple: true,
   modelValue: undefined,
   data: undefined,
-  userIds: undefined
+  userIds: undefined,
 });
 const emit = defineEmits(['update:modelValue', 'confirmCallBack']);
 
@@ -135,7 +154,7 @@ const queryFormRef = ref<ElFormInstance>();
 const tableRef = ref<VxeTableInstance<UserVO>>();
 
 const userDialog = useDialog({
-  title: '用户选择'
+  title: '用户选择',
 });
 
 const queryParams = ref<UserQuery>({
@@ -146,7 +165,7 @@ const queryParams = ref<UserQuery>({
   status: '',
   deptId: '',
   roleId: '',
-  userIds: ''
+  userIds: '',
 });
 
 const defaultSelectUserIds = computed(() => computedIds(prop.data));
@@ -157,8 +176,8 @@ watchEffect(
     deptTreeRef.value?.filter(deptName.value);
   },
   {
-    flush: 'post' // watchEffect会在DOM挂载或者更新之前就会触发，此属性控制在DOM元素更新后运行
-  }
+    flush: 'post', // watchEffect会在DOM挂载或者更新之前就会触发，此属性控制在DOM元素更新后运行
+  },
 );
 
 const confirm = () => {
@@ -301,11 +320,11 @@ watch(
       resetQuery(false);
       selectUserList.value = [];
     }
-  }
+  },
 );
 
 defineExpose({
   open: userDialog.openDialog,
-  close: userDialog.closeDialog
+  close: userDialog.closeDialog,
 });
 </script>
