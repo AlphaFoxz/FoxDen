@@ -17,6 +17,7 @@ import com.github.alphafoxz.foxden.domain.system.bo.SysMenuBo
 import com.github.alphafoxz.foxden.domain.system.service.SysMenuService
 import com.github.alphafoxz.foxden.domain.system.service.SysTenantPackageService
 import com.github.alphafoxz.foxden.domain.system.service.extensions.deleteMenu
+import com.github.alphafoxz.foxden.domain.system.vo.MenuTreeSelectVo
 import com.github.alphafoxz.foxden.domain.system.vo.RouterVo
 import com.github.alphafoxz.foxden.domain.system.vo.SysMenuVo
 import org.springframework.validation.annotation.Validated
@@ -89,14 +90,15 @@ class SysMenuController(
      */
     @SaCheckPermission("system:menu:query")
     @GetMapping("/roleMenuTreeselect/{roleId}")
-    fun roleMenuTreeselect(@PathVariable roleId: Long): R<Map<String, Any>> {
+    fun roleMenuTreeselect(@PathVariable roleId: Long): R<MenuTreeSelectVo> {
         val userId = LoginHelper.getUserId() ?: 0L
         val menus = menuService.selectMenuList(userId)
-        val selectVo = mapOf(
-            "checkedKeys" to menuService.selectMenuListByRoleId(roleId),
-            "menus" to menuService.buildMenuTreeSelect(menus)
+        return R.ok(
+            MenuTreeSelectVo(
+                checkedKeys = menuService.selectMenuListByRoleId(roleId),
+                menus = menuService.buildMenuTreeSelect(menus)
+            )
         )
-        return R.ok(selectVo)
     }
 
     /**
@@ -196,12 +198,4 @@ class SysMenuController(
         menuService.deleteMenuById(menuIdList)
         return R.ok()
     }
-
-    /**
-     * 菜单树选择VO
-     */
-    data class MenuTreeSelectVo(
-        val checkedKeys: List<Long>,
-        val menus: List<Tree<Long>>
-    )
 }
