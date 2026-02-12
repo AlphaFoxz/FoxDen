@@ -1,9 +1,12 @@
 package com.github.alphafoxz.foxden.domain.system.entity
 
-import com.github.alphafoxz.foxden.common.core.constant.SystemConstants
-import com.github.alphafoxz.foxden.common.jimmer.entity.comm.*
+import com.github.alphafoxz.foxden.common.jimmer.entity.comm.CommDelFlag
+import com.github.alphafoxz.foxden.common.jimmer.entity.comm.CommInfo
+import com.github.alphafoxz.foxden.common.jimmer.entity.comm.CommTenant
+import org.babyfish.jimmer.jackson.JsonConverter
+import org.babyfish.jimmer.jackson.LongToStringConverter
 import org.babyfish.jimmer.sql.*
-import java.util.Date
+import java.util.*
 
 /**
  * 用户对象 sys_user
@@ -14,9 +17,9 @@ interface SysUser : CommDelFlag, CommInfo, CommTenant {
     /**
      * 主键ID
      */
-    @org.babyfish.jimmer.sql.Column(name = "user_id")
+    @Column(name = "user_id")
     @Id
-    @GeneratedValue
+    @JsonConverter(LongToStringConverter::class)
     val id: Long
 
     /**

@@ -1,13 +1,16 @@
 package com.github.alphafoxz.foxden.domain.system.service.impl
 
-import com.github.alphafoxz.foxden.domain.system.service.SysOperLogService
-import com.github.alphafoxz.foxden.domain.system.entity.*
-import com.github.alphafoxz.foxden.domain.system.bo.SysOperLogBo
-import com.github.alphafoxz.foxden.domain.system.vo.SysOperLogVo
 import com.github.alphafoxz.foxden.common.jimmer.core.page.PageQuery
 import com.github.alphafoxz.foxden.common.jimmer.core.page.TableDataInfo
-import org.babyfish.jimmer.sql.kt.ast.expression.*
-import org.babyfish.jimmer.sql.kt.*
+import com.github.alphafoxz.foxden.domain.system.bo.SysOperLogBo
+import com.github.alphafoxz.foxden.domain.system.entity.*
+import com.github.alphafoxz.foxden.domain.system.service.SysOperLogService
+import com.github.alphafoxz.foxden.domain.system.service.extensions.saveWithAutoId
+import com.github.alphafoxz.foxden.domain.system.vo.SysOperLogVo
+import org.babyfish.jimmer.sql.kt.KSqlClient
+import org.babyfish.jimmer.sql.kt.ast.expression.desc
+import org.babyfish.jimmer.sql.kt.ast.expression.eq
+import org.babyfish.jimmer.sql.kt.ast.expression.like
 import org.springframework.stereotype.Service
 
 /**
@@ -56,7 +59,7 @@ class SysOperLogServiceImpl(
             costTime = bo.costTime
         }
 
-        sqlClient.save(newOperLog)
+        sqlClient.saveWithAutoId(newOperLog)
     }
 
     override fun selectOperLogById(operId: Long): SysOperLogVo? {

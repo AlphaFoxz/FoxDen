@@ -1,13 +1,14 @@
 package com.github.alphafoxz.foxden.domain.system.service.impl
 
-import com.github.alphafoxz.foxden.domain.system.service.SysClientService
-import com.github.alphafoxz.foxden.domain.system.entity.*
-import com.github.alphafoxz.foxden.domain.system.bo.SysClientBo
-import com.github.alphafoxz.foxden.domain.system.vo.SysClientVo
 import com.github.alphafoxz.foxden.common.core.constant.SystemConstants
 import com.github.alphafoxz.foxden.common.core.exception.ServiceException
-import org.babyfish.jimmer.sql.kt.ast.expression.*
+import com.github.alphafoxz.foxden.domain.system.bo.SysClientBo
+import com.github.alphafoxz.foxden.domain.system.entity.*
+import com.github.alphafoxz.foxden.domain.system.service.SysClientService
+import com.github.alphafoxz.foxden.domain.system.service.extensions.saveWithAutoId
+import com.github.alphafoxz.foxden.domain.system.vo.SysClientVo
 import org.babyfish.jimmer.sql.kt.*
+import org.babyfish.jimmer.sql.kt.ast.expression.*
 import org.springframework.stereotype.Service
 
 /**
@@ -57,7 +58,7 @@ class SysClientServiceImpl(
             createTime = java.time.LocalDateTime.now()
         }
 
-        val result = sqlClient.save(newClient)
+        val result = sqlClient.saveWithAutoId(newClient)
         return if (result.isModified) 1 else 0
     }
 

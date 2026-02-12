@@ -1,7 +1,12 @@
 package com.github.alphafoxz.foxden.domain.system.entity
 
-import com.github.alphafoxz.foxden.common.jimmer.entity.comm.*
-import org.babyfish.jimmer.sql.*
+import com.github.alphafoxz.foxden.common.jimmer.entity.comm.CommInfo
+import com.github.alphafoxz.foxden.common.jimmer.entity.comm.CommTenant
+import org.babyfish.jimmer.jackson.JsonConverter
+import org.babyfish.jimmer.jackson.LongToStringConverter
+import org.babyfish.jimmer.sql.Entity
+import org.babyfish.jimmer.sql.Id
+import org.babyfish.jimmer.sql.Table
 
 /**
  * 字典类型表 sys_dict_type
@@ -14,7 +19,7 @@ interface SysDictType : CommInfo, CommTenant {
      */
     @org.babyfish.jimmer.sql.Column(name = "dict_id")
     @Id
-    @GeneratedValue
+    @JsonConverter(LongToStringConverter::class)
     val id: Long
 
     /**

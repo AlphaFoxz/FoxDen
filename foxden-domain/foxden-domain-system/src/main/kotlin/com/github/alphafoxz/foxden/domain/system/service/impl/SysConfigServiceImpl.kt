@@ -9,6 +9,7 @@ import com.github.alphafoxz.foxden.common.redis.utils.CacheUtils
 import com.github.alphafoxz.foxden.domain.system.bo.SysConfigBo
 import com.github.alphafoxz.foxden.domain.system.entity.*
 import com.github.alphafoxz.foxden.domain.system.service.SysConfigService
+import com.github.alphafoxz.foxden.domain.system.service.extensions.saveWithAutoId
 import com.github.alphafoxz.foxden.domain.system.vo.SysConfigVo
 import org.babyfish.jimmer.sql.kt.KSqlClient
 import org.babyfish.jimmer.sql.kt.ast.expression.asc
@@ -84,7 +85,7 @@ class SysConfigServiceImpl(
             createTime = java.time.LocalDateTime.now()
         }
 
-        val result = sqlClient.save(newConfig)
+        val result = sqlClient.saveWithAutoId(newConfig)
         return if (result.isModified) 1 else 0
     }
 

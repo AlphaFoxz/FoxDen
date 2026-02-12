@@ -20,12 +20,16 @@ class SysUserServiceImpl(
 | Operation | Method Type | Use |
 |-----------|-------------|-----|
 | **INSERT** | `insertXxx()`, `registerXxx()` | `sqlClient.save(Draft)` - Draft API for type-safe entity creation |
+| **INSERT (Custom ID)** | Entities with Snowflake ID | `sqlClient.saveWithAutoId(Draft)` - Auto ID generation with `INSERT_ONLY` mode |
 | **UPDATE** | `updateXxx()` | `sqlClient.createUpdate()` - Direct UPDATE, better performance |
 | **DELETE** | `deleteXxx()` | `sqlClient.deleteById/deleteByIds()` |
 
 **Rule of thumb:**
 - Creating new entity or handling associations? → `save(Draft)`
+- Creating entity with custom ID generator (Snowflake)? → `saveWithAutoId(Draft)` or `save(Draft) { setMode(INSERT_ONLY) }`
 - Updating existing fields? → `createUpdate()`
+
+**Note:** For entities using custom `UserIdGenerator` (e.g., SnowflakeIdGenerator), the ID is null during Draft creation. Use `saveWithAutoId()` extension function or explicitly set `INSERT_ONLY` mode to tell Jimmer this is an insert operation.
 
 ## Query Patterns
 

@@ -14,6 +14,7 @@ import com.github.alphafoxz.foxden.common.oss.enums.AccessPolicyType
 import com.github.alphafoxz.foxden.common.oss.factory.OssFactory
 import com.github.alphafoxz.foxden.domain.system.entity.*
 import com.github.alphafoxz.foxden.domain.system.service.SysOssService
+import com.github.alphafoxz.foxden.domain.system.service.extensions.saveWithAutoId
 import com.github.alphafoxz.foxden.domain.system.vo.SysOssVo
 import jakarta.servlet.http.HttpServletResponse
 import org.babyfish.jimmer.sql.kt.KSqlClient
@@ -130,7 +131,7 @@ class SysOssServiceImpl(
             this.createTime = java.time.LocalDateTime.now()
         }
 
-        val result = sqlClient.save(newOss)
+        val result = sqlClient.saveWithAutoId(newOss)
         if (!result.isModified) {
             throw ServiceException("保存文件信息失败")
         }
@@ -174,7 +175,7 @@ class SysOssServiceImpl(
             this.createTime = java.time.LocalDateTime.now()
         }
 
-        val result = sqlClient.save(newOss)
+        val result = sqlClient.saveWithAutoId(newOss)
         if (!result.isModified) {
             throw ServiceException("保存文件信息失败")
         }

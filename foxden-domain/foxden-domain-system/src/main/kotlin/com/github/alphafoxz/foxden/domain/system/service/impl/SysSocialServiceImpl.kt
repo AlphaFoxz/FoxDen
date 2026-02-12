@@ -1,12 +1,14 @@
 package com.github.alphafoxz.foxden.domain.system.service.impl
 
-import com.github.alphafoxz.foxden.domain.system.service.SysSocialService
-import com.github.alphafoxz.foxden.domain.system.entity.*
-import com.github.alphafoxz.foxden.domain.system.bo.SysSocialBo
-import com.github.alphafoxz.foxden.domain.system.vo.SysSocialVo
 import com.github.alphafoxz.foxden.common.core.exception.ServiceException
-import org.babyfish.jimmer.sql.kt.ast.expression.*
-import org.babyfish.jimmer.sql.kt.*
+import com.github.alphafoxz.foxden.domain.system.bo.SysSocialBo
+import com.github.alphafoxz.foxden.domain.system.entity.*
+import com.github.alphafoxz.foxden.domain.system.service.SysSocialService
+import com.github.alphafoxz.foxden.domain.system.service.extensions.saveWithAutoId
+import com.github.alphafoxz.foxden.domain.system.vo.SysSocialVo
+import org.babyfish.jimmer.sql.kt.KSqlClient
+import org.babyfish.jimmer.sql.kt.ast.expression.desc
+import org.babyfish.jimmer.sql.kt.ast.expression.eq
 import org.springframework.stereotype.Service
 
 /**
@@ -66,7 +68,7 @@ class SysSocialServiceImpl(
             createTime = java.time.LocalDateTime.now()
         }
 
-        val result = sqlClient.save(newSocial)
+        val result = sqlClient.saveWithAutoId(newSocial)
         return if (result.isModified) 1 else 0
     }
 

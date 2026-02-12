@@ -1,5 +1,6 @@
 package com.github.alphafoxz.foxden.domain.system.service.impl
 
+import com.github.alphafoxz.foxden.common.core.constant.CacheNames
 import com.github.alphafoxz.foxden.common.core.domain.dto.DictDataDTO
 import com.github.alphafoxz.foxden.common.core.domain.dto.DictTypeDTO
 import com.github.alphafoxz.foxden.common.core.exception.ServiceException
@@ -10,15 +11,17 @@ import com.github.alphafoxz.foxden.common.core.utils.StringUtils
 import com.github.alphafoxz.foxden.common.jimmer.core.page.PageQuery
 import com.github.alphafoxz.foxden.common.jimmer.core.page.TableDataInfo
 import com.github.alphafoxz.foxden.common.redis.utils.CacheUtils
-import com.github.alphafoxz.foxden.common.core.constant.CacheNames
-import com.github.alphafoxz.foxden.domain.system.entity.*
 import com.github.alphafoxz.foxden.domain.system.bo.SysDictTypeBo
+import com.github.alphafoxz.foxden.domain.system.entity.*
 import com.github.alphafoxz.foxden.domain.system.service.SysDictTypeService
+import com.github.alphafoxz.foxden.domain.system.service.extensions.saveWithAutoId
 import com.github.alphafoxz.foxden.domain.system.vo.SysDictDataVo
 import com.github.alphafoxz.foxden.domain.system.vo.SysDictTypeVo
-import org.babyfish.jimmer.sql.kt.ast.expression.*
-import org.babyfish.jimmer.sql.kt.*
-import org.springframework.cache.annotation.CacheEvict
+import org.babyfish.jimmer.sql.kt.KSqlClient
+import org.babyfish.jimmer.sql.kt.ast.expression.asc
+import org.babyfish.jimmer.sql.kt.ast.expression.eq
+import org.babyfish.jimmer.sql.kt.ast.expression.like
+import org.babyfish.jimmer.sql.kt.ast.expression.ne
 import org.springframework.cache.annotation.CachePut
 import org.springframework.cache.annotation.Cacheable
 import org.springframework.stereotype.Service
@@ -41,7 +44,11 @@ class SysDictTypeServiceImpl(
         }.execute()
 
         // 使用假分页
-        return TableDataInfo.build(dictTypes.map { entityToVo(it) }, pageQuery.getPageNumOrDefault(), pageQuery.getPageSizeOrDefault())
+        return TableDataInfo.build(
+            dictTypes.map { entityToVo(it) },
+            pageQuery.getPageNumOrDefault(),
+            pageQuery.getPageSizeOrDefault()
+        )
     }
 
     override fun selectDictTypeList(dictType: SysDictTypeBo): List<SysDictTypeVo> {
@@ -131,7 +138,7 @@ class SysDictTypeServiceImpl(
             createTime = java.time.LocalDateTime.now()
         }
 
-        val result = sqlClient.save(newDictType)
+        val result = sqlClient.saveWithAutoId(newDictType)
         if (result.isModified) {
             // 新增 type 下无 data 数据 返回空防止缓存穿透
             return emptyList()

@@ -2,26 +2,29 @@ package com.github.alphafoxz.foxden.domain.system.service.impl
 
 import com.github.alphafoxz.foxden.common.core.constant.SystemConstants
 import com.github.alphafoxz.foxden.common.core.domain.dto.UserDTO
+import com.github.alphafoxz.foxden.common.core.enums.UserType
 import com.github.alphafoxz.foxden.common.core.exception.ServiceException
 import com.github.alphafoxz.foxden.common.core.service.UserService
 import com.github.alphafoxz.foxden.common.core.utils.MapstructUtils
-import com.github.alphafoxz.foxden.common.core.utils.StringUtils
-import com.github.alphafoxz.foxden.common.core.enums.UserType
 import com.github.alphafoxz.foxden.common.jimmer.core.page.PageQuery
 import com.github.alphafoxz.foxden.common.jimmer.core.page.TableDataInfo
 import com.github.alphafoxz.foxden.common.security.utils.LoginHelper
 import com.github.alphafoxz.foxden.domain.system.bo.SysUserBo
 import com.github.alphafoxz.foxden.domain.system.entity.*
-import com.github.alphafoxz.foxden.domain.system.service.SysUserService
 import com.github.alphafoxz.foxden.domain.system.service.SysRoleService
+import com.github.alphafoxz.foxden.domain.system.service.SysUserService
+import com.github.alphafoxz.foxden.domain.system.service.extensions.saveWithAutoId
 import com.github.alphafoxz.foxden.domain.system.vo.SysUserExportVo
 import com.github.alphafoxz.foxden.domain.system.vo.SysUserVo
-import org.babyfish.jimmer.sql.kt.ast.expression.*
-import org.babyfish.jimmer.sql.kt.*
+import org.babyfish.jimmer.sql.kt.KSqlClient
+import org.babyfish.jimmer.sql.kt.ast.expression.asc
+import org.babyfish.jimmer.sql.kt.ast.expression.eq
+import org.babyfish.jimmer.sql.kt.ast.expression.like
+import org.babyfish.jimmer.sql.kt.ast.expression.ne
 import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.stereotype.Service
 import java.time.LocalDateTime
-import java.util.Date
+import java.util.*
 
 /**
  * User 业务层处理
@@ -340,7 +343,7 @@ class SysUserServiceImpl(
             createTime = LocalDateTime.now()
         }
 
-        val result = sqlClient.save(newUser)
+        val result = sqlClient.saveWithAutoId(newUser)
         if (!result.isModified) {
             return 0
         }
@@ -412,7 +415,7 @@ class SysUserServiceImpl(
             createTime = LocalDateTime.now()
         }
 
-        val result = sqlClient.save(newUser)
+        val result = sqlClient.saveWithAutoId(newUser)
         return result.isModified
     }
 

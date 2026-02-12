@@ -10,13 +10,16 @@ import com.github.alphafoxz.foxden.common.security.utils.LoginHelper
 import com.github.alphafoxz.foxden.domain.system.bo.SysMenuBo
 import com.github.alphafoxz.foxden.domain.system.entity.*
 import com.github.alphafoxz.foxden.domain.system.service.SysMenuService
+import com.github.alphafoxz.foxden.domain.system.service.extensions.saveWithAutoId
 import com.github.alphafoxz.foxden.domain.system.vo.RouterVo
 import com.github.alphafoxz.foxden.domain.system.vo.SysMenuVo
 import com.github.alphafoxz.foxden.domain.tenant.entity.SysTenantPackage
 import org.babyfish.jimmer.sql.kt.KSqlClient
-import org.babyfish.jimmer.sql.kt.ast.expression.*
+import org.babyfish.jimmer.sql.kt.ast.expression.asc
+import org.babyfish.jimmer.sql.kt.ast.expression.eq
+import org.babyfish.jimmer.sql.kt.ast.expression.like
+import org.babyfish.jimmer.sql.kt.ast.expression.ne
 import org.babyfish.jimmer.sql.kt.fetcher.newFetcher
-import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.stereotype.Service
 
 /**
@@ -281,7 +284,7 @@ class SysMenuServiceImpl(
             createTime = java.time.LocalDateTime.now()
         }
 
-        val result = sqlClient.save(newMenu)
+        val result = sqlClient.saveWithAutoId(newMenu)
         return if (result.isModified) 1 else 0
     }
 
@@ -301,16 +304,20 @@ class SysMenuServiceImpl(
             bo.component?.let { set(table.component, it) }
             bo.queryParam?.let { set(table.queryParam, it) }
             bo.isFrame?.let {
-                set(table.frameFlag, when (it) {
-                    "1" -> "1"
-                    else -> "0"
-                })
+                set(
+                    table.frameFlag, when (it) {
+                        "1" -> "1"
+                        else -> "0"
+                    }
+                )
             }
             bo.isCache?.let {
-                set(table.cacheFlag, when (it) {
-                    "0" -> "0"
-                    else -> "1"
-                })
+                set(
+                    table.cacheFlag, when (it) {
+                        "0" -> "0"
+                        else -> "1"
+                    }
+                )
             }
             bo.menuType?.let { set(table.menuType, it) }
             bo.visible?.let { set(table.visible, it) }
@@ -392,7 +399,8 @@ class SysMenuServiceImpl(
             // 根目录下路由必须唯一
             if (path.equals(dbPath, ignoreCase = true)
                 && parentId == 0L
-                && dbParentId == 0L) {
+                && dbParentId == 0L
+            ) {
                 return false
             }
         }
@@ -408,11 +416,15 @@ class SysMenuServiceImpl(
         val parentId = menu.parentId
 
         // 一级目录（parent_id == 0）且类型为目录（M）且非外链（is_frame=1）
-        if ((parentId ?: 0L) == 0L && SystemConstants.TYPE_DIR == menu.menuType && SystemConstants.NO_FRAME == menu.frameFlag) {
+        if ((parentId
+                ?: 0L) == 0L && SystemConstants.TYPE_DIR == menu.menuType && SystemConstants.NO_FRAME == menu.frameFlag
+        ) {
             routerPath = "/" + menu.path
         }
         // 一级菜单（parent_id == 0）且类型为菜单（C）且非外链
-        else if ((parentId ?: 0L) == 0L && SystemConstants.TYPE_MENU == menu.menuType && SystemConstants.NO_FRAME == menu.frameFlag) {
+        else if ((parentId
+                ?: 0L) == 0L && SystemConstants.TYPE_MENU == menu.menuType && SystemConstants.NO_FRAME == menu.frameFlag
+        ) {
             routerPath = "/"
         }
 
@@ -434,7 +446,8 @@ class SysMenuServiceImpl(
      * 是否为菜单内部跳转（一级菜单）
      */
     private fun isMenuFrame(menu: SysMenu): Boolean {
-        return (menu.parentId ?: 0L) == 0L && SystemConstants.TYPE_MENU == menu.menuType && SystemConstants.NO_FRAME == menu.frameFlag
+        return (menu.parentId
+            ?: 0L) == 0L && SystemConstants.TYPE_MENU == menu.menuType && SystemConstants.NO_FRAME == menu.frameFlag
     }
 
     /**

@@ -1,6 +1,11 @@
 package com.github.alphafoxz.foxden.domain.system.entity
 
-import org.babyfish.jimmer.sql.*
+import org.babyfish.jimmer.jackson.JsonConverter
+import org.babyfish.jimmer.jackson.LongToStringConverter
+import org.babyfish.jimmer.sql.Column
+import org.babyfish.jimmer.sql.Entity
+import org.babyfish.jimmer.sql.Id
+import org.babyfish.jimmer.sql.Table
 import java.util.*
 
 /**
@@ -15,7 +20,7 @@ interface SysLogininfor {
      */
     @Column(name = "info_id")
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @JsonConverter(LongToStringConverter::class)
     val id: Long
 
     /**

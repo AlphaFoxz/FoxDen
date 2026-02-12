@@ -1,14 +1,27 @@
 package com.github.alphafoxz.foxden.domain.system.service.extensions
 
 import com.github.alphafoxz.foxden.domain.system.bo.SysTenantBo
-import com.github.alphafoxz.foxden.domain.system.service.SysTenantService
 import com.github.alphafoxz.foxden.domain.system.service.SysSocialService
+import com.github.alphafoxz.foxden.domain.system.service.SysTenantService
 import com.github.alphafoxz.foxden.domain.system.vo.SysSocialVo
+import org.babyfish.jimmer.sql.ast.mutation.SaveMode
+import org.babyfish.jimmer.sql.kt.ast.mutation.KSaveOperations
 
 /**
  * Jimmer Service 扩展方法
  * 提供简化的方法名以兼容旧代码
  */
+
+/**
+ * 使用雪花 ID 生成器的实体保存扩展
+ * 自动添加 INSERT_ONLY 模式
+ *
+ * 使用场景：对于使用自定义 ID 生成器（如雪花 ID）的实体，
+ * 在 Draft 创建时 ID 为 null，Jimmer 无法判断是插入还是更新
+ *
+ * 注意：仅用于插入新实体，更新操作请使用 save()
+ */
+fun <E : Any> KSaveOperations.saveWithAutoId(entity: E) = this.save(entity) { setMode(SaveMode.INSERT_ONLY) }
 
 /**
  * SysTenantService 扩展 - queryList 方法别名
@@ -85,7 +98,9 @@ fun com.github.alphafoxz.foxden.domain.system.service.SysUserService.updateByBo(
         data["loginDate"]?.let {
             // Handle both Date and LocalDateTime
             loginDate = when (it) {
-                is java.util.Date -> (it as java.util.Date).toInstant().atZone(java.time.ZoneId.systemDefault()).toLocalDateTime()
+                is java.util.Date -> (it as java.util.Date).toInstant().atZone(java.time.ZoneId.systemDefault())
+                    .toLocalDateTime()
+
                 is java.time.LocalDateTime -> it as java.time.LocalDateTime
                 else -> null
             }
@@ -146,7 +161,10 @@ fun com.github.alphafoxz.foxden.domain.system.service.SysDeptService.buildDeptTr
     return buildTree(depts, 0L)
 }
 
-private fun buildTree(depts: List<com.github.alphafoxz.foxden.domain.system.vo.SysDeptVo>, parentId: Long?): List<com.github.alphafoxz.foxden.domain.system.vo.SysDeptVo> {
+private fun buildTree(
+    depts: List<com.github.alphafoxz.foxden.domain.system.vo.SysDeptVo>,
+    parentId: Long?
+): List<com.github.alphafoxz.foxden.domain.system.vo.SysDeptVo> {
     return depts.filter { it.parentId == parentId }
 }
 

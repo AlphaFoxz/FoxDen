@@ -1,16 +1,20 @@
 package com.github.alphafoxz.foxden.domain.system.service.impl
 
-import com.github.alphafoxz.foxden.common.jimmer.core.page.PageQuery
-import com.github.alphafoxz.foxden.common.jimmer.core.page.TableDataInfo
-import com.github.alphafoxz.foxden.domain.system.service.SysDictDataService
-import com.github.alphafoxz.foxden.domain.system.entity.*
-import com.github.alphafoxz.foxden.domain.system.bo.SysDictDataBo
-import com.github.alphafoxz.foxden.domain.system.vo.SysDictDataVo
 import com.github.alphafoxz.foxden.common.core.constant.CacheNames
 import com.github.alphafoxz.foxden.common.core.constant.SystemConstants
 import com.github.alphafoxz.foxden.common.core.exception.ServiceException
-import org.babyfish.jimmer.sql.kt.ast.expression.*
-import org.babyfish.jimmer.sql.kt.*
+import com.github.alphafoxz.foxden.common.jimmer.core.page.PageQuery
+import com.github.alphafoxz.foxden.common.jimmer.core.page.TableDataInfo
+import com.github.alphafoxz.foxden.domain.system.bo.SysDictDataBo
+import com.github.alphafoxz.foxden.domain.system.entity.*
+import com.github.alphafoxz.foxden.domain.system.service.SysDictDataService
+import com.github.alphafoxz.foxden.domain.system.service.extensions.saveWithAutoId
+import com.github.alphafoxz.foxden.domain.system.vo.SysDictDataVo
+import org.babyfish.jimmer.sql.kt.KSqlClient
+import org.babyfish.jimmer.sql.kt.ast.expression.asc
+import org.babyfish.jimmer.sql.kt.ast.expression.eq
+import org.babyfish.jimmer.sql.kt.ast.expression.like
+import org.babyfish.jimmer.sql.kt.ast.expression.ne
 import org.springframework.cache.annotation.CacheEvict
 import org.springframework.cache.annotation.CachePut
 import org.springframework.stereotype.Service
@@ -99,7 +103,7 @@ class SysDictDataServiceImpl(
             createTime = java.time.LocalDateTime.now()
         }
 
-        val result = sqlClient.save(newDictData)
+        val result = sqlClient.saveWithAutoId(newDictData)
         return if (result.isModified) 1 else 0
     }
 

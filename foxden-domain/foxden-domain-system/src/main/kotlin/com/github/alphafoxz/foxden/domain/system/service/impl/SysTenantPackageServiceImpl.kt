@@ -1,13 +1,17 @@
 package com.github.alphafoxz.foxden.domain.system.service.impl
 
-import com.github.alphafoxz.foxden.domain.system.service.SysTenantPackageService
-import com.github.alphafoxz.foxden.domain.tenant.entity.*
-import com.github.alphafoxz.foxden.domain.system.bo.SysTenantPackageBo
-import com.github.alphafoxz.foxden.domain.system.vo.SysTenantPackageVo
 import com.github.alphafoxz.foxden.common.core.constant.SystemConstants
 import com.github.alphafoxz.foxden.common.core.exception.ServiceException
-import org.babyfish.jimmer.sql.kt.ast.expression.*
-import org.babyfish.jimmer.sql.kt.*
+import com.github.alphafoxz.foxden.domain.system.bo.SysTenantPackageBo
+import com.github.alphafoxz.foxden.domain.system.service.SysTenantPackageService
+import com.github.alphafoxz.foxden.domain.system.service.extensions.saveWithAutoId
+import com.github.alphafoxz.foxden.domain.system.vo.SysTenantPackageVo
+import com.github.alphafoxz.foxden.domain.tenant.entity.*
+import org.babyfish.jimmer.sql.kt.KSqlClient
+import org.babyfish.jimmer.sql.kt.ast.expression.asc
+import org.babyfish.jimmer.sql.kt.ast.expression.eq
+import org.babyfish.jimmer.sql.kt.ast.expression.like
+import org.babyfish.jimmer.sql.kt.ast.expression.ne
 import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -87,7 +91,7 @@ class SysTenantPackageServiceImpl(
             createBy = bo.createBy?.toLong()
         }
 
-        val result = sqlClient.save(newPkg)
+        val result = sqlClient.saveWithAutoId(newPkg)
         return if (result.isModified) 1 else 0
     }
 
@@ -172,29 +176,29 @@ class SysTenantPackageServiceImpl(
      * 构建查询条件
      */
     private fun buildQueryWrapper(bo: SysTenantPackageBo) = sqlClient.createQuery(SysTenantPackage::class) {
-            where(table.delFlag eq "0")
-            bo.packageName?.takeIf { it.isNotBlank() }?.let {
-                where(table.packageName like "%${it}%")
-            }
-            bo.status?.takeIf { it.isNotBlank() }?.let {
-                where(table.status eq it)
-            }
-            orderBy(table.id.asc())
-            select(table)
+        where(table.delFlag eq "0")
+        bo.packageName?.takeIf { it.isNotBlank() }?.let {
+            where(table.packageName like "%${it}%")
         }
+        bo.status?.takeIf { it.isNotBlank() }?.let {
+            where(table.status eq it)
+        }
+        orderBy(table.id.asc())
+        select(table)
     }
+}
 
-    /**
-     * 实体转 VO
-     */
-    private fun entityToVo(pkg: SysTenantPackage): SysTenantPackageVo {
-        return SysTenantPackageVo(
-            packageId = pkg.id,
-            packageName = pkg.packageName,
-            menuIds = pkg.menuIds,
-            menuCheckStrictly = pkg.menuCheckStrictly,
-            remark = pkg.remark,
-            status = pkg.status,
-            createTime = pkg.createTime
-        )
+/**
+ * 实体转 VO
+ */
+private fun entityToVo(pkg: SysTenantPackage): SysTenantPackageVo {
+    return SysTenantPackageVo(
+        packageId = pkg.id,
+        packageName = pkg.packageName,
+        menuIds = pkg.menuIds,
+        menuCheckStrictly = pkg.menuCheckStrictly,
+        remark = pkg.remark,
+        status = pkg.status,
+        createTime = pkg.createTime
+    )
 }

@@ -10,8 +10,9 @@ import com.github.alphafoxz.foxden.common.security.utils.LoginHelper
 import com.github.alphafoxz.foxden.domain.system.bo.SysRoleBo
 import com.github.alphafoxz.foxden.domain.system.entity.*
 import com.github.alphafoxz.foxden.domain.system.service.SysRoleService
+import com.github.alphafoxz.foxden.domain.system.service.extensions.saveWithAutoId
 import com.github.alphafoxz.foxden.domain.system.vo.SysRoleVo
-import org.babyfish.jimmer.sql.kt.*
+import org.babyfish.jimmer.sql.kt.KSqlClient
 import org.babyfish.jimmer.sql.kt.ast.expression.*
 import org.springframework.cache.annotation.CacheEvict
 import org.springframework.jdbc.core.JdbcTemplate
@@ -248,7 +249,7 @@ class SysRoleServiceImpl(
             createTime = java.time.LocalDateTime.now()
         }
 
-        val result = sqlClient.save(newRole)
+        val result = sqlClient.saveWithAutoId(newRole)
         return if (result.isModified) 1 else 0
     }
 

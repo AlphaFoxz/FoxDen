@@ -4,9 +4,9 @@ import com.github.alphafoxz.foxden.common.core.constant.CacheNames
 import com.github.alphafoxz.foxden.common.core.constant.SystemConstants
 import com.github.alphafoxz.foxden.common.core.exception.ServiceException
 import com.github.alphafoxz.foxden.common.core.utils.StringUtils
-import com.github.alphafoxz.foxden.common.json.utils.JsonUtils
 import com.github.alphafoxz.foxden.common.jimmer.core.page.PageQuery
 import com.github.alphafoxz.foxden.common.jimmer.core.page.TableDataInfo
+import com.github.alphafoxz.foxden.common.json.utils.JsonUtils
 import com.github.alphafoxz.foxden.common.oss.constant.OssConstant
 import com.github.alphafoxz.foxden.common.oss.properties.OssProperties
 import com.github.alphafoxz.foxden.common.redis.utils.CacheUtils
@@ -14,12 +14,15 @@ import com.github.alphafoxz.foxden.common.redis.utils.RedisUtils
 import com.github.alphafoxz.foxden.domain.system.bo.SysOssConfigBo
 import com.github.alphafoxz.foxden.domain.system.entity.*
 import com.github.alphafoxz.foxden.domain.system.service.SysOssConfigService
+import com.github.alphafoxz.foxden.domain.system.service.extensions.saveWithAutoId
 import com.github.alphafoxz.foxden.domain.system.vo.SysOssConfigVo
 import org.babyfish.jimmer.sql.kt.KSqlClient
-import org.babyfish.jimmer.sql.kt.ast.expression.*
+import org.babyfish.jimmer.sql.kt.ast.expression.asc
+import org.babyfish.jimmer.sql.kt.ast.expression.eq
+import org.babyfish.jimmer.sql.kt.ast.expression.like
+import org.babyfish.jimmer.sql.kt.ast.expression.ne
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
-import org.springframework.transaction.annotation.Transactional
 
 /**
  * 对象存储配置Service业务层处理
@@ -97,7 +100,7 @@ class SysOssConfigServiceImpl(
             createTime = java.time.LocalDateTime.now()
         }
 
-        val result = sqlClient.save(newConfig)
+        val result = sqlClient.saveWithAutoId(newConfig)
         if (result.isModified) {
             // 从数据库查询完整的数据做缓存
             val config = sqlClient.findById(SysOssConfig::class, newConfig.id)

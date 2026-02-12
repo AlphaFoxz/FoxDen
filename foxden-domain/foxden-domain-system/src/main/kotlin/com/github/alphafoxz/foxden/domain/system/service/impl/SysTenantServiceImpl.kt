@@ -2,6 +2,7 @@ package com.github.alphafoxz.foxden.domain.system.service.impl
 
 import cn.hutool.core.util.RandomUtil
 import cn.hutool.crypto.digest.BCrypt
+import com.github.alphafoxz.foxden.common.core.constant.CacheNames
 import com.github.alphafoxz.foxden.common.core.constant.Constants
 import com.github.alphafoxz.foxden.common.core.constant.SystemConstants
 import com.github.alphafoxz.foxden.common.core.constant.TenantConstants
@@ -9,19 +10,13 @@ import com.github.alphafoxz.foxden.common.core.exception.ServiceException
 import com.github.alphafoxz.foxden.common.jimmer.helper.TenantHelper
 import com.github.alphafoxz.foxden.common.security.utils.LoginHelper
 import com.github.alphafoxz.foxden.domain.system.bo.SysTenantBo
-import com.github.alphafoxz.foxden.domain.system.entity.SysConfig
-import com.github.alphafoxz.foxden.domain.system.entity.SysDept
-import com.github.alphafoxz.foxden.domain.system.entity.SysDictData
-import com.github.alphafoxz.foxden.domain.system.entity.SysDictType
-import com.github.alphafoxz.foxden.domain.system.entity.SysRole
 import com.github.alphafoxz.foxden.domain.system.service.SysTenantPackageService
-import com.github.alphafoxz.foxden.common.core.constant.CacheNames
 import com.github.alphafoxz.foxden.domain.system.service.SysTenantService
+import com.github.alphafoxz.foxden.domain.system.service.extensions.saveWithAutoId
 import com.github.alphafoxz.foxden.domain.system.vo.SysTenantVo
-import com.github.alphafoxz.foxden.domain.tenant.entity.SysTenant
-import org.springframework.cache.annotation.Cacheable
 import com.github.alphafoxz.foxden.domain.tenant.entity.SysTenantPackage
-import org.babyfish.jimmer.sql.kt.*
+import org.babyfish.jimmer.sql.kt.KSqlClient
+import org.springframework.cache.annotation.Cacheable
 import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -195,7 +190,7 @@ class SysTenantServiceImpl(
             createBy = bo.createBy?.toLong()
             createTime = java.time.LocalDateTime.now()
         }
-        val userResult = sqlClient.save(user)
+        val userResult = sqlClient.saveWithAutoId(user)
         if (!userResult.isModified) {
             throw ServiceException("创建用户失败")
         }

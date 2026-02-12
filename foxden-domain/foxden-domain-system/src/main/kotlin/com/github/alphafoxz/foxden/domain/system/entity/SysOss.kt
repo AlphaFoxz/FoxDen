@@ -1,7 +1,14 @@
 package com.github.alphafoxz.foxden.domain.system.entity
 
-import com.github.alphafoxz.foxden.common.jimmer.entity.comm.*
-import org.babyfish.jimmer.sql.*
+import com.github.alphafoxz.foxden.common.jimmer.entity.comm.CommDelFlag
+import com.github.alphafoxz.foxden.common.jimmer.entity.comm.CommInfo
+import com.github.alphafoxz.foxden.common.jimmer.entity.comm.CommTenant
+import org.babyfish.jimmer.jackson.JsonConverter
+import org.babyfish.jimmer.jackson.LongToStringConverter
+import org.babyfish.jimmer.sql.Column
+import org.babyfish.jimmer.sql.Entity
+import org.babyfish.jimmer.sql.Id
+import org.babyfish.jimmer.sql.Table
 
 /**
  * OSS对象存储对象
@@ -12,9 +19,9 @@ interface SysOss : CommDelFlag, CommInfo, CommTenant {
     /**
      * 主键ID
      */
-    @org.babyfish.jimmer.sql.Column(name = "oss_id")
+    @Column(name = "oss_id")
     @Id
-    @GeneratedValue
+    @JsonConverter(LongToStringConverter::class)
     val id: Long
 
     /**

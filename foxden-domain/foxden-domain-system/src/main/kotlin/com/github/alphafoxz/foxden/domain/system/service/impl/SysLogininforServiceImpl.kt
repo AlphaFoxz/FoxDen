@@ -5,13 +5,13 @@ import com.github.alphafoxz.foxden.common.jimmer.core.page.TableDataInfo
 import com.github.alphafoxz.foxden.domain.system.bo.SysLogininforBo
 import com.github.alphafoxz.foxden.domain.system.entity.*
 import com.github.alphafoxz.foxden.domain.system.service.SysLogininforService
+import com.github.alphafoxz.foxden.domain.system.service.extensions.saveWithAutoId
 import com.github.alphafoxz.foxden.domain.system.vo.SysLogininforVo
 import org.babyfish.jimmer.sql.kt.KSqlClient
 import org.babyfish.jimmer.sql.kt.ast.expression.between
 import org.babyfish.jimmer.sql.kt.ast.expression.desc
 import org.babyfish.jimmer.sql.kt.ast.expression.eq
 import org.babyfish.jimmer.sql.kt.ast.expression.like
-import org.babyfish.jimmer.sql.ast.mutation.SaveMode
 import org.springframework.stereotype.Service
 import java.sql.Timestamp
 
@@ -101,8 +101,9 @@ class SysLogininforServiceImpl(
             loginTime = java.util.Date()
         }
 
-        // 使用 INSERT_ONLY 模式，因为登录日志始终是插入新记录
-        val result = sqlClient.save(newLogininfor, SaveMode.INSERT_ONLY)
+        // 使用 INSERT_ONLY 模式，明确告诉 Jimmer 这是插入操作
+        // 因为 SysLogininfor 的 id 是自定义雪花算法生成的，在 Draft 中为 null，Jimmer 无法自动判断
+        val result = sqlClient.saveWithAutoId(newLogininfor)
         return if (result.isModified) 1 else 0
     }
 
