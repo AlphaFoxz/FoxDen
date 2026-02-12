@@ -39,8 +39,7 @@ class SysTenantPackageController(
     @SaCheckPermission("system:tenantPackage:list")
     @GetMapping("/list")
     fun list(bo: SysTenantPackageBo, pageQuery: PageQuery): TableDataInfo<SysTenantPackageVo> {
-        val list = tenantPackageService.selectTenantPackageList(bo)
-        return TableDataInfo.build(list)
+        return tenantPackageService.selectTenantPackageList(bo, pageQuery)
     }
 
     /**
@@ -75,7 +74,7 @@ class SysTenantPackageController(
     @PostMapping
     fun add(@Validated(AddGroup::class) @RequestBody bo: SysTenantPackageBo): R<Void> {
         if (!tenantPackageService.checkPackageNameUnique(bo)) {
-            return R.fail("新增套餐'" + (bo.packageName ?: "") + "'失败，套餐名称已存在")
+            return R.fail("新增套餐'${bo.packageName ?: ""}'失败，套餐名称已存在")
         }
         return toAjax(tenantPackageService.insertTenantPackage(bo))
     }

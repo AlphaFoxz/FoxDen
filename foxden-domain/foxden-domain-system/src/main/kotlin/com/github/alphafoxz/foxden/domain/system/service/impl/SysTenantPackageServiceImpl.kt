@@ -2,6 +2,9 @@ package com.github.alphafoxz.foxden.domain.system.service.impl
 
 import com.github.alphafoxz.foxden.common.core.constant.SystemConstants
 import com.github.alphafoxz.foxden.common.core.exception.ServiceException
+import com.github.alphafoxz.foxden.common.core.utils.StringUtils
+import com.github.alphafoxz.foxden.common.jimmer.core.page.PageQuery
+import com.github.alphafoxz.foxden.common.jimmer.core.page.TableDataInfo
 import com.github.alphafoxz.foxden.domain.system.bo.SysTenantPackageBo
 import com.github.alphafoxz.foxden.domain.system.service.SysTenantPackageService
 import com.github.alphafoxz.foxden.domain.system.service.extensions.saveWithAutoId
@@ -28,8 +31,11 @@ class SysTenantPackageServiceImpl(
     private val jdbcTemplate: JdbcTemplate
 ) : SysTenantPackageService {
 
-    override fun selectTenantPackageList(bo: SysTenantPackageBo): List<SysTenantPackageVo> {
-        val packages = sqlClient.createQuery(SysTenantPackage::class) {
+    override fun selectTenantPackageList(
+        bo: SysTenantPackageBo,
+        pageQuery: PageQuery
+    ): TableDataInfo<SysTenantPackageVo> {
+        val pager = sqlClient.createQuery(SysTenantPackage::class) {
             where(table.delFlag eq "0")
             bo.packageId?.let { where(table.id eq it) }
             bo.packageName?.takeIf { it.isNotBlank() }?.let {
@@ -38,9 +44,9 @@ class SysTenantPackageServiceImpl(
             bo.status?.takeIf { it.isNotBlank() }?.let { where(table.status eq it) }
             orderBy(table.id.asc())
             select(table)
-        }.execute()
+        }.fetchPage(pageQuery.getPageNumOrDefault() - 1, pageQuery.getPageSizeOrDefault())
 
-        return packages.map { entityToVo(it) }
+        return TableDataInfo(pager.rows.map { entityToVo(it) }, pager.totalRowCount)
     }
 
     override fun selectList(): List<SysTenantPackageVo> {
@@ -78,7 +84,7 @@ class SysTenantPackageServiceImpl(
         }
 
         // 保存菜单id
-        val menuIdsStr = if (bo.menuIds.isNullOrBlank()) "" else bo.menuIds
+        val menuIdsStr = if (bo.menuIds.isNullOrEmpty()) "" else StringUtils.joinComma(bo.menuIds)
 
         val newPkg = SysTenantPackageDraft.`$`.produce {
             packageName = bo.packageName ?: throw ServiceException("套餐名称不能为空")
@@ -109,7 +115,7 @@ class SysTenantPackageServiceImpl(
         }
 
         // 保存菜单id
-        val menuIdsStr = if (bo.menuIds.isNullOrBlank()) "" else bo.menuIds
+        val menuIdsStr = if (bo.menuIds.isNullOrEmpty()) "" else StringUtils.joinComma(bo.menuIds)
 
         val updated = SysTenantPackageDraft.`$`.produce(existing) {
             bo.packageName?.let { packageName = it }
@@ -121,7 +127,7 @@ class SysTenantPackageServiceImpl(
         }
 
         val result = sqlClient.save(updated)
-        return if (result.isModified) 1 else 0
+        return result.totalAffectedRowCount
     }
 
     @Transactional
@@ -153,7 +159,7 @@ class SysTenantPackageServiceImpl(
             }.fetchOneOrNull() != null
         }
 
-        if (tenantExists != null) {
+        if (tenantExists) {
             throw ServiceException("租户套餐已被使用")
         }
 

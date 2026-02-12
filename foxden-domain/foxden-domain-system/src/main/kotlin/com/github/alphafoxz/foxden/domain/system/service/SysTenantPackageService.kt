@@ -1,5 +1,7 @@
 package com.github.alphafoxz.foxden.domain.system.service
 
+import com.github.alphafoxz.foxden.common.jimmer.core.page.PageQuery
+import com.github.alphafoxz.foxden.common.jimmer.core.page.TableDataInfo
 import com.github.alphafoxz.foxden.domain.system.bo.SysTenantPackageBo
 import com.github.alphafoxz.foxden.domain.system.vo.SysTenantPackageVo
 
@@ -16,7 +18,7 @@ interface SysTenantPackageService {
      * @param bo 租户套餐信息
      * @return 租户套餐集合
      */
-    fun selectTenantPackageList(bo: SysTenantPackageBo): List<SysTenantPackageVo>
+    fun selectTenantPackageList(bo: SysTenantPackageBo, pageQuery: PageQuery): TableDataInfo<SysTenantPackageVo>
 
     /**
      * 查询租户套餐已启用列表

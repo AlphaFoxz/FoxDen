@@ -1,6 +1,9 @@
 package com.github.alphafoxz.foxden.domain.tenant.entity
 
-import com.github.alphafoxz.foxden.common.jimmer.entity.comm.*
+import com.github.alphafoxz.foxden.common.jimmer.entity.comm.CommDelFlag
+import com.github.alphafoxz.foxden.common.jimmer.entity.comm.CommInfo
+import org.babyfish.jimmer.jackson.JsonConverter
+import org.babyfish.jimmer.jackson.LongToStringConverter
 import org.babyfish.jimmer.sql.*
 
 /**
@@ -12,9 +15,9 @@ interface SysTenantPackage : CommDelFlag, CommInfo {
     /**
      * 主键ID
      */
-    @org.babyfish.jimmer.sql.Column(name = "package_id")
+    @Column(name = "package_id")
     @Id
-    @GeneratedValue
+    @JsonConverter(LongToStringConverter::class)
     val id: Long
 
     /**

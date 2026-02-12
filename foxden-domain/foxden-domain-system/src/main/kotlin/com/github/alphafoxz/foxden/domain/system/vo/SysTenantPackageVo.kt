@@ -1,6 +1,8 @@
 package com.github.alphafoxz.foxden.domain.system.vo
 
 import com.fasterxml.jackson.annotation.JsonInclude
+import com.fasterxml.jackson.databind.annotation.JsonSerialize
+import com.github.alphafoxz.foxden.common.json.handler.BigNumberSerializer
 
 /**
  * 租户套餐视图对象 sys_tenant_package
@@ -12,6 +14,7 @@ data class SysTenantPackageVo(
     /**
      * 套餐ID
      */
+    @param:JsonSerialize(using = BigNumberSerializer::class)
     var packageId: Long? = null,
 
     /**

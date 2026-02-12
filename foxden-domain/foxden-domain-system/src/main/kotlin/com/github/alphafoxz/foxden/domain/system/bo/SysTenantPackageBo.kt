@@ -26,7 +26,7 @@ data class SysTenantPackageBo(
      * 关联菜单ID
      */
     @get:NotNull(message = "关联菜单不能为空")
-    var menuIds: String? = null,
+    var menuIds: List<Long>? = null,
 
     /**
      * 备注
