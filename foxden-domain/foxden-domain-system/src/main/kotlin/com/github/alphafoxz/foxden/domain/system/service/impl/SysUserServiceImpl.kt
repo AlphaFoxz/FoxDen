@@ -1,7 +1,9 @@
 package com.github.alphafoxz.foxden.domain.system.service.impl
 
 import com.github.alphafoxz.foxden.common.core.constant.SystemConstants
+import com.github.alphafoxz.foxden.common.core.domain.dto.UserDTO
 import com.github.alphafoxz.foxden.common.core.exception.ServiceException
+import com.github.alphafoxz.foxden.common.core.service.UserService
 import com.github.alphafoxz.foxden.common.core.utils.MapstructUtils
 import com.github.alphafoxz.foxden.common.core.utils.StringUtils
 import com.github.alphafoxz.foxden.common.core.enums.UserType
@@ -19,6 +21,7 @@ import org.babyfish.jimmer.sql.kt.*
 import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.stereotype.Service
 import java.time.LocalDateTime
+import java.util.Date
 
 /**
  * User 业务层处理
@@ -31,7 +34,7 @@ class SysUserServiceImpl(
     private val sqlClient: KSqlClient,
     private val roleService: SysRoleService,
     private val jdbcTemplate: JdbcTemplate
-) : SysUserService {
+) : SysUserService, UserService {
 
     override fun selectPageUserList(user: SysUserBo, pageQuery: PageQuery): TableDataInfo<SysUserVo> {
         val pager = sqlClient.createQuery(SysUser::class) {
@@ -338,7 +341,55 @@ class SysUserServiceImpl(
         }
 
         val result = sqlClient.save(newUser)
-        return if (result.isModified) 1 else 0
+        if (!result.isModified) {
+            return 0
+        }
+
+        // 设置返回的 userId
+        user.userId = result.modifiedEntity.id
+
+        // 新增用户岗位关联
+        insertUserPost(user, false)
+
+        return 1
+    }
+
+    /**
+     * 新增用户岗位信息
+     *
+     * @param user  用户对象
+     * @param clear 清除已存在的关联数据
+     */
+    private fun insertUserPost(user: SysUserBo, clear: Boolean) {
+        val postIdList = user.postIds ?: return
+
+        if (postIdList.isEmpty()) {
+            return
+        }
+
+        val userId = user.userId ?: return
+
+        // 是否清除旧的用户岗位绑定
+        if (clear) {
+            jdbcTemplate.update(
+                "DELETE FROM sys_user_post WHERE user_id = ?",
+                userId
+            )
+        }
+
+        // 批量插入用户-岗位关联
+        val insertValues = postIdList.joinToString(",") { "(?,?)" }
+        val insertArgs = mutableListOf<Any?>()
+
+        for (postId in postIdList) {
+            insertArgs.add(userId)
+            insertArgs.add(postId)
+        }
+
+        jdbcTemplate.update(
+            "INSERT INTO sys_user_post (user_id, post_id) VALUES $insertValues",
+            *insertArgs.toTypedArray()
+        )
     }
 
     override fun registerUser(user: SysUserBo, tenantId: String?): Boolean {
@@ -368,6 +419,12 @@ class SysUserServiceImpl(
     override fun updateUser(user: SysUserBo): Int {
         val userIdVal = user.userId ?: return 0
 
+        // 新增用户与角色管理
+        insertUserRole(userIdVal, user.roleIds?.toTypedArray(), true)
+
+        // 新增用户与岗位管理
+        insertUserPost(user, true)
+
         val result = sqlClient.createUpdate(SysUser::class) {
             where(table.id eq userIdVal)
             user.deptId?.let { set(table.deptId, it) }
@@ -380,7 +437,56 @@ class SysUserServiceImpl(
             user.userType?.let { set(table.userType, it) }
             set(table.updateTime, LocalDateTime.now())
         }.execute()
+
+        if (result < 1) {
+            throw ServiceException("修改用户${user.userName}信息失败")
+        }
+
         return result
+    }
+
+    /**
+     * 新增用户角色信息
+     *
+     * @param userId  用户ID
+     * @param roleIds 角色组
+     * @param clear   清除已存在的关联数据
+     */
+    private fun insertUserRole(userId: Long, roleIds: Array<Long>?, clear: Boolean) {
+        if (roleIds == null || roleIds.isEmpty()) {
+            return
+        }
+
+        val roleList = roleIds.toMutableList()
+
+        // 非超级管理员，禁止包含超级管理员角色
+        if (!LoginHelper.isSuperAdmin(userId)) {
+            roleList.remove(SystemConstants.SUPER_ADMIN_ID)
+        }
+
+        // 是否清除原有绑定
+        if (clear) {
+            jdbcTemplate.update(
+                "DELETE FROM sys_user_role WHERE user_id = ?",
+                userId
+            )
+        }
+
+        // 批量插入用户-角色关联
+        if (roleList.isNotEmpty()) {
+            val insertValues = roleList.joinToString(",") { "(?,?)" }
+            val insertArgs = mutableListOf<Any?>()
+
+            for (roleId in roleList) {
+                insertArgs.add(userId)
+                insertArgs.add(roleId)
+            }
+
+            jdbcTemplate.update(
+                "INSERT INTO sys_user_role (user_id, role_id) VALUES $insertValues",
+                *insertArgs.toTypedArray()
+            )
+        }
     }
 
     override fun updateUserStatus(userId: Long, status: String): Int {
@@ -530,5 +636,245 @@ class SysUserServiceImpl(
         }
 
         return names.joinToString(",")
+    }
+
+    // ==================== UserService 接口新增方法 ====================
+
+    /**
+     * 通过用户ID查询用户账户
+     *
+     * @param userId 用户ID
+     * @return 用户账户
+     */
+    override fun selectUserNameById(userId: Long): String? {
+        val user = sqlClient.createQuery(SysUser::class) {
+            where(table.id eq userId)
+            select(table.userName)
+        }.fetchOneOrNull()
+        return user
+    }
+
+    /**
+     * 通过用户ID查询用户昵称
+     *
+     * @param userId 用户ID
+     * @return 用户昵称
+     */
+    override fun selectNicknameById(userId: Long): String? {
+        val user = sqlClient.createQuery(SysUser::class) {
+            where(table.id eq userId)
+            select(table.nickName)
+        }.fetchOneOrNull()
+        return user
+    }
+
+    /**
+     * 通过用户ID查询用户手机号
+     *
+     * @param userId 用户id
+     * @return 用户手机号
+     */
+    override fun selectPhonenumberById(userId: Long): String? {
+        val user = sqlClient.createQuery(SysUser::class) {
+            where(table.id eq userId)
+            select(table.phonenumber)
+        }.fetchOneOrNull()
+        return user
+    }
+
+    /**
+     * 通过用户ID查询用户邮箱
+     *
+     * @param userId 用户id
+     * @return 用户邮箱
+     */
+    override fun selectEmailById(userId: Long): String? {
+        val user = sqlClient.createQuery(SysUser::class) {
+            where(table.id eq userId)
+            select(table.email)
+        }.fetchOneOrNull()
+        return user
+    }
+
+    /**
+     * 通过用户ID查询用户列表
+     *
+     * @param userIds 用户ids
+     * @return 用户列表
+     */
+    override fun selectListByIds(userIds: List<Long>): List<UserDTO> {
+        if (userIds.isEmpty()) {
+            return emptyList()
+        }
+
+        // 使用 findByIds 避免类型推断问题
+        val users = sqlClient.findByIds(SysUser::class, userIds)
+            .filter { it.status == SystemConstants.NORMAL }
+
+        return users.map { user ->
+            UserDTO(
+                userId = user.id,
+                deptId = user.deptId,
+                userName = user.userName,
+                nickName = user.nickName,
+                userType = user.userType,
+                email = user.email,
+                phonenumber = user.phonenumber,
+                sex = user.sex,
+                status = user.status,
+                createTime = user.createTime?.let { localDateTimeToDate(it) }
+            )
+        }
+    }
+
+    /**
+     * LocalDateTime 转换为 Date
+     */
+    private fun localDateTimeToDate(localDateTime: LocalDateTime): Date {
+        return java.sql.Timestamp.valueOf(localDateTime)
+    }
+
+    /**
+     * 通过角色ID查询用户ID
+     *
+     * @param roleIds 角色ids
+     * @return 用户ids
+     */
+    override fun selectUserIdsByRoleIds(roleIds: List<Long>): List<Long> {
+        if (roleIds.isEmpty()) {
+            return emptyList()
+        }
+
+        // 查询 sys_user_role 表获取用户ID列表
+        val userIds = mutableSetOf<Long>()
+        roleIds.forEach { roleId ->
+            val ids = jdbcTemplate.queryForList(
+                "SELECT user_id FROM sys_user_role WHERE role_id = ?",
+                Long::class.java,
+                roleId
+            )
+            userIds.addAll(ids)
+        }
+        return userIds.toList()
+    }
+
+    /**
+     * 通过角色ID查询用户
+     *
+     * @param roleIds 角色ids
+     * @return 用户
+     */
+    override fun selectUsersByRoleIds(roleIds: List<Long>): List<UserDTO> {
+        if (roleIds.isEmpty()) {
+            return emptyList()
+        }
+
+        val userIds = selectUserIdsByRoleIds(roleIds)
+        if (userIds.isEmpty()) {
+            return emptyList()
+        }
+
+        return selectListByIds(userIds)
+    }
+
+    /**
+     * 通过部门ID查询用户
+     *
+     * @param deptIds 部门ids
+     * @return 用户
+     */
+    override fun selectUsersByDeptIds(deptIds: List<Long>): List<UserDTO> {
+        if (deptIds.isEmpty()) {
+            return emptyList()
+        }
+
+        // 使用 JDBC 查询，避免 `in` 关键字冲突
+        val sql = StringBuilder(
+            """
+            SELECT user_id, user_name, nick_name, email, phonenumber
+            FROM sys_user
+            WHERE del_flag = '0' AND status = '0' AND dept_id IN (
+            """.trimIndent()
+        )
+
+        val params = mutableListOf<Any?>()
+        deptIds.forEachIndexed { index, deptId ->
+            sql.append(if (index == 0) "?" else ",?")
+            params.add(deptId)
+        }
+        sql.append(")")
+
+        val users = jdbcTemplate.query(
+            sql.toString(),
+            params.toTypedArray()
+        ) { rs, _ ->
+            UserDTO(
+                userId = rs.getLong("user_id"),
+                userName = rs.getString("user_name"),
+                nickName = rs.getString("nick_name"),
+                email = rs.getString("email"),
+                phonenumber = rs.getString("phonenumber")
+            )
+        }
+
+        return users
+    }
+
+    /**
+     * 通过岗位ID查询用户
+     *
+     * @param postIds 岗位ids
+     * @return 用户
+     */
+    override fun selectUsersByPostIds(postIds: List<Long>): List<UserDTO> {
+        if (postIds.isEmpty()) {
+            return emptyList()
+        }
+
+        // 查询 sys_user_post 表获取用户ID列表
+        val userIds = mutableSetOf<Long>()
+        postIds.forEach { postId ->
+            val ids = jdbcTemplate.queryForList(
+                "SELECT user_id FROM sys_user_post WHERE post_id = ?",
+                Long::class.java,
+                postId
+            )
+            userIds.addAll(ids)
+        }
+
+        if (userIds.isEmpty()) {
+            return emptyList()
+        }
+
+        return selectListByIds(userIds.toList())
+    }
+
+    /**
+     * 根据用户 ID 列表查询用户名称映射关系
+     *
+     * @param userIds 用户 ID 列表
+     * @return Map，其中 key 为用户 ID，value 为对应的用户名称
+     */
+    override fun selectUserNamesByIds(userIds: List<Long>): Map<Long, String> {
+        if (userIds.isEmpty()) {
+            return emptyMap()
+        }
+
+        val result = mutableMapOf<Long, String>()
+
+        // 使用 JDBC 查询，避免 Jimmer DSL 的类型推断问题
+        if (userIds.size == 1) {
+            val nickName = sqlClient.findById(SysUser::class, userIds[0])?.nickName
+            if (nickName != null) {
+                result[userIds[0]] = nickName
+            }
+        } else {
+            val users = sqlClient.findByIds(SysUser::class, userIds)
+            for (user in users) {
+                result[user.id] = user.nickName ?: ""
+            }
+        }
+
+        return result
     }
 }

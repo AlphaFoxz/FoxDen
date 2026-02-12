@@ -22,6 +22,9 @@ dependencies {
 
     // Jackson JSR310
     api("com.fasterxml.jackson.datatype:jackson-datatype-jsr310")
+
+    // Jackson Kotlin
+    api("com.fasterxml.jackson.module:jackson-module-kotlin")
 }
 
 afterEvaluate {

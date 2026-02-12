@@ -1,12 +1,15 @@
 package com.github.alphafoxz.foxden.app.system.controller
 
 import cn.dev33.satoken.annotation.SaCheckPermission
+import com.github.alphafoxz.foxden.common.core.constant.CacheConstants
 import com.github.alphafoxz.foxden.common.core.domain.R
 import com.github.alphafoxz.foxden.common.excel.utils.ExcelUtil
+import com.github.alphafoxz.foxden.common.idempotent.annotation.RepeatSubmit
 import com.github.alphafoxz.foxden.common.jimmer.core.page.PageQuery
 import com.github.alphafoxz.foxden.common.jimmer.core.page.TableDataInfo
 import com.github.alphafoxz.foxden.common.log.annotation.Log
 import com.github.alphafoxz.foxden.common.log.enums.BusinessType
+import com.github.alphafoxz.foxden.common.redis.utils.RedisUtils
 import com.github.alphafoxz.foxden.common.web.core.BaseController
 import com.github.alphafoxz.foxden.domain.system.bo.SysLogininforBo
 import com.github.alphafoxz.foxden.domain.system.service.SysLogininforService
@@ -66,6 +69,22 @@ class SysLogininforController(
     @DeleteMapping("/clean")
     fun clean(): R<Void> {
         logininforService.clean()
+        return R.ok()
+    }
+
+    /**
+     * 账户解锁
+     * @param userName 用户名
+     */
+    @SaCheckPermission("monitor:logininfor:unlock")
+    @Log(title = "账户解锁", businessType = BusinessType.OTHER)
+    @RepeatSubmit
+    @GetMapping("/unlock/{userName}")
+    fun unlock(@PathVariable userName: String): R<Void> {
+        val loginName = CacheConstants.PWD_ERR_CNT_KEY + userName
+        if (RedisUtils.hasKey(loginName)) {
+            RedisUtils.deleteObject(loginName)
+        }
         return R.ok()
     }
 }

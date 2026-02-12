@@ -3,10 +3,13 @@ package com.github.alphafoxz.foxden.common.redis.config
 import com.fasterxml.jackson.annotation.JsonAutoDetect
 import com.fasterxml.jackson.annotation.PropertyAccessor
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.databind.SerializationFeature
+import com.fasterxml.jackson.databind.jsontype.PolymorphicTypeValidator
 import com.fasterxml.jackson.databind.jsontype.impl.LaissezFaireSubTypeValidator
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer
 import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer
+import com.fasterxml.jackson.module.kotlin.KotlinModule
 import com.github.alphafoxz.foxden.common.redis.config.properties.RedissonProperties
 import com.github.alphafoxz.foxden.common.redis.handler.KeyPrefixHandler
 import org.redisson.client.codec.StringCodec
@@ -39,10 +42,19 @@ class RedisConfig {
             javaTimeModule.addDeserializer(LocalDateTime::class.java, LocalDateTimeDeserializer(formatter))
 
             val om = ObjectMapper()
-            om.registerModule(javaTimeModule)
-            om.setTimeZone(TimeZone.getDefault())
-            om.setVisibility(PropertyAccessor.ALL, JsonAutoDetect.Visibility.ANY)
-            om.activateDefaultTyping(LaissezFaireSubTypeValidator.instance, ObjectMapper.DefaultTyping.NON_FINAL)
+                .registerModule(KotlinModule.Builder().build())
+                .registerModule(javaTimeModule)
+                .setTimeZone(TimeZone.getDefault())
+                .setVisibility(PropertyAccessor.ALL, JsonAutoDetect.Visibility.ANY)
+                .disable(SerializationFeature.FAIL_ON_EMPTY_BEANS)
+                .disable(SerializationFeature.WRAP_ROOT_VALUE)
+                .enable(SerializationFeature.INDENT_OUTPUT)
+                // 使用 EVERYTHING 为所有类型（包括 final 的 Kotlin data class）添加类型信息
+                // 这样 Spring Cache 才能正确反序列化为目标类型
+                .activateDefaultTyping(
+                    LaissezFaireSubTypeValidator.instance,
+                    ObjectMapper.DefaultTyping.EVERYTHING
+                )
 
             val jsonCodec = TypedJsonJacksonCodec(Any::class.java, om)
             // 组合序列化 key 使用 String 内容使用通用 json 格式
