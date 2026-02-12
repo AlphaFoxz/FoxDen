@@ -42,7 +42,7 @@ override fun selectPageUserList(bo: SysUserBo, pageQuery: PageQuery): TableDataI
         orderBy(table.id.asc())
         select(table)
     }.fetchPage(pageQuery.pageNum - 1, pageQuery.pageSize)
-    return TableDataInfo.build(pager.rows.map { entityToVo(it) }, pager.totalRowCount)
+    return TableDataInfo(pager.rows.map { entityToVo(it) }, pager.totalRowCount)
 }
 ```
 

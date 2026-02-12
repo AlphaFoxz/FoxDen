@@ -5,22 +5,21 @@ import com.github.alphafoxz.foxden.common.core.domain.dto.OssDTO
 import com.github.alphafoxz.foxden.common.core.exception.ServiceException
 import com.github.alphafoxz.foxden.common.core.utils.MapstructUtils
 import com.github.alphafoxz.foxden.common.core.utils.SpringUtils
-import com.github.alphafoxz.foxden.common.core.utils.StringUtils
 import com.github.alphafoxz.foxden.common.core.utils.file.FileUtils
-import com.github.alphafoxz.foxden.common.json.utils.JsonUtils
 import com.github.alphafoxz.foxden.common.jimmer.core.page.PageQuery
 import com.github.alphafoxz.foxden.common.jimmer.core.page.TableDataInfo
-import com.github.alphafoxz.foxden.common.oss.core.OssClient
+import com.github.alphafoxz.foxden.common.json.utils.JsonUtils
 import com.github.alphafoxz.foxden.common.oss.entity.UploadResult
 import com.github.alphafoxz.foxden.common.oss.enums.AccessPolicyType
 import com.github.alphafoxz.foxden.common.oss.factory.OssFactory
-import com.github.alphafoxz.foxden.common.redis.utils.CacheUtils
 import com.github.alphafoxz.foxden.domain.system.entity.*
 import com.github.alphafoxz.foxden.domain.system.service.SysOssService
 import com.github.alphafoxz.foxden.domain.system.vo.SysOssVo
 import jakarta.servlet.http.HttpServletResponse
 import org.babyfish.jimmer.sql.kt.KSqlClient
-import org.babyfish.jimmer.sql.kt.ast.expression.*
+import org.babyfish.jimmer.sql.kt.ast.expression.asc
+import org.babyfish.jimmer.sql.kt.ast.expression.eq
+import org.babyfish.jimmer.sql.kt.ast.expression.like
 import org.springframework.cache.annotation.Cacheable
 import org.springframework.http.MediaType
 import org.springframework.stereotype.Service
@@ -41,21 +40,27 @@ class SysOssServiceImpl(
     /**
      * 查询OSS对象存储列表
      */
-    override fun queryPageList(sysOss: com.github.alphafoxz.foxden.domain.system.bo.SysOssBo, pageQuery: PageQuery): TableDataInfo<SysOssVo> {
-        val ossList = sqlClient.createQuery(SysOss::class) {
-            sysOss.ossId?.let { where(table.id eq it) }
+    override fun queryPageList(
+        sysOss: com.github.alphafoxz.foxden.domain.system.bo.SysOssBo,
+        pageQuery: PageQuery
+    ): TableDataInfo<SysOssVo> {
+        val pager = sqlClient.createQuery(SysOss::class) {
             sysOss.fileName?.takeIf { it.isNotBlank() }?.let { where(table.fileName like "%${it}%") }
             sysOss.originalName?.takeIf { it.isNotBlank() }?.let { where(table.originalName like "%${it}%") }
             sysOss.fileSuffix?.takeIf { it.isNotBlank() }?.let { where(table.fileSuffix eq it) }
+            sysOss.url?.takeIf { it.isNotBlank() }?.let { where(table.url eq it) }
             sysOss.service?.takeIf { it.isNotBlank() }?.let { where(table.service eq it) }
             sysOss.createBy?.takeIf { it.isNotBlank() }?.let { where(table.createBy eq it.toLong()) }
             orderBy(table.id.asc())
             select(table)
-        }.execute()
+        }.fetchPage(
+            pageQuery.getPageNumOrDefault() - 1,
+            pageQuery.getPageSizeOrDefault()
+        )
 
         // 转换为 VO 并匹配 URL
-        val voList = ossList.map { matchingUrl(entityToVo(it)) }
-        return TableDataInfo.build(voList)
+        val voList = pager.rows.map { matchingUrl(entityToVo(it)) }
+        return TableDataInfo(voList, pager.totalRowCount)
     }
 
     /**

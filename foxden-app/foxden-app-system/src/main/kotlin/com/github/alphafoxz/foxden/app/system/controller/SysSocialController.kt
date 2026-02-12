@@ -2,19 +2,14 @@ package com.github.alphafoxz.foxden.app.system.controller
 
 import cn.dev33.satoken.annotation.SaCheckPermission
 import com.github.alphafoxz.foxden.common.core.domain.R
-import com.github.alphafoxz.foxden.common.core.validate.AddGroup
-import com.github.alphafoxz.foxden.common.core.validate.EditGroup
-import com.github.alphafoxz.foxden.common.idempotent.annotation.RepeatSubmit
-import com.github.alphafoxz.foxden.common.log.annotation.Log
-import com.github.alphafoxz.foxden.common.log.enums.BusinessType
 import com.github.alphafoxz.foxden.common.security.utils.LoginHelper
 import com.github.alphafoxz.foxden.common.web.core.BaseController
-import com.github.alphafoxz.foxden.domain.system.bo.SysSocialBo
 import com.github.alphafoxz.foxden.domain.system.service.SysSocialService
 import com.github.alphafoxz.foxden.domain.system.vo.SysSocialVo
-import jakarta.validation.constraints.NotEmpty
 import org.springframework.validation.annotation.Validated
-import org.springframework.web.bind.annotation.*
+import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.RestController
 
 /**
  * 社交关系 控制层
@@ -37,51 +32,4 @@ class SysSocialController(
         return R.ok(socialService.selectSocialListByUserId(LoginHelper.getUserId()!!))
     }
 
-    /**
-     * 获取社交关系详细信息
-     *
-     * @param socialId 社交关系ID
-     */
-    @SaCheckPermission("system:social:query")
-    @GetMapping("/{socialId}")
-    fun getInfo(@PathVariable socialId: Long): R<SysSocialVo> {
-        return R.ok(socialService.selectSocialById(socialId))
-    }
-
-    /**
-     * 新增社交关系
-     */
-    @SaCheckPermission("system:social:add")
-    @Log(title = "社交关系", businessType = BusinessType.INSERT)
-    @RepeatSubmit()
-    @PostMapping
-    fun add(@Validated(AddGroup::class) @RequestBody bo: SysSocialBo): R<Void> {
-        return toAjax(socialService.insertSocial(bo))
-    }
-
-    /**
-     * 修改社交关系
-     */
-    @SaCheckPermission("system:social:edit")
-    @Log(title = "社交关系", businessType = BusinessType.UPDATE)
-    @RepeatSubmit()
-    @PutMapping
-    fun edit(@Validated(EditGroup::class) @RequestBody bo: SysSocialBo): R<Void> {
-        return toAjax(socialService.updateSocial(bo))
-    }
-
-    /**
-     * 删除社交关系
-     *
-     * @param socialIds 社交关系ID串
-     */
-    @SaCheckPermission("system:social:remove")
-    @Log(title = "社交关系", businessType = BusinessType.DELETE)
-    @DeleteMapping("/{socialIds}")
-    fun remove(@NotEmpty(message = "主键不能为空") @PathVariable socialIds: Array<Long>): R<Void> {
-        for (socialId in socialIds) {
-            socialService.deleteSocialById(socialId)
-        }
-        return toAjax(socialIds.size)
-    }
 }
