@@ -5,11 +5,13 @@ import com.github.alphafoxz.foxden.domain.system.service.SysDeptService
 import com.github.alphafoxz.foxden.domain.system.entity.*
 import com.github.alphafoxz.foxden.domain.system.bo.SysDeptBo
 import com.github.alphafoxz.foxden.domain.system.vo.SysDeptVo
+import com.github.alphafoxz.foxden.common.core.constant.CacheNames
 import com.github.alphafoxz.foxden.common.core.constant.SystemConstants
 import com.github.alphafoxz.foxden.common.core.exception.ServiceException
 import com.github.alphafoxz.foxden.common.core.utils.StringUtils
 import org.babyfish.jimmer.sql.kt.ast.expression.*
 import org.babyfish.jimmer.sql.kt.*
+import org.springframework.cache.annotation.Cacheable
 import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.stereotype.Service
 
@@ -35,6 +37,7 @@ class SysDeptServiceImpl(
         return depts.map { entityToVo(it) }
     }
 
+    @Cacheable(cacheNames = [CacheNames.SYS_DEPT], key = "#deptId")
     override fun selectDeptById(deptId: Long): SysDeptVo? {
         val dept = sqlClient.findById(SysDept::class, deptId) ?: return null
         val vo = entityToVo(dept)

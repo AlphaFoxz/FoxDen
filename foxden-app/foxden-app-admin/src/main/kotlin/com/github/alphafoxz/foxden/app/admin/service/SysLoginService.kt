@@ -12,42 +12,29 @@ import com.github.alphafoxz.foxden.common.core.domain.dto.RoleDTO
 import com.github.alphafoxz.foxden.common.core.domain.model.LoginUser
 import com.github.alphafoxz.foxden.common.core.enums.LoginType
 import com.github.alphafoxz.foxden.common.core.exception.ServiceException
+import com.github.alphafoxz.foxden.common.core.exception.tenant.TenantException
 import com.github.alphafoxz.foxden.common.core.exception.user.UserException
 import com.github.alphafoxz.foxden.common.core.utils.DateUtils
 import com.github.alphafoxz.foxden.common.core.utils.MessageUtils
-import com.github.alphafoxz.foxden.common.web.utils.ServletUtils
 import com.github.alphafoxz.foxden.common.core.utils.SpringUtils
 import com.github.alphafoxz.foxden.common.core.utils.StringUtils
 import com.github.alphafoxz.foxden.common.jimmer.helper.DataPermissionHelper
+import com.github.alphafoxz.foxden.common.jimmer.helper.TenantHelper
 import com.github.alphafoxz.foxden.common.log.event.LogininforEvent
 import com.github.alphafoxz.foxden.common.redis.utils.RedisUtils
 import com.github.alphafoxz.foxden.common.security.utils.LoginHelper
-import com.github.alphafoxz.foxden.common.core.exception.tenant.TenantException
-import com.github.alphafoxz.foxden.common.jimmer.helper.TenantHelper
-import com.github.alphafoxz.foxden.domain.system.entity.SysUser
-import com.github.alphafoxz.foxden.domain.system.entity.SysUserFetcher
-import com.github.alphafoxz.foxden.domain.system.service.SysDeptService
-import com.github.alphafoxz.foxden.domain.system.service.SysPermissionService
-import com.github.alphafoxz.foxden.domain.system.service.SysPostService
-import com.github.alphafoxz.foxden.domain.system.service.SysRoleService
-import com.github.alphafoxz.foxden.domain.system.service.SysSocialService
-import com.github.alphafoxz.foxden.domain.system.service.SysTenantService
-import com.github.alphafoxz.foxden.domain.system.service.SysUserService
+import com.github.alphafoxz.foxden.common.web.utils.ServletUtils
+import com.github.alphafoxz.foxden.domain.system.service.*
 import com.github.alphafoxz.foxden.domain.system.service.extensions.insertByBo
 import com.github.alphafoxz.foxden.domain.system.service.extensions.queryList
 import com.github.alphafoxz.foxden.domain.system.service.extensions.selectPostDetailsByUserId
 import com.github.alphafoxz.foxden.domain.system.service.extensions.updateByBo
-import com.github.alphafoxz.foxden.domain.system.vo.SysDeptVo
-import com.github.alphafoxz.foxden.domain.system.vo.SysPostVo
-import com.github.alphafoxz.foxden.domain.system.vo.SysRoleVo
-import com.github.alphafoxz.foxden.domain.system.vo.SysTenantVo
 import com.github.alphafoxz.foxden.domain.system.vo.SysUserVo
 import me.zhyd.oauth.model.AuthUser
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import java.time.Duration
-import java.util.Date
 import java.util.function.Supplier
 
 /**
@@ -99,10 +86,12 @@ class SysLoginService(
         }
 
         // 查询是否已经绑定用户
-        val existingList = socialService.queryList(mapOf(
-            "userId" to userId,
-            "source" to authUserData.source
-        ))
+        val existingList = socialService.queryList(
+            mapOf(
+                "userId" to userId,
+                "source" to authUserData.source
+            )
+        )
 
         if (existingList.isEmpty()) {
             // 没有绑定用户，新增用户信息
@@ -254,8 +243,10 @@ class SysLoginService(
 
         // 锁定时间内登录 则踢出
         if (errorNumber >= maxRetryCount) {
-            recordLogininfor(tenantId ?: "", username ?: "", loginFail,
-                MessageUtils.message(loginType.retryLimitExceed, maxRetryCount, lockTime) ?: "超过最大尝试次数")
+            recordLogininfor(
+                tenantId ?: "", username ?: "", loginFail,
+                MessageUtils.message(loginType.retryLimitExceed, maxRetryCount, lockTime) ?: "超过最大尝试次数"
+            )
             throw UserException(loginType.retryLimitExceed, maxRetryCount, lockTime)
         }
 
@@ -266,12 +257,16 @@ class SysLoginService(
 
             // 达到规定错误次数 则锁定登录
             if (newErrorNumber >= maxRetryCount) {
-                recordLogininfor(tenantId ?: "", username ?: "", loginFail,
-                    MessageUtils.message(loginType.retryLimitExceed, maxRetryCount, lockTime) ?: "超过最大尝试次数")
+                recordLogininfor(
+                    tenantId ?: "", username ?: "", loginFail,
+                    MessageUtils.message(loginType.retryLimitExceed, maxRetryCount, lockTime) ?: "超过最大尝试次数"
+                )
                 throw UserException(loginType.retryLimitExceed, maxRetryCount, lockTime)
             } else {
-                recordLogininfor(tenantId ?: "", username ?: "", loginFail,
-                    MessageUtils.message(loginType.retryLimitCount, newErrorNumber) ?: "登录失败次数过多")
+                recordLogininfor(
+                    tenantId ?: "", username ?: "", loginFail,
+                    MessageUtils.message(loginType.retryLimitCount, newErrorNumber) ?: "登录失败次数过多"
+                )
                 throw UserException(loginType.retryLimitCount, newErrorNumber)
             }
         }
@@ -302,7 +297,9 @@ class SysLoginService(
         } else if (SystemConstants.DISABLE == tenant.status) {
             log.info("登录租户：{} 已被停用.", tenantId)
             throw TenantException("tenant.blocked")
-        } else if (tenant.expireTime != null && DateUtils.getNowDate().after(java.sql.Timestamp.valueOf(tenant.expireTime))) {
+        } else if (tenant.expireTime != null && DateUtils.getNowDate()
+                .after(java.sql.Timestamp.valueOf(tenant.expireTime))
+        ) {
             log.info("登录租户：{} 已超过有效期.", tenantId)
             throw TenantException("tenant.expired")
         }

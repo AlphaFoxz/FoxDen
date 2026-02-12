@@ -15,9 +15,11 @@ import com.github.alphafoxz.foxden.domain.system.entity.SysDictData
 import com.github.alphafoxz.foxden.domain.system.entity.SysDictType
 import com.github.alphafoxz.foxden.domain.system.entity.SysRole
 import com.github.alphafoxz.foxden.domain.system.service.SysTenantPackageService
+import com.github.alphafoxz.foxden.common.core.constant.CacheNames
 import com.github.alphafoxz.foxden.domain.system.service.SysTenantService
 import com.github.alphafoxz.foxden.domain.system.vo.SysTenantVo
 import com.github.alphafoxz.foxden.domain.tenant.entity.SysTenant
+import org.springframework.cache.annotation.Cacheable
 import com.github.alphafoxz.foxden.domain.tenant.entity.SysTenantPackage
 import org.babyfish.jimmer.sql.kt.*
 import org.springframework.jdbc.core.JdbcTemplate
@@ -85,6 +87,7 @@ class SysTenantServiceImpl(
         }.firstOrNull()
     }
 
+    @Cacheable(cacheNames = [CacheNames.SYS_TENANT], key = "#tenantId")
     override fun queryByTenantId(tenantId: String): SysTenantVo? {
         val sql = """
             SELECT t.* FROM sys_tenant t

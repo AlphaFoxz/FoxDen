@@ -6,10 +6,13 @@ import com.github.alphafoxz.foxden.domain.system.service.SysDictDataService
 import com.github.alphafoxz.foxden.domain.system.entity.*
 import com.github.alphafoxz.foxden.domain.system.bo.SysDictDataBo
 import com.github.alphafoxz.foxden.domain.system.vo.SysDictDataVo
+import com.github.alphafoxz.foxden.common.core.constant.CacheNames
 import com.github.alphafoxz.foxden.common.core.constant.SystemConstants
 import com.github.alphafoxz.foxden.common.core.exception.ServiceException
 import org.babyfish.jimmer.sql.kt.ast.expression.*
 import org.babyfish.jimmer.sql.kt.*
+import org.springframework.cache.annotation.CacheEvict
+import org.springframework.cache.annotation.CachePut
 import org.springframework.stereotype.Service
 
 /**
@@ -77,10 +80,12 @@ class SysDictDataServiceImpl(
         return entityToVo(dictData)
     }
 
+    @CacheEvict(cacheNames = [CacheNames.SYS_DICT], allEntries = true)
     override fun deleteDictDataByIds(dictCodes: Array<Long>) {
         sqlClient.deleteByIds(SysDictData::class, dictCodes.toList())
     }
 
+    @CachePut(cacheNames = [CacheNames.SYS_DICT], key = "#bo.dictType")
     override fun insertDictData(bo: SysDictDataBo): Int {
         val newDictData = com.github.alphafoxz.foxden.domain.system.entity.SysDictDataDraft.`$`.produce {
             dictSort = bo.dictSort ?: 0
@@ -98,6 +103,7 @@ class SysDictDataServiceImpl(
         return if (result.isModified) 1 else 0
     }
 
+    @CachePut(cacheNames = [CacheNames.SYS_DICT], key = "#bo.dictType")
     override fun updateDictData(bo: SysDictDataBo): Int {
         val dictCodeVal = bo.dictCode ?: return 0
 

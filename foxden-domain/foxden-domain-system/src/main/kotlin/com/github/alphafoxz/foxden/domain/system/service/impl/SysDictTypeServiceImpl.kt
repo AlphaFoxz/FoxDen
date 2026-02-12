@@ -19,6 +19,7 @@ import com.github.alphafoxz.foxden.domain.system.vo.SysDictTypeVo
 import org.babyfish.jimmer.sql.kt.ast.expression.*
 import org.babyfish.jimmer.sql.kt.*
 import org.springframework.cache.annotation.CacheEvict
+import org.springframework.cache.annotation.CachePut
 import org.springframework.cache.annotation.Cacheable
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -120,7 +121,7 @@ class SysDictTypeServiceImpl(
         CacheUtils.clear(CacheNames.SYS_DICT_TYPE)
     }
 
-    @Cacheable(cacheNames = [CacheNames.SYS_DICT], key = "#bo.dictType")
+    @CachePut(cacheNames = [CacheNames.SYS_DICT], key = "#bo.dictType")
     @Transactional(rollbackFor = [Exception::class])
     override fun insertDictType(bo: SysDictTypeBo): List<SysDictDataVo> {
         val newDictType = com.github.alphafoxz.foxden.domain.system.entity.SysDictTypeDraft.`$`.produce {
@@ -138,7 +139,7 @@ class SysDictTypeServiceImpl(
         throw ServiceException("操作失败")
     }
 
-    @Cacheable(cacheNames = [CacheNames.SYS_DICT], key = "#bo.dictType")
+    @CachePut(cacheNames = [CacheNames.SYS_DICT], key = "#bo.dictType")
     @Transactional(rollbackFor = [Exception::class])
     override fun updateDictType(bo: SysDictTypeBo): List<SysDictDataVo> {
         val dictIdVal = bo.dictId ?: throw ServiceException("字典ID不能为空")

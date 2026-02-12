@@ -1,6 +1,7 @@
 package com.github.alphafoxz.foxden.domain.system.service.impl
 
 import cn.dev33.satoken.stp.StpUtil
+import com.github.alphafoxz.foxden.common.core.constant.CacheNames
 import com.github.alphafoxz.foxden.common.core.constant.SystemConstants
 import com.github.alphafoxz.foxden.common.core.exception.ServiceException
 import com.github.alphafoxz.foxden.common.jimmer.core.page.PageQuery
@@ -12,6 +13,7 @@ import com.github.alphafoxz.foxden.domain.system.service.SysRoleService
 import com.github.alphafoxz.foxden.domain.system.vo.SysRoleVo
 import org.babyfish.jimmer.sql.kt.*
 import org.babyfish.jimmer.sql.kt.ast.expression.*
+import org.springframework.cache.annotation.CacheEvict
 import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -231,6 +233,7 @@ class SysRoleServiceImpl(
         ) ?: 0L
     }
 
+    @CacheEvict(cacheNames = [CacheNames.SYS_ROLE_CUSTOM], key = "#bo.roleId")
     override fun insertRole(bo: SysRoleBo): Int {
         val newRole = com.github.alphafoxz.foxden.domain.system.entity.SysRoleDraft.`$`.produce {
             roleName = bo.roleName ?: throw ServiceException("角色名称不能为空")
@@ -249,6 +252,7 @@ class SysRoleServiceImpl(
         return if (result.isModified) 1 else 0
     }
 
+    @CacheEvict(cacheNames = [CacheNames.SYS_ROLE_CUSTOM], key = "#bo.roleId")
     override fun updateRole(bo: SysRoleBo): Int {
         val roleIdVal = bo.roleId ?: return 0
         val existing = sqlClient.findById(SysRole::class, roleIdVal)
@@ -280,11 +284,13 @@ class SysRoleServiceImpl(
         return result
     }
 
+    @CacheEvict(cacheNames = [CacheNames.SYS_ROLE_CUSTOM], key = "#roleId")
     override fun deleteRoleById(roleId: Long): Int {
         val result = sqlClient.deleteById(SysRole::class, roleId)
         return result.totalAffectedRowCount
     }
 
+    @CacheEvict(cacheNames = [CacheNames.SYS_ROLE_CUSTOM], allEntries = true)
     override fun deleteRoleByIds(roleIds: List<Long>): Int {
         val result = sqlClient.deleteByIds(SysRole::class, roleIds)
         return result.totalAffectedRowCount
