@@ -1,5 +1,7 @@
 package com.github.alphafoxz.foxden.domain.system.service.impl
 
+import com.github.alphafoxz.foxden.common.jimmer.core.page.PageQuery
+import com.github.alphafoxz.foxden.common.jimmer.core.page.TableDataInfo
 import com.github.alphafoxz.foxden.domain.system.service.SysDictDataService
 import com.github.alphafoxz.foxden.domain.system.entity.*
 import com.github.alphafoxz.foxden.domain.system.bo.SysDictDataBo
@@ -32,6 +34,22 @@ class SysDictDataServiceImpl(
         }.execute()
 
         return dictDataList.map { entityToVo(it) }
+    }
+
+    override fun selectPageDictDataList(dictData: SysDictDataBo, pageQuery: PageQuery): TableDataInfo<SysDictDataVo> {
+        val pager = sqlClient.createQuery(SysDictData::class) {
+            dictData.dictCode?.let { where(table.id eq it) }
+            dictData.dictType?.takeIf { it.isNotBlank() }?.let { where(table.dictType eq it) }
+            dictData.dictLabel?.takeIf { it.isNotBlank() }?.let { where(table.dictLabel like "%${it}%") }
+            // 双重排序：dictSort + id (dict_code)
+            orderBy(
+                table.dictSort.asc(),
+                table.id.asc()
+            )
+            select(table)
+        }.fetchPage((pageQuery.pageNum ?: 1) - 1, pageQuery.pageSize ?: 10)
+
+        return TableDataInfo(pager.rows.map { entityToVo(it) }, pager.totalRowCount)
     }
 
     override fun selectDictDataByType(dictType: String): List<SysDictDataVo> {

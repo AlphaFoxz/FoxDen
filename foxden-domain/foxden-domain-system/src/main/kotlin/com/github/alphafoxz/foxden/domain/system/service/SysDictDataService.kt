@@ -1,5 +1,7 @@
 package com.github.alphafoxz.foxden.domain.system.service
 
+import com.github.alphafoxz.foxden.common.jimmer.core.page.PageQuery
+import com.github.alphafoxz.foxden.common.jimmer.core.page.TableDataInfo
 import com.github.alphafoxz.foxden.domain.system.bo.SysDictDataBo
 import com.github.alphafoxz.foxden.domain.system.vo.SysDictDataVo
 
@@ -12,6 +14,15 @@ interface SysDictDataService {
 
     /**
      * 根据条件分页查询字典数据
+     *
+     * @param dictData 字典数据信息
+     * @param pageQuery 分页参数
+     * @return 字典数据分页集合
+     */
+    fun selectPageDictDataList(dictData: SysDictDataBo, pageQuery: PageQuery): TableDataInfo<SysDictDataVo>
+
+    /**
+     * 根据条件查询字典数据列表
      *
      * @param dictData 字典数据信息
      * @return 字典数据集合

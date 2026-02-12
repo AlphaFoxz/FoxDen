@@ -1,6 +1,9 @@
 package com.github.alphafoxz.foxden.app.system.controller
 
 import cn.dev33.satoken.annotation.SaCheckPermission
+import cn.hutool.core.lang.tree.Tree
+import cn.hutool.core.util.StrUtil
+import com.github.alphafoxz.foxden.common.core.constant.SystemConstants
 import com.github.alphafoxz.foxden.common.core.domain.R
 import com.github.alphafoxz.foxden.common.core.utils.StringUtils
 import com.github.alphafoxz.foxden.common.idempotent.annotation.RepeatSubmit
@@ -9,10 +12,7 @@ import com.github.alphafoxz.foxden.common.log.enums.BusinessType
 import com.github.alphafoxz.foxden.common.web.core.BaseController
 import com.github.alphafoxz.foxden.domain.system.bo.SysDeptBo
 import com.github.alphafoxz.foxden.domain.system.service.SysDeptService
-import com.github.alphafoxz.foxden.domain.system.service.extensions.buildDeptTreeSelect
-import com.github.alphafoxz.foxden.domain.system.service.extensions.deleteDept
 import com.github.alphafoxz.foxden.domain.system.vo.SysDeptVo
-import cn.hutool.core.lang.tree.Tree
 import org.springframework.validation.annotation.Validated
 import org.springframework.web.bind.annotation.*
 
@@ -49,9 +49,9 @@ class SysDeptController(
         // 过滤掉指定部门及其子部门
         val filteredDepts = depts.filter { dept ->
             deptId == null || (
-                dept.deptId != deptId &&
-                !StringUtils.splitList(dept.ancestors).contains(deptId.toString())
-            )
+                    dept.deptId != deptId &&
+                            !StringUtils.splitList(dept.ancestors).contains(deptId.toString())
+                    )
         }
         return R.ok(filteredDepts)
     }
@@ -72,8 +72,7 @@ class SysDeptController(
     @GetMapping("/treeselect")
     fun treeselect(dept: SysDeptBo): R<List<Tree<Long>>> {
         val depts = deptService.selectDeptList(dept)
-        // TODO: 构建树形结构，暂时返回空列表
-        return R.ok(emptyList())
+        return R.ok(deptService.buildDeptTreeSelect(depts))
     }
 
     /**
@@ -98,12 +97,20 @@ class SysDeptController(
     @RepeatSubmit
     @PutMapping
     fun edit(@Validated @RequestBody dept: SysDeptBo): R<Void> {
-        deptService.checkDeptDataScope(dept.deptId!!)
+        val deptId: Long? = dept.deptId
+        deptService.checkDeptDataScope(deptId!!)
         if (!deptService.checkDeptNameUnique(dept)) {
             return R.fail("修改部门'" + dept.deptName + "'失败，部门名称已存在")
         }
         if (dept.parentId == dept.deptId) {
             return R.fail("修改部门'" + dept.deptName + "'失败，上级部门不能是自己")
+        }
+        if (StrUtil.equals(SystemConstants.DISABLE, dept.status)) {
+            if (deptService.selectNormalChildrenDeptById(deptId) > 0) {
+                return R.fail("该部门包含未停用的子部门!")
+            } else if (deptService.checkDeptExistUser(deptId)) {
+                return R.fail("该部门下存在已分配用户，不能禁用!")
+            }
         }
         return toAjax(deptService.updateDept(dept))
     }
@@ -115,13 +122,16 @@ class SysDeptController(
     @Log(title = "部门管理", businessType = BusinessType.DELETE)
     @DeleteMapping("/{deptId}")
     fun remove(@PathVariable deptId: Long): R<Void> {
+        if (SystemConstants.DEFAULT_DEPT_ID == deptId) {
+            return R.warn("默认部门,不允许删除")
+        }
         if (deptService.hasChildByDeptId(deptId)) {
-            return R.fail("存在下级部门,不允许删除")
+            return R.warn("存在下级部门,不允许删除")
         }
         if (deptService.checkDeptExistUser(deptId)) {
-            return R.fail("部门存在用户,不允许删除")
+            return R.warn("部门存在用户,不允许删除")
         }
         deptService.checkDeptDataScope(deptId)
-        return toAjax(deptService.deleteDept(deptId))
+        return toAjax(deptService.deleteDeptById(deptId))
     }
 }

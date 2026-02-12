@@ -4,6 +4,8 @@ import cn.dev33.satoken.annotation.SaCheckPermission
 import com.github.alphafoxz.foxden.common.core.domain.R
 import com.github.alphafoxz.foxden.common.excel.utils.ExcelUtil
 import com.github.alphafoxz.foxden.common.idempotent.annotation.RepeatSubmit
+import com.github.alphafoxz.foxden.common.jimmer.core.page.PageQuery
+import com.github.alphafoxz.foxden.common.jimmer.core.page.TableDataInfo
 import com.github.alphafoxz.foxden.common.log.annotation.Log
 import com.github.alphafoxz.foxden.common.log.enums.BusinessType
 import com.github.alphafoxz.foxden.common.web.core.BaseController
@@ -33,8 +35,8 @@ class SysDictDataController(
      */
     @SaCheckPermission("system:dict:list")
     @GetMapping("/list")
-    fun list(dictData: SysDictDataBo): R<List<SysDictDataVo>> {
-        return R.ok(dictDataService.selectDictDataList(dictData))
+    fun list(dictData: SysDictDataBo, pageQuery: PageQuery): TableDataInfo<SysDictDataVo> {
+        return dictDataService.selectPageDictDataList(dictData, pageQuery)
     }
 
     /**

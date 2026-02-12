@@ -4,6 +4,7 @@ import cn.dev33.satoken.annotation.SaCheckPermission
 import cn.hutool.core.util.ObjectUtil
 import com.github.alphafoxz.foxden.common.core.constant.SystemConstants
 import com.github.alphafoxz.foxden.common.core.domain.R
+import com.github.alphafoxz.foxden.common.excel.utils.ExcelUtil
 import com.github.alphafoxz.foxden.common.idempotent.annotation.RepeatSubmit
 import com.github.alphafoxz.foxden.common.jimmer.core.page.PageQuery
 import com.github.alphafoxz.foxden.common.jimmer.core.page.TableDataInfo
@@ -15,6 +16,7 @@ import com.github.alphafoxz.foxden.domain.system.bo.SysPostBo
 import com.github.alphafoxz.foxden.domain.system.service.SysDeptService
 import com.github.alphafoxz.foxden.domain.system.service.SysPostService
 import com.github.alphafoxz.foxden.domain.system.vo.SysPostVo
+import jakarta.servlet.http.HttpServletResponse
 import org.springframework.validation.annotation.Validated
 import org.springframework.web.bind.annotation.*
 
@@ -38,6 +40,17 @@ class SysPostController(
     @GetMapping("/list")
     fun list(post: SysPostBo, pageQuery: PageQuery): TableDataInfo<SysPostVo> {
         return postService.selectPagePostList(post, pageQuery)
+    }
+
+    /**
+     * 导出岗位列表
+     */
+    @Log(title = "岗位管理", businessType = BusinessType.EXPORT)
+    @SaCheckPermission("system:post:export")
+    @PostMapping("/export")
+    fun export(post: SysPostBo, response: HttpServletResponse) {
+        val list = postService.selectPostList(post)
+        ExcelUtil.exportExcel(list, "岗位数据", SysPostVo::class.java, response)
     }
 
     /**
