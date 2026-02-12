@@ -11,6 +11,7 @@ import org.babyfish.jimmer.sql.kt.ast.expression.between
 import org.babyfish.jimmer.sql.kt.ast.expression.desc
 import org.babyfish.jimmer.sql.kt.ast.expression.eq
 import org.babyfish.jimmer.sql.kt.ast.expression.like
+import org.babyfish.jimmer.sql.ast.mutation.SaveMode
 import org.springframework.stereotype.Service
 import java.sql.Timestamp
 
@@ -87,10 +88,10 @@ class SysLogininforServiceImpl(
 
     override fun insertLogininfor(bo: SysLogininforBo): Int {
         val newLogininfor = SysLogininforDraft.`$`.produce {
-            tenantId = "default"
+            tenantId = bo.tenantId ?: "default"
             userName = bo.userName
-            clientKey = null
-            deviceType = null
+            clientKey = bo.clientKey
+            deviceType = bo.deviceType
             status = bo.status
             ipaddr = bo.ipaddr
             loginLocation = bo.loginLocation
@@ -100,7 +101,8 @@ class SysLogininforServiceImpl(
             loginTime = java.util.Date()
         }
 
-        val result = sqlClient.save(newLogininfor)
+        // 使用 INSERT_ONLY 模式，因为登录日志始终是插入新记录
+        val result = sqlClient.save(newLogininfor, SaveMode.INSERT_ONLY)
         return if (result.isModified) 1 else 0
     }
 

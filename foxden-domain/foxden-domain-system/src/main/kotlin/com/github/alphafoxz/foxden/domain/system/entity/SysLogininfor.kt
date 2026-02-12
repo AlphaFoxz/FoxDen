@@ -1,8 +1,7 @@
 package com.github.alphafoxz.foxden.domain.system.entity
 
-import com.github.alphafoxz.foxden.common.jimmer.entity.comm.*
 import org.babyfish.jimmer.sql.*
-import java.util.Date
+import java.util.*
 
 /**
  * 系统访问记录表 sys_logininfor
@@ -10,12 +9,13 @@ import java.util.Date
 @Entity
 @Table(name = "sys_logininfor")
 interface SysLogininfor {
+
     /**
-     * 主键ID
+     * 访问ID
      */
-    @org.babyfish.jimmer.sql.Column(name = "info_id")
+    @Column(name = "info_id")
     @Id
-    @GeneratedValue
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     val id: Long
 
     /**
