@@ -45,6 +45,14 @@ interface SysLogininforService {
     fun deleteLogininforByIds(infoIds: Array<Long>)
 
     /**
+     * 查询登录日志集合（用于导出）
+     *
+     * @param bo 登录日志信息
+     * @return 登录记录集合
+     */
+    fun selectList(bo: SysLogininforBo): List<SysLogininforVo>
+
+    /**
      * 清空登录日志
      */
     fun cleanLogininfor()

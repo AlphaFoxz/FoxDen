@@ -1,42 +1,96 @@
 package com.github.alphafoxz.foxden.domain.system.service.impl
 
-import com.github.alphafoxz.foxden.domain.system.service.SysLogininforService
-import com.github.alphafoxz.foxden.domain.system.entity.*
-import com.github.alphafoxz.foxden.domain.system.bo.SysLogininforBo
-import com.github.alphafoxz.foxden.domain.system.vo.SysLogininforVo
 import com.github.alphafoxz.foxden.common.jimmer.core.page.PageQuery
 import com.github.alphafoxz.foxden.common.jimmer.core.page.TableDataInfo
-import org.babyfish.jimmer.sql.kt.ast.expression.*
-import org.babyfish.jimmer.sql.kt.*
+import com.github.alphafoxz.foxden.domain.system.bo.SysLogininforBo
+import com.github.alphafoxz.foxden.domain.system.entity.*
+import com.github.alphafoxz.foxden.domain.system.service.SysLogininforService
+import com.github.alphafoxz.foxden.domain.system.vo.SysLogininforVo
+import org.babyfish.jimmer.sql.kt.KSqlClient
+import org.babyfish.jimmer.sql.kt.ast.expression.between
+import org.babyfish.jimmer.sql.kt.ast.expression.desc
+import org.babyfish.jimmer.sql.kt.ast.expression.eq
+import org.babyfish.jimmer.sql.kt.ast.expression.like
 import org.springframework.stereotype.Service
+import java.sql.Timestamp
 
-/**
- * Logininfor 业务层处理
- */
 @Service
 class SysLogininforServiceImpl(
     private val sqlClient: KSqlClient
 ) : SysLogininforService {
 
     override fun selectPageList(bo: SysLogininforBo, pageQuery: PageQuery): TableDataInfo<SysLogininforVo> {
-        // TODO: Implement proper pagination when needed
+        // 使用 Jimmer DSL 查询
+        val pager = sqlClient.createQuery(SysLogininfor::class) {
+            // IP地址模糊查询
+            bo.ipaddr?.takeIf { it.isNotBlank() }?.let {
+                where(table.ipaddr like "%$it%")
+            }
+            // 状态精确查询
+            bo.status?.takeIf { it.isNotBlank() }?.let {
+                where(table.status eq it)
+            }
+            // 用户名模糊查询
+            bo.userName?.takeIf { it.isNotBlank() }?.let {
+                where(table.userName like "%$it%")
+            }
+
+            // 时间范围查询
+            val beginTime = bo.beginTime
+            val endTime = bo.endTime
+            if (beginTime != null && endTime != null) {
+                val beginDate = Timestamp.valueOf(beginTime)
+                val endDate = Timestamp.valueOf(endTime)
+                where(table.loginTime.between(beginDate, endDate))
+            }
+
+            // 排序
+            if (pageQuery.orderByColumn.isNullOrBlank()) {
+                orderBy(table.id.desc())
+            }
+            select(table)
+        }.fetchPage(pageQuery.getPageNumOrDefault() - 1, pageQuery.getPageSizeOrDefault())
+
+        return TableDataInfo(pager.rows.map { entityToVo(it) }, pager.totalRowCount)
+    }
+
+    override fun selectList(bo: SysLogininforBo): List<SysLogininforVo> {
+        // 使用 Jimmer DSL 查询（参照老项目 selectLogininforList）
         val logininfors = sqlClient.createQuery(SysLogininfor::class) {
-            bo.infoId?.let { where(table.id eq it) }
-            bo.userName?.takeIf { it.isNotBlank() }?.let { where(table.userName like "%${it}%") }
-            bo.status?.takeIf { it.isNotBlank() }?.let { where(table.status eq it) }
+            // IP地址模糊查询
+            bo.ipaddr?.takeIf { it.isNotBlank() }?.let {
+                where(table.ipaddr like "%$it%")
+            }
+            // 状态精确查询
+            bo.status?.takeIf { it.isNotBlank() }?.let {
+                where(table.status eq it)
+            }
+            // 用户名模糊查询
+            bo.userName?.takeIf { it.isNotBlank() }?.let {
+                where(table.userName like "%$it%")
+            }
+            // 时间范围查询
+            val beginTime = bo.beginTime
+            val endTime = bo.endTime
+            if (beginTime != null && endTime != null) {
+                val beginDate = Timestamp.valueOf(beginTime)
+                val endDate = Timestamp.valueOf(endTime)
+                where(table.loginTime.between(beginDate, endDate))
+            }
+            // 按ID倒序排序
             orderBy(table.id.desc())
             select(table)
         }.execute()
 
-        return TableDataInfo.build(logininfors.map { entityToVo(it) })
+        return logininfors.map { entityToVo(it) }
     }
 
     override fun insertLogininfor(bo: SysLogininforBo): Int {
-        val newLogininfor = com.github.alphafoxz.foxden.domain.system.entity.SysLogininforDraft.`$`.produce {
-            tenantId = "default" // TODO: Get from context
+        val newLogininfor = SysLogininforDraft.`$`.produce {
+            tenantId = "default"
             userName = bo.userName
-            clientKey = null // TODO: Get from context
-            deviceType = null // TODO: Get from request
+            clientKey = null
+            deviceType = null
             status = bo.status
             ipaddr = bo.ipaddr
             loginLocation = bo.loginLocation
@@ -60,7 +114,6 @@ class SysLogininforServiceImpl(
     }
 
     override fun cleanLogininfor() {
-        // Delete all login records
         val allIds = sqlClient.createQuery(SysLogininfor::class) {
             select(table.id)
         }.execute()
@@ -70,9 +123,6 @@ class SysLogininforServiceImpl(
         }
     }
 
-    /**
-     * 实体转 VO
-     */
     private fun entityToVo(logininfor: SysLogininfor): SysLogininforVo {
         return SysLogininforVo(
             infoId = logininfor.id,

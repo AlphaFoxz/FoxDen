@@ -1,6 +1,5 @@
 package com.github.alphafoxz.foxden.domain.system.bo
 
-import jakarta.validation.constraints.NotBlank
 import jakarta.validation.constraints.Size
 
 /**
@@ -10,6 +9,11 @@ import jakarta.validation.constraints.Size
  */
 data class SysLogininforBo(
     /**
+     * 租户ID
+     */
+    var tenantId: String? = null,
+
+    /**
      * 序号
      */
     var infoId: Long? = null,
@@ -18,6 +22,16 @@ data class SysLogininforBo(
      * 用户账号
      */
     var userName: String? = null,
+
+    /**
+     * 客户端密钥
+     */
+    var clientKey: String? = null,
+
+    /**
+     * 设备类型
+     */
+    var deviceType: String? = null,
 
     /**
      * 登录IP地址
@@ -57,5 +71,15 @@ data class SysLogininforBo(
     /**
      * 访问时间
      */
-    var loginTime: java.time.LocalDateTime? = null
+    var loginTime: java.time.LocalDateTime? = null,
+
+    /**
+     * 开始时间
+     */
+    var beginTime: String? = null,
+
+    /**
+     * 结束时间
+     */
+    var endTime: String? = null
 )
