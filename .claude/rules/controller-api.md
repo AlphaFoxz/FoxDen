@@ -33,8 +33,8 @@ Use `@SaCheckPermission` for authorization:
 ```kotlin
 @SaCheckPermission("system:user:query")
 @GetMapping("/list")
-fun list(bo: SysUserBo): R<TableDataInfo<SysUserVo>> {
-    return R.ok(userService.selectUserList(bo))
+fun list(bo: SysUserBo, pageQuery: PageQuery): TableDataInfo<SysUserVo> {
+    return userService.selectUserList(bo, pageQuery)
 }
 ```
 

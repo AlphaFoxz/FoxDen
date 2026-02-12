@@ -3,6 +3,8 @@ package com.github.alphafoxz.foxden.app.system.controller
 import cn.dev33.satoken.annotation.SaCheckPermission
 import com.github.alphafoxz.foxden.common.core.domain.R
 import com.github.alphafoxz.foxden.common.idempotent.annotation.RepeatSubmit
+import com.github.alphafoxz.foxden.common.jimmer.core.page.PageQuery
+import com.github.alphafoxz.foxden.common.jimmer.core.page.TableDataInfo
 import com.github.alphafoxz.foxden.common.log.annotation.Log
 import com.github.alphafoxz.foxden.common.log.enums.BusinessType
 import com.github.alphafoxz.foxden.common.web.core.BaseController
@@ -30,8 +32,8 @@ class SysConfigController(
      */
     @SaCheckPermission("system:config:list")
     @GetMapping("/list")
-    fun list(config: SysConfigBo): R<List<SysConfigVo>> {
-        return R.ok(configService.selectConfigList(config))
+    fun list(config: SysConfigBo, pageQuery: PageQuery): TableDataInfo<SysConfigVo> {
+        return configService.selectConfigList(config, pageQuery)
     }
 
     /**

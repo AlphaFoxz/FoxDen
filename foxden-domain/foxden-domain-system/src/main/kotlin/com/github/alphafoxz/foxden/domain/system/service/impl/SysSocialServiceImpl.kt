@@ -44,6 +44,16 @@ class SysSocialServiceImpl(
         return socials.map { entityToVo(it) }
     }
 
+    override fun selectSocialListByUserId(userId: Long): List<SysSocialVo> {
+        val socials = sqlClient.createQuery(SysSocial::class) {
+            where(table.userId eq userId)
+            orderBy(table.id.desc())
+            select(table)
+        }.execute()
+
+        return socials.map { entityToVo(it) }
+    }
+
     override fun insertSocial(bo: SysSocialBo): Int {
         val newSocial = com.github.alphafoxz.foxden.domain.system.entity.SysSocialDraft.`$`.produce {
             userId = bo.userId

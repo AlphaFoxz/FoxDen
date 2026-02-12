@@ -35,6 +35,14 @@ interface SysSocialService {
     fun selectByAuthId(authId: String): List<SysSocialVo>
 
     /**
+     * 根据用户ID查询社会化关系列表
+     *
+     * @param userId 用户ID
+     * @return 社会化关系集合
+     */
+    fun selectSocialListByUserId(userId: Long): List<SysSocialVo>
+
+    /**
      * 新增社会化关系
      *
      * @param bo 社会化关系信息

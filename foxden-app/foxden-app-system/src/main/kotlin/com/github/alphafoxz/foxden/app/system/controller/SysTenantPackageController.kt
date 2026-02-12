@@ -6,7 +6,6 @@ import com.github.alphafoxz.foxden.common.core.constant.TenantConstants
 import com.github.alphafoxz.foxden.common.core.domain.R
 import com.github.alphafoxz.foxden.common.core.validate.AddGroup
 import com.github.alphafoxz.foxden.common.core.validate.EditGroup
-import com.github.alphafoxz.foxden.common.excel.utils.ExcelUtil
 import com.github.alphafoxz.foxden.common.idempotent.annotation.RepeatSubmit
 import com.github.alphafoxz.foxden.common.jimmer.core.page.PageQuery
 import com.github.alphafoxz.foxden.common.jimmer.core.page.TableDataInfo
@@ -16,7 +15,6 @@ import com.github.alphafoxz.foxden.common.web.core.BaseController
 import com.github.alphafoxz.foxden.domain.system.bo.SysTenantPackageBo
 import com.github.alphafoxz.foxden.domain.system.service.SysTenantPackageService
 import com.github.alphafoxz.foxden.domain.system.vo.SysTenantPackageVo
-import jakarta.servlet.http.HttpServletResponse
 import jakarta.validation.constraints.NotEmpty
 import jakarta.validation.constraints.NotNull
 import org.springframework.validation.annotation.Validated
@@ -43,6 +41,16 @@ class SysTenantPackageController(
     fun list(bo: SysTenantPackageBo, pageQuery: PageQuery): TableDataInfo<SysTenantPackageVo> {
         val list = tenantPackageService.selectTenantPackageList(bo)
         return TableDataInfo.build(list)
+    }
+
+    /**
+     * 查询租户套餐下拉选列表
+     */
+    @SaCheckRole(TenantConstants.SUPER_ADMIN_ROLE_KEY)
+    @SaCheckPermission("system:tenantPackage:list")
+    @GetMapping("/selectList")
+    fun selectList(): R<List<SysTenantPackageVo>> {
+        return R.ok(tenantPackageService.selectList())
     }
 
     /**

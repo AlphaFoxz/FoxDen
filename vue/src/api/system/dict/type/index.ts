@@ -1,62 +1,62 @@
+import {type AxiosPromise} from 'axios';
+import {type DictTypeForm, type DictTypeVO, type DictTypeQuery} from './types';
 import request from '@/utils/request';
-import { DictTypeForm, DictTypeVO, DictTypeQuery } from './types';
-import { AxiosPromise } from 'axios';
 
 // 查询字典类型列表
-export function listType(query: DictTypeQuery): AxiosPromise<DictTypeVO[]> {
+export async function listType(query: DictTypeQuery): AxiosPromise<DictTypeVO[]> {
   return request({
     url: '/system/dict/type/list',
     method: 'get',
-    params: query
+    params: query,
   });
 }
 
 // 查询字典类型详细
-export function getType(dictId: number | string): AxiosPromise<DictTypeVO> {
+export async function getType(dictId: number | string): AxiosPromise<DictTypeVO> {
   return request({
     url: '/system/dict/type/' + dictId,
-    method: 'get'
+    method: 'get',
   });
 }
 
 // 新增字典类型
-export function addType(data: DictTypeForm) {
+export async function addType(data: DictTypeForm) {
   return request({
     url: '/system/dict/type',
     method: 'post',
-    data: data
+    data,
   });
 }
 
 // 修改字典类型
-export function updateType(data: DictTypeForm) {
+export async function updateType(data: DictTypeForm) {
   return request({
     url: '/system/dict/type',
     method: 'put',
-    data: data
+    data,
   });
 }
 
 // 删除字典类型
-export function delType(dictId: string | number | Array<string | number>) {
+export async function delType(dictId: string | number | Array<string | number>) {
   return request({
-    url: '/system/dict/type/' + dictId,
-    method: 'delete'
+    url: '/system/dict/type/' + dictId.toString(),
+    method: 'delete',
   });
 }
 
 // 刷新字典缓存
-export function refreshCache() {
+export async function refreshCache() {
   return request({
     url: '/system/dict/type/refreshCache',
-    method: 'delete'
+    method: 'delete',
   });
 }
 
 // 获取字典选择框列表
-export function optionselect(): AxiosPromise<DictTypeVO[]> {
+export async function optionselect(): AxiosPromise<DictTypeVO[]> {
   return request({
     url: '/system/dict/type/optionselect',
-    method: 'get'
+    method: 'get',
   });
 }

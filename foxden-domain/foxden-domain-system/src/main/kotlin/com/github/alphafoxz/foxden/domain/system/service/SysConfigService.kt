@@ -1,5 +1,7 @@
 package com.github.alphafoxz.foxden.domain.system.service
 
+import com.github.alphafoxz.foxden.common.jimmer.core.page.PageQuery
+import com.github.alphafoxz.foxden.common.jimmer.core.page.TableDataInfo
 import com.github.alphafoxz.foxden.domain.system.bo.SysConfigBo
 import com.github.alphafoxz.foxden.domain.system.vo.SysConfigVo
 
@@ -16,7 +18,7 @@ interface SysConfigService {
      * @param config 参数配置信息
      * @return 参数配置集合
      */
-    fun selectConfigList(config: SysConfigBo): List<SysConfigVo>
+    fun selectConfigList(config: SysConfigBo, pageQuery: PageQuery): TableDataInfo<SysConfigVo>
 
     /**
      * 根据键名查询参数配置信息

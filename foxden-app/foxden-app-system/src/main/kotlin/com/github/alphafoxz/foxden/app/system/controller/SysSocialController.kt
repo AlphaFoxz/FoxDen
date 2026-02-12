@@ -5,15 +5,13 @@ import com.github.alphafoxz.foxden.common.core.domain.R
 import com.github.alphafoxz.foxden.common.core.validate.AddGroup
 import com.github.alphafoxz.foxden.common.core.validate.EditGroup
 import com.github.alphafoxz.foxden.common.idempotent.annotation.RepeatSubmit
-import com.github.alphafoxz.foxden.common.jimmer.core.page.PageQuery
-import com.github.alphafoxz.foxden.common.jimmer.core.page.TableDataInfo
 import com.github.alphafoxz.foxden.common.log.annotation.Log
 import com.github.alphafoxz.foxden.common.log.enums.BusinessType
+import com.github.alphafoxz.foxden.common.security.utils.LoginHelper
 import com.github.alphafoxz.foxden.common.web.core.BaseController
 import com.github.alphafoxz.foxden.domain.system.bo.SysSocialBo
 import com.github.alphafoxz.foxden.domain.system.service.SysSocialService
 import com.github.alphafoxz.foxden.domain.system.vo.SysSocialVo
-import jakarta.validation.Valid
 import jakarta.validation.constraints.NotEmpty
 import org.springframework.validation.annotation.Validated
 import org.springframework.web.bind.annotation.*
@@ -35,9 +33,8 @@ class SysSocialController(
      */
     @SaCheckPermission("system:social:list")
     @GetMapping("/list")
-    fun list(bo: SysSocialBo, pageQuery: PageQuery): TableDataInfo<SysSocialVo> {
-        val list = socialService.selectSocialList(bo)
-        return TableDataInfo.build(list)
+    fun list(): R<List<SysSocialVo>> {
+        return R.ok(socialService.selectSocialListByUserId(LoginHelper.getUserId()!!))
     }
 
     /**

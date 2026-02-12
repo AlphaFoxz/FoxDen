@@ -42,7 +42,7 @@
 
 <script setup lang="ts">
 import { listByIds, delOss } from '@/api/system/oss';
-import { OssVO } from '@/api/system/oss/types';
+import type { OssVO } from '@/api/system/oss/types';
 import { propTypes } from '@/utils/propTypes';
 import { globalHeaders } from '@/utils/request';
 import { compressAccurately } from 'image-conversion';

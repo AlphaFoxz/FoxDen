@@ -39,10 +39,7 @@ class SysTenantPackageServiceImpl(
         return packages.map { entityToVo(it) }
     }
 
-    /**
-     * 查询租户套餐已启用列表
-     */
-    fun selectList(): List<SysTenantPackageVo> {
+    override fun selectList(): List<SysTenantPackageVo> {
         val packages = sqlClient.createQuery(SysTenantPackage::class) {
             where(table.delFlag eq "0")
             where(table.status eq SystemConstants.NORMAL)

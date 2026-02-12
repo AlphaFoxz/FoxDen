@@ -19,6 +19,13 @@ interface SysTenantPackageService {
     fun selectTenantPackageList(bo: SysTenantPackageBo): List<SysTenantPackageVo>
 
     /**
+     * 查询租户套餐已启用列表
+     *
+     * @return 租户套餐集合
+     */
+    fun selectList(): List<SysTenantPackageVo>
+
+    /**
      * 根据套餐ID查询租户套餐
      *
      * @param packageId 租户套餐ID

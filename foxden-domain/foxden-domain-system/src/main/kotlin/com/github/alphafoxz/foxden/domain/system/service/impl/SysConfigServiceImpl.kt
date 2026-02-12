@@ -3,14 +3,18 @@ package com.github.alphafoxz.foxden.domain.system.service.impl
 import com.github.alphafoxz.foxden.common.core.constant.CacheNames
 import com.github.alphafoxz.foxden.common.core.constant.SystemConstants
 import com.github.alphafoxz.foxden.common.core.exception.ServiceException
+import com.github.alphafoxz.foxden.common.jimmer.core.page.PageQuery
+import com.github.alphafoxz.foxden.common.jimmer.core.page.TableDataInfo
 import com.github.alphafoxz.foxden.common.redis.utils.CacheUtils
 import com.github.alphafoxz.foxden.domain.system.bo.SysConfigBo
 import com.github.alphafoxz.foxden.domain.system.entity.*
 import com.github.alphafoxz.foxden.domain.system.service.SysConfigService
 import com.github.alphafoxz.foxden.domain.system.vo.SysConfigVo
-import org.babyfish.jimmer.sql.kt.ast.expression.*
-import org.babyfish.jimmer.sql.kt.*
-import org.springframework.cache.annotation.CacheEvict
+import org.babyfish.jimmer.sql.kt.KSqlClient
+import org.babyfish.jimmer.sql.kt.ast.expression.asc
+import org.babyfish.jimmer.sql.kt.ast.expression.eq
+import org.babyfish.jimmer.sql.kt.ast.expression.like
+import org.babyfish.jimmer.sql.kt.ast.expression.ne
 import org.springframework.cache.annotation.CachePut
 import org.springframework.cache.annotation.Cacheable
 import org.springframework.stereotype.Service
@@ -23,7 +27,7 @@ class SysConfigServiceImpl(
     private val sqlClient: KSqlClient
 ) : SysConfigService {
 
-    override fun selectConfigList(config: SysConfigBo): List<SysConfigVo> {
+    override fun selectConfigList(config: SysConfigBo, pageQuery: PageQuery): TableDataInfo<SysConfigVo> {
         val configs = sqlClient.createQuery(SysConfig::class) {
             config.configId?.let { where(table.id eq it) }
             config.configName?.takeIf { it.isNotBlank() }?.let { where(table.configName like "%${it}%") }
@@ -31,9 +35,9 @@ class SysConfigServiceImpl(
             config.configType?.takeIf { it.isNotBlank() }?.let { where(table.configType eq it) }
             orderBy(table.id.asc())
             select(table)
-        }.execute()
+        }.fetchPage((pageQuery.pageNum ?: 1) - 1, pageQuery.pageSize ?: 10)
 
-        return configs.map { entityToVo(it) }
+        return TableDataInfo(configs.rows.map { entityToVo(it) }, configs.totalRowCount)
     }
 
     @Cacheable(cacheNames = [CacheNames.SYS_CONFIG], key = "#configKey")
