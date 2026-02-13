@@ -12,7 +12,7 @@ interface Return {
 
 function expose(ops?: Options): Return {
   const visible = ref(false);
-  const title = ref(ops.title || '');
+  const title = ref(ops?.title ?? '');
 
   const openDialog = () => {
     visible.value = true;

@@ -10,7 +10,7 @@ const expose = {
   async refreshPage(object?: RouteLocationNormalized): Promise<void> {
     const {path, query, matched} = router.currentRoute.value;
     if (object === undefined) {
-      matched.forEach((m: RouteLocationMatched) => {
+      for (const m of matched) {
         if (m.components && m.components.default && m.components.default.name && !['Layout', 'ParentView'].includes(m.components.default.name)) {
           object = {
             name: m.components.default.name,
@@ -24,10 +24,10 @@ const expose = {
             meta: undefined,
           };
         }
-      });
+      }
     }
 
-    let query1: undefined | {} = {};
+    let query1: undefined | Record<string, unknown> = {};
     let path1: undefined | string = '';
     if (object) {
       query1 = object.query;
@@ -42,9 +42,9 @@ const expose = {
   },
   // 关闭当前tab页签，打开新页签
   closeOpenPage(object: RouteLocationRaw): void {
-    useTagsViewStore().delView(router.currentRoute.value);
+    void useTagsViewStore().delView(router.currentRoute.value);
     if (object !== undefined) {
-      router.push(object);
+      void router.push(object);
     }
   },
   // 关闭指定tab页签
@@ -68,15 +68,15 @@ const expose = {
   },
   // 关闭左侧tab页签
   async closeLeftPage(object?: RouteLocationNormalized) {
-    return useTagsViewStore().delLeftTags(object || router.currentRoute.value);
+    return useTagsViewStore().delLeftTags(object ?? router.currentRoute.value);
   },
   // 关闭右侧tab页签
   async closeRightPage(object?: RouteLocationNormalized) {
-    return useTagsViewStore().delRightTags(object || router.currentRoute.value);
+    return useTagsViewStore().delRightTags(object ?? router.currentRoute.value);
   },
   // 关闭其他tab页签
   async closeOtherPage(object?: RouteLocationNormalized) {
-    return useTagsViewStore().delOthersViews(object || router.currentRoute.value);
+    return useTagsViewStore().delOthersViews(object ?? router.currentRoute.value);
   },
   /**
    * 打开tab页签
@@ -84,7 +84,7 @@ const expose = {
    * @param title 标题
    * @param query 参数
    */
-  async openPage(url: string, title?: string, query?: any) {
+  async openPage(url: string, title?: string, query?: Record<string, unknown>) {
     const object = {path: url, query: {...query, title}};
     return router.push(object);
   },

@@ -33,6 +33,13 @@ FoxDen 是一个功能完备的多租户 SaaS 平台，采用现代 JVM 技术�
 - 🌐 **社交登录**：集成 JustAuth，支持 20+ 社交平台
 - 📄 **Excel 导入导出**：EasyExcel 集成，便捷数据处理
 - 📦 **对象存储**：支持 MinIO、阿里云 OSS、腾讯云 COS
+- ⏰ **任务调度**：SnailJob 分布式任务调度
+- 🔄 **工作流引擎**：WarmFlow 工作流引擎
+- 🔒 **接口幂等**：API 幂等性保护
+- 🚦 **接口限流**：API 限流支持
+- 🎭 **敏感数据**：敏感字段自动脱敏
+- 📡 **服务端推送**：SSE 实时推送
+- 🌐 **服务翻译**：字典翻译服务
 
 ---
 
@@ -44,10 +51,13 @@ FoxDen 是一个功能完备的多租户 SaaS 平台，采用现代 JVM 技术�
 | **框架** | Spring Boot | 3.5.10 |
 | **ORM** | Jimmer | 0.10.6 |
 | **数据库** | PostgreSQL | - |
-| **缓存** | Redis (Redisson) | 3.35.0 |
+| **缓存** | Redis (Redisson) | 3.52.0 |
 | **安全** | Sa-Token | 1.44.0 |
-| **API 文档** | SpringDoc OpenAPI | 2.8.2 |
+| **API 文档** | SpringDoc OpenAPI | 2.8.15 |
 | **Excel** | EasyExcel | 4.0.3 |
+| **分布式锁** | Lock4j | 2.2.7 |
+| **任务调度** | SnailJob | 1.9.0 |
+| **工作流** | WarmFlow | 1.8.4 |
 | **构建工具** | Gradle (Kotlin DSL) | - |
 | **JDK** | Java | 21 |
 
@@ -84,9 +94,25 @@ cd foxden
 
 ### 访问地址
 
-- **应用地址**: http://localhost:12003
+- **管理端应用**: http://localhost:12003
 - **API 文档**: http://localhost:12003/swagger-ui.html
 - **健康检查**: http://localhost:12003/actuator/health
+
+### 运行特定应用
+
+```bash
+# 管理端应用（端口 12003）
+./gradlew :foxden-app:foxden-app-admin:bootRun
+
+# 系统管理（端口 12004）
+./gradlew :foxden-app:foxden-app-system:bootRun
+
+# 任务调度（端口 12005）
+./gradlew :foxden-app:foxden-app-job:bootRun
+
+# 工作流（端口 12006）
+./gradlew :foxden-app:foxden-app-workflow:bootRun
+```
 
 ### 默认配置
 
@@ -109,22 +135,42 @@ server:
 
 ```
 foxden/
-├── foxden-bom/                      # 依赖管理
+├── foxden-bom/                      # 依赖管理 (Bill of Materials)
 ├── foxden-common/                   # 通用模块
-│   ├── foxden-common-core/         # 核心工具
-│   ├── foxden-common-jimmer/       # Jimmer ORM 工具
-│   ├── foxden-common-web/          # Web 通用（验证码、XSS）
-│   ├── foxden-common-security/     # Sa-Token 集成
-│   ├── foxden-common-redis/        # Redis 缓存
-│   ├── foxden-common-encrypt/      # API 加密
-│   └── ... (其他通用模块)
+│   ├── foxden-common-core/         # 核心工具、常量、异常、DTO
+│   ├── foxden-common-jimmer/       # Jimmer ORM 工具、Trait、数据权限
+│   ├── foxden-common-web/          # Web 通用（验证码、XSS、国际化）
+│   ├── foxden-common-security/     # Sa-Token 安全配置
+│   ├── foxden-common-redis/        # Redis 缓存（Redisson）
+│   ├── foxden-common-encrypt/      # API 加解密（RSA+AES）
+│   ├── foxden-common-log/          # 日志注解和事件发布
+│   ├── foxden-common-oss/          # 对象存储（MinIO、阿里云、腾讯云）
+│   ├── foxden-common-excel/        # Excel 导入导出（EasyExcel）
+│   ├── foxden-common-mail/         # 邮件功能
+│   ├── foxden-common-sms/          # 短信功能
+│   ├── foxden-common-social/       # 社交登录（JustAuth）
+│   ├── foxden-common-doc/          # SpringDoc OpenAPI 文档
+│   ├── foxden-common-idempotent/   # 幂等性处理
+│   ├── foxden-common-ratelimiter/  # 限流功能
+│   ├── foxden-common-json/         # JSON 配置
+│   ├── foxden-common-job/          # 任务调度（SnailJob）
+│   ├── foxden-common-sensitive/    # 敏感数据脱敏
+│   ├── foxden-common-sse/          # 服务端推送（SSE）
+│   ├── foxden-common-tenant/       # 租户通用工具
+│   └── foxden-common-translation/  # 字典翻译服务
 ├── foxden-domain/                   # 领域层
-│   ├── foxden-domain-system/       # 系统域
+│   ├── foxden-domain-system/       # 系统域（用户、角色、菜单、部门等）
 │   ├── foxden-domain-tenant/       # 租户域
-│   └── foxden-domain-infrastructure/
+│   ├── foxden-domain-infrastructure/ # 基础设施服务
+│   ├── foxden-domain-gen/          # 代码生成
+│   ├── foxden-domain-job/          # 任务调度域
+│   ├── foxden-domain-test/         # 测试域
+│   └── foxden-domain-workflow/     # 工作流域（WarmFlow）
 └── foxden-app/                      # 应用层
-    ├── foxden-app-admin/           # 管理端应用
-    └── foxden-app-system/          # 系统控制器
+    ├── foxden-app-admin/           # 管理端应用（认证、登录、注册）
+    ├── foxden-app-system/          # 系统管理控制器
+    ├── foxden-app-job/             # 任务调度应用
+    └── foxden-app-workflow/        # 工作流应用
 ```
 
 ---
@@ -141,6 +187,8 @@ foxden/
 - **参数配置**：系统参数、动态配置
 - **通知公告**：公告发布
 - **日志管理**：操作日志、登录日志
+- **客户端管理**：客户端应用管理
+- **OSS 管理**：对象存储配置与文件管理
 
 ### 租户管理
 
@@ -160,6 +208,22 @@ foxden/
 - JWT 令牌管理
 - 登录失败锁定
 - 验证码校验（图形/数学）
+
+### 任务调度（SnailJob）
+
+- SnailJob 分布式任务调度
+- Cron 表达式调度
+- 任务监控与执行日志
+- 失败重试机制
+- 任务依赖管理
+
+### 工作流引擎（WarmFlow）
+
+- 可视化流程设计器
+- 流程定义与部署
+- 任务分配与审批
+- 流程实例监控
+- 历史查询与审计追踪
 
 ---
 

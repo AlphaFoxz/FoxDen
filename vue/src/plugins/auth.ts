@@ -1,20 +1,20 @@
 import {useUserStore} from '@/store/modules/user';
 
 const authPermission = (permission: string): boolean => {
-  const all_permission = '*:*:*';
+  const ALL_PERMISSION = '*:*:*'.toUpperCase();
   const {permissions} = useUserStore();
   if (permission && permission.length > 0) {
-    return permissions.some(v => all_permission === v || v === permission);
+    return permissions.some(v => ALL_PERMISSION === v || v === permission);
   }
 
   return false;
 };
 
 const authRole = (role: string): boolean => {
-  const super_admin = 'admin';
+  const SUPER_ADMIN = 'admin';
   const {roles} = useUserStore();
   if (role && role.length > 0) {
-    return roles.some(v => super_admin === v || v === role);
+    return roles.some(v => SUPER_ADMIN === v || v === role);
   }
 
   return false;

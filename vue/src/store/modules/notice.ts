@@ -23,9 +23,9 @@ export const useNoticeStore = defineStore('notice', () => {
 
   // 实现全部已读
   const readAll = () => {
-    state.notices.forEach((item: any) => {
+    for (const item of state.notices) {
       item.read = true;
-    });
+    }
   };
 
   const clearNotice = () => {

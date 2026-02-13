@@ -16,6 +16,16 @@ export {};
 
 declare module 'vue' {
   interface ComponentCustomProperties {
+    useDict: typeof useDict;
+    addDateRange: typeof addDateRange;
+    download: typeof rd;
+    handleTree: typeof handleTree;
+    getConfigKey: typeof getConfigKey;
+    updateConfigByKey: typeof updateConfigByKey;
+    selectDictLabel: typeof selectDictLabel;
+    selectDictLabels: typeof selectDictLabels;
+    parseTime: typeof parseTime;
+
     // 全局方法声明
     $modal: typeof modal;
     $tab: typeof tab;
@@ -28,16 +38,6 @@ declare module 'vue' {
      * @param key i18n key
      */
     $t(key: ObjKeysToUnion<LanguageType>): string;
-
-    useDict: typeof useDict;
-    addDateRange: typeof addDateRange;
-    download: typeof rd;
-    handleTree: typeof handleTree;
-    getConfigKey: typeof getConfigKey;
-    updateConfigByKey: typeof updateConfigByKey;
-    selectDictLabel: typeof selectDictLabel;
-    selectDictLabels: typeof selectDictLabels;
-    parseTime: typeof parseTime;
   }
 }
 

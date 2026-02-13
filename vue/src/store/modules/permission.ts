@@ -45,11 +45,10 @@ export const usePermissionStore = defineStore('permission', () => {
   };
 
   const generateRoutes = async (): Promise<RouteRecordRaw[]> => {
-    const res = await getRouters();
-    const {data} = res;
-    const sdata = JSON.parse(JSON.stringify(data));
-    const rdata = JSON.parse(JSON.stringify(data));
-    const defaultData = JSON.parse(JSON.stringify(data));
+    const {data} = await getRouters();
+    const sdata = structuredClone(data);
+    const rdata = structuredClone(data);
+    const defaultData = structuredClone(data);
     const sidebarRoutes = filterAsyncRouter(sdata);
     const rewriteRoutes = filterAsyncRouter(rdata, undefined, true);
     const defaultRoutes = filterAsyncRouter(defaultData);

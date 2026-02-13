@@ -32,7 +32,7 @@ export const useAppStore = defineStore('app', () => {
     sidebarStatus.value = sidebar.opened ? '1' : '0';
   };
 
-  const closeSideBar = ({withoutAnimation}: any): void => {
+  const closeSideBar = ({withoutAnimation}: {withoutAnimation: boolean}): void => {
     sidebarStatus.value = '0';
     sidebar.opened = false;
     sidebar.withoutAnimation = withoutAnimation;
