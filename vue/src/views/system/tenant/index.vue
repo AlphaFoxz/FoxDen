@@ -253,7 +253,7 @@ import { useUserStore } from '@/store/modules/user';
 import type { TenantForm, TenantQuery, TenantVO } from '@/api/system/tenant/types';
 import type { TenantPkgVO } from '@/api/system/tenantPackage/types';
 
-const { proxy } = getCurrentInstance() as ComponentInternalInstance;
+const { proxy } = getCurrentInstance();
 
 const userStore = useUserStore();
 const userId = ref(userStore.userId);

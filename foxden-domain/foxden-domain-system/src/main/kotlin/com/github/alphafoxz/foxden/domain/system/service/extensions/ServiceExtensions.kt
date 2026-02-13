@@ -31,6 +31,13 @@ fun SysTenantService.queryList(bo: SysTenantBo): List<com.github.alphafoxz.foxde
 }
 
 /**
+ * SysTenantService 扩展 - queryPageList 方法别名
+ */
+fun SysTenantService.queryPageList(bo: SysTenantBo, pageQuery: com.github.alphafoxz.foxden.common.jimmer.core.page.PageQuery): com.github.alphafoxz.foxden.common.jimmer.core.page.TableDataInfo<com.github.alphafoxz.foxden.domain.system.vo.SysTenantVo> {
+    return this.selectPageTenantList(bo, pageQuery)
+}
+
+/**
  * SysSocialService 扩展 - queryList 方法
  * 根据 Map 条件批量查询社交账号
  */
@@ -252,13 +259,6 @@ fun com.github.alphafoxz.foxden.domain.system.service.SysOperLogService.deleteBy
 fun com.github.alphafoxz.foxden.domain.system.service.SysOperLogService.clean(): Int {
     this.cleanOperLog()
     return 1
-}
-
-/**
- * SysTenantService 扩展 - queryPageList 方法别名
- */
-fun SysTenantService.queryPageList(bo: SysTenantBo): List<com.github.alphafoxz.foxden.domain.system.vo.SysTenantVo> {
-    return this.selectTenantList(bo)
 }
 
 /**

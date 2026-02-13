@@ -305,7 +305,6 @@ class SysDictTypeServiceImpl(
             dictType = dictData.dictType,
             cssClass = dictData.cssClass,
             listClass = dictData.listClass,
-            isDefault = dictData.defaultFlag,
             remark = dictData.remark,
             createTime = dictData.createTime
         )

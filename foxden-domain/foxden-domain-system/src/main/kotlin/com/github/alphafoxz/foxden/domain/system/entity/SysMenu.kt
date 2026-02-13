@@ -1,6 +1,6 @@
 package com.github.alphafoxz.foxden.domain.system.entity
 
-import com.github.alphafoxz.foxden.common.jimmer.entity.comm.*
+import com.github.alphafoxz.foxden.common.jimmer.entity.comm.CommInfo
 import org.babyfish.jimmer.sql.*
 
 /**
@@ -12,7 +12,7 @@ interface SysMenu : CommInfo {
     /**
      * 主键ID
      */
-    @org.babyfish.jimmer.sql.Column(name = "menu_id")
+    @Column(name = "menu_id")
     @Id
     @GeneratedValue
     val id: Long

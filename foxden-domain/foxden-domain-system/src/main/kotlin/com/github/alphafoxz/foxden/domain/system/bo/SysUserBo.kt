@@ -1,12 +1,10 @@
 package com.github.alphafoxz.foxden.domain.system.bo
 
-import com.github.alphafoxz.foxden.common.core.constant.SystemConstants
 import com.github.alphafoxz.foxden.common.core.validate.AddGroup
 import com.github.alphafoxz.foxden.common.core.validate.EditGroup
 import com.github.alphafoxz.foxden.common.core.xss.Xss
 import jakarta.validation.constraints.Email
 import jakarta.validation.constraints.NotBlank
-import jakarta.validation.constraints.NotNull
 import jakarta.validation.constraints.Size
 
 /**

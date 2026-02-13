@@ -27,14 +27,32 @@ class JacksonConfig {
     fun registerJavaTimeModule(): Module {
         // 全局配置序列化返回 JSON 处理
         val javaTimeModule = JavaTimeModule()
+
+        // Long 序列化器 - 同时注册 Kotlin 和 Java 类型
         javaTimeModule.addSerializer(Long::class.java, BigNumberSerializer.INSTANCE)
+        javaTimeModule.addSerializer(java.lang.Long::class.java, BigNumberSerializer.INSTANCE)
         javaTimeModule.addSerializer(java.lang.Long.TYPE, BigNumberSerializer.INSTANCE)
+
+        // BigInteger 序列化器 - 同时注册 Kotlin 和 Java 类型
         javaTimeModule.addSerializer(BigInteger::class.java, BigNumberSerializer.INSTANCE)
+        javaTimeModule.addSerializer(java.math.BigInteger::class.java, BigNumberSerializer.INSTANCE)
+
+        // BigDecimal 序列化器 - 同时注册 Kotlin 和 Java 类型
         javaTimeModule.addSerializer(BigDecimal::class.java, ToStringSerializer.instance)
+        javaTimeModule.addSerializer(java.math.BigDecimal::class.java, ToStringSerializer.instance)
+
         val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
+
+        // LocalDateTime 序列化器 - 同时注册 Kotlin 和 Java 类型
         javaTimeModule.addSerializer(LocalDateTime::class.java, LocalDateTimeSerializer(formatter))
+        javaTimeModule.addSerializer(java.time.LocalDateTime::class.java, LocalDateTimeSerializer(formatter))
         javaTimeModule.addDeserializer(LocalDateTime::class.java, LocalDateTimeDeserializer(formatter))
+        javaTimeModule.addDeserializer(java.time.LocalDateTime::class.java, LocalDateTimeDeserializer(formatter))
+
+        // Date 反序列化器 - 同时注册 Kotlin 和 Java 类型
         javaTimeModule.addDeserializer(Date::class.java, CustomDateDeserializer())
+        javaTimeModule.addDeserializer(java.util.Date::class.java, CustomDateDeserializer())
+
         return javaTimeModule
     }
 

@@ -1,6 +1,5 @@
 package com.github.alphafoxz.foxden.domain.system.entity
 
-import com.github.alphafoxz.foxden.common.core.constant.SystemConstants
 import com.github.alphafoxz.foxden.common.jimmer.entity.comm.CommInfo
 import com.github.alphafoxz.foxden.common.jimmer.entity.comm.CommTenant
 import org.babyfish.jimmer.jackson.JsonConverter
@@ -55,20 +54,7 @@ interface SysDictData : CommInfo, CommTenant {
     val listClass: String?
 
     /**
-     * 是否默认（Y是 N否）
-     */
-    @Column(name = "is_default")
-    val defaultFlag: String?
-
-    /**
      * 备注
      */
     val remark: String?
-
-    /**
-     * 是否默认值
-     */
-    fun getDefault(): Boolean {
-        return SystemConstants.YES == defaultFlag
-    }
 }

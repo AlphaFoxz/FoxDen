@@ -14,6 +14,7 @@ import com.github.alphafoxz.foxden.common.log.enums.BusinessType
 import com.github.alphafoxz.foxden.common.web.core.BaseController
 import com.github.alphafoxz.foxden.domain.system.bo.SysTenantBo
 import com.github.alphafoxz.foxden.domain.system.service.SysTenantService
+import com.github.alphafoxz.foxden.domain.system.service.extensions.queryPageList
 import com.github.alphafoxz.foxden.domain.system.vo.SysTenantVo
 import jakarta.servlet.http.HttpServletResponse
 import jakarta.validation.constraints.NotBlank
@@ -41,10 +42,7 @@ class SysTenantController(
     @SaCheckPermission("system:tenant:list")
     @GetMapping("/list")
     fun list(bo: SysTenantBo, pageQuery: PageQuery): TableDataInfo<SysTenantVo> {
-        val list = tenantService.selectTenantList(bo)
-        val pageNum = pageQuery.pageNum ?: 1
-        val pageSize = pageQuery.pageSize ?: list.size
-        return TableDataInfo.build(list, pageNum, pageSize)
+        return tenantService.queryPageList(bo, pageQuery)
     }
 
     /**

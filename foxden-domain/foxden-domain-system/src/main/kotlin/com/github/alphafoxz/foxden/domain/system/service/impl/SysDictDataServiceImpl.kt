@@ -1,7 +1,6 @@
 package com.github.alphafoxz.foxden.domain.system.service.impl
 
 import com.github.alphafoxz.foxden.common.core.constant.CacheNames
-import com.github.alphafoxz.foxden.common.core.constant.SystemConstants
 import com.github.alphafoxz.foxden.common.core.exception.ServiceException
 import com.github.alphafoxz.foxden.common.jimmer.core.page.PageQuery
 import com.github.alphafoxz.foxden.common.jimmer.core.page.TableDataInfo
@@ -98,7 +97,6 @@ class SysDictDataServiceImpl(
             dictType = bo.dictType ?: throw ServiceException("字典类型不能为空")
             cssClass = bo.cssClass
             listClass = bo.listClass
-            defaultFlag = bo.isDefault ?: SystemConstants.NO
             remark = bo.remark
             createTime = java.time.LocalDateTime.now()
         }
@@ -119,7 +117,6 @@ class SysDictDataServiceImpl(
             bo.dictType?.let { set(table.dictType, it) }
             bo.cssClass?.let { set(table.cssClass, it) }
             bo.listClass?.let { set(table.listClass, it) }
-            bo.isDefault?.let { set(table.defaultFlag, it) }
             bo.remark?.let { set(table.remark, it) }
             set(table.updateTime, java.time.LocalDateTime.now())
         }.execute()
@@ -149,7 +146,6 @@ class SysDictDataServiceImpl(
             dictType = dictData.dictType,
             cssClass = dictData.cssClass,
             listClass = dictData.listClass,
-            isDefault = dictData.defaultFlag,
             remark = dictData.remark,
             createTime = dictData.createTime
         )

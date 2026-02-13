@@ -43,6 +43,8 @@ class SysUserServiceImpl(
         val pager = sqlClient.createQuery(SysUser::class) {
             where(table.delFlag eq "0")
             user.userId?.let { where(table.id eq it) }
+            // TODO 这里的deptId查询逻辑需要细化，应该是把所有子部门的用户查询出来
+            user.deptId?.let { where(table.deptId eq it) }
             user.userName?.takeIf { it.isNotBlank() }?.let { where(table.userName like "%${it}%") }
             user.nickName?.takeIf { it.isNotBlank() }?.let { where(table.nickName like "%${it}%") }
             user.status?.takeIf { it.isNotBlank() }?.let { where(table.status eq it) }

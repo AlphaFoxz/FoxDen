@@ -7,6 +7,7 @@ import com.github.alphafoxz.foxden.common.core.constant.Constants
 import com.github.alphafoxz.foxden.common.core.constant.SystemConstants
 import com.github.alphafoxz.foxden.common.core.constant.TenantConstants
 import com.github.alphafoxz.foxden.common.core.exception.ServiceException
+import com.github.alphafoxz.foxden.common.jimmer.core.page.TableDataInfo
 import com.github.alphafoxz.foxden.common.jimmer.helper.TenantHelper
 import com.github.alphafoxz.foxden.common.security.utils.LoginHelper
 import com.github.alphafoxz.foxden.domain.system.bo.SysTenantBo
@@ -44,6 +45,40 @@ class SysTenantServiceImpl(
         return jdbcTemplate.query(sql, args.toTypedArray()) { rs, _ ->
             entityToVo(rs)
         }
+    }
+
+    override fun selectPageTenantList(
+        bo: SysTenantBo,
+        pageQuery: com.github.alphafoxz.foxden.common.jimmer.core.page.PageQuery
+    ): com.github.alphafoxz.foxden.common.jimmer.core.page.TableDataInfo<SysTenantVo> {
+        val conditions = buildConditions(bo)
+        val args = buildArgs(bo)
+
+        // 查询总数
+        val countSql = """
+            SELECT COUNT(*) FROM sys_tenant t
+            WHERE t.del_flag = '0'
+            $conditions
+        """.trimIndent()
+        val total = jdbcTemplate.queryForObject(countSql, Long::class.java, *args.toTypedArray()) ?: 0
+
+        // 查询分页数据
+        val pageNum = pageQuery.getPageNumOrDefault()
+        val pageSize = pageQuery.getPageSizeOrDefault()
+        val offset = (pageNum - 1) * pageSize
+        val dataSql = """
+            SELECT t.* FROM sys_tenant t
+            WHERE t.del_flag = '0'
+            $conditions
+            ORDER BY t.id ASC
+            LIMIT $pageSize OFFSET $offset
+        """.trimIndent()
+
+        val rows = jdbcTemplate.query(dataSql, args.toTypedArray()) { rs, _ ->
+            entityToVo(rs)
+        }
+
+        return TableDataInfo(rows, total)
     }
 
     private fun buildConditions(bo: SysTenantBo): String {
@@ -301,7 +336,6 @@ class SysTenantServiceImpl(
                 this.dictType = rs.getString("dict_type")
                 cssClass = rs.getString("css_class")
                 listClass = rs.getString("list_class")
-                defaultFlag = rs.getString("default_flag")
                 remark = rs.getString("remark")
                 this.tenantId = tenantId
                 createBy = rs.getLong("create_by").takeIf { !rs.wasNull() }
@@ -328,7 +362,7 @@ class SysTenantServiceImpl(
     private fun syncTenantConfigData(tenantId: String) {
         // 使用JdbcTemplate从默认租户获取配置
         val configs = jdbcTemplate.query(
-            "SELECT * FROM sys_config WHERE tenant_id = ? AND del_flag = '0'",
+            "SELECT * FROM sys_config WHERE tenant_id = ?",
             arrayOf(TenantConstants.DEFAULT_TENANT_ID)
         ) { rs, _ ->
             com.github.alphafoxz.foxden.domain.system.entity.SysConfigDraft.`$`.produce {
@@ -600,7 +634,7 @@ class SysTenantServiceImpl(
     override fun syncTenantDict() {
         // 从默认租户获取所有字典类型
         val defaultDictTypes = jdbcTemplate.query(
-            "SELECT * FROM sys_dict_type WHERE tenant_id = ? AND del_flag = '0'",
+            "SELECT * FROM sys_dict_type WHERE tenant_id = ?",
             arrayOf(TenantConstants.DEFAULT_TENANT_ID)
         ) { rs, _ ->
             com.github.alphafoxz.foxden.domain.system.entity.SysDictTypeDraft.`$`.produce {
@@ -615,7 +649,7 @@ class SysTenantServiceImpl(
 
         // 从默认租户获取所有字典数据
         val defaultDictDataList = jdbcTemplate.query(
-            "SELECT * FROM sys_dict_data WHERE tenant_id = ? AND del_flag = '0'",
+            "SELECT * FROM sys_dict_data WHERE tenant_id = ?",
             arrayOf(TenantConstants.DEFAULT_TENANT_ID)
         ) { rs, _ ->
             com.github.alphafoxz.foxden.domain.system.entity.SysDictDataDraft.`$`.produce {
@@ -625,7 +659,6 @@ class SysTenantServiceImpl(
                 this.dictType = rs.getString("dict_type")
                 cssClass = rs.getString("css_class")
                 listClass = rs.getString("list_class")
-                defaultFlag = rs.getString("default_flag")
                 remark = rs.getString("remark")
                 this.tenantId = TenantConstants.DEFAULT_TENANT_ID
                 createBy = rs.getLong("create_by").takeIf { !rs.wasNull() }
@@ -640,14 +673,14 @@ class SysTenantServiceImpl(
 
         // 按租户分组的字典类型和数据
         val tenantDictTypesMap = jdbcTemplate.query(
-            "SELECT * FROM sys_dict_type WHERE del_flag = '0'",
+            "SELECT * FROM sys_dict_type",
             emptyArray()
         ) { rs, _ ->
             Pair(rs.getString("tenant_id"), rs.getString("dict_type"))
         }.groupBy { it.first }.mapValues { entry -> entry.value.map { pair -> pair.second } }
 
         val tenantDictDataMap = jdbcTemplate.query(
-            "SELECT * FROM sys_dict_data WHERE del_flag = '0'",
+            "SELECT * FROM sys_dict_data",
             emptyArray()
         ) { rs, _ ->
             Triple(rs.getString("tenant_id"), rs.getString("dict_type"), rs.getString("dict_value"))
@@ -690,7 +723,6 @@ class SysTenantServiceImpl(
                         this.dictType = defaultData.dictType
                         cssClass = defaultData.cssClass
                         listClass = defaultData.listClass
-                        defaultFlag = defaultData.defaultFlag
                         remark = defaultData.remark
                         this.tenantId = tenant
                         createBy = defaultData.createBy
@@ -706,7 +738,7 @@ class SysTenantServiceImpl(
     override fun syncTenantConfig() {
         // 从默认租户获取所有配置
         val defaultConfigs: List<com.github.alphafoxz.foxden.domain.system.entity.SysConfig> = jdbcTemplate.query(
-            "SELECT * FROM sys_config WHERE tenant_id = ? AND del_flag = '0'",
+            "SELECT * FROM sys_config WHERE tenant_id = ?",
             arrayOf(TenantConstants.DEFAULT_TENANT_ID)
         ) { rs, _ ->
             com.github.alphafoxz.foxden.domain.system.entity.SysConfigDraft.`$`.produce {
@@ -723,7 +755,7 @@ class SysTenantServiceImpl(
 
         // 按租户分组的配置
         val tenantConfigsMap: Map<String, List<String>> = jdbcTemplate.query(
-            "SELECT * FROM sys_config WHERE del_flag = '0'",
+            "SELECT * FROM sys_config",
             emptyArray()
         ) { rs, _ ->
             Pair(rs.getString("tenant_id"), rs.getString("config_key"))
@@ -811,6 +843,7 @@ class SysTenantServiceImpl(
         } else null
 
         return SysTenantVo(
+            id = rs.getLong("id"),
             tenantId = rs.getString("tenant_id"),
             contactUserName = rs.getString("contact_user_name"),
             contactPhone = rs.getString("contact_phone"),

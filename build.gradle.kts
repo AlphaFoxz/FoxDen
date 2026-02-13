@@ -41,7 +41,11 @@ subprojects {
 
         tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
             compilerOptions {
-                freeCompilerArgs.addAll("-Xjsr305=strict")
+                freeCompilerArgs.addAll(
+                    "-Xjsr305=strict"
+                )
+                // 启用所有可能的优化
+                allWarningsAsErrors = false
             }
         }
 

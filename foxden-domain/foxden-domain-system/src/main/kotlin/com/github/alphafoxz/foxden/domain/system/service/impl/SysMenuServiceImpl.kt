@@ -243,21 +243,13 @@ class SysMenuServiceImpl(
 
     override fun checkMenuExistRole(menuId: Long): Boolean {
         // 检查菜单是否被角色关联
-        // 简化实现：查询是否有启用的角色存在
-        // 注意：完整实现需要直接查询 sys_role_menu 关联表
-        // 由于 Jimmer 对 @ManyToMany 反向查询的限制，这里使用简化版本
-        try {
-            val count = sqlClient.createQuery(SysRole::class) {
-                where(table.status eq "0")
-                select(table.id)
-            }.execute().count()
-
-            // 如果有启用的角色，认为菜单可能被关联
-            // TODO: 创建 SysRoleMenu 实体以精确查询关联表
-            return count > 0
-        } catch (e: Exception) {
-            return false
-        }
+        // 直接查询 sys_role_menu 关联表（与老项目逻辑一致）
+        val count = jdbcTemplate.queryForObject(
+            """SELECT COUNT(*) FROM sys_role_menu WHERE menu_id = ?""",
+            Long::class.java,
+            menuId
+        )
+        return (count ?: 0L) > 0
     }
 
     override fun insertMenu(bo: SysMenuBo): Int {
