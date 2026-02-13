@@ -18,7 +18,7 @@ interface SysConfigService {
      * @param config 参数配置信息
      * @return 参数配置集合
      */
-    fun selectConfigList(config: SysConfigBo, pageQuery: PageQuery): TableDataInfo<SysConfigVo>
+    fun selectPageConfigList(config: SysConfigBo, pageQuery: PageQuery): TableDataInfo<SysConfigVo>
 
     /**
      * 根据键名查询参数配置信息
@@ -35,6 +35,14 @@ interface SysConfigService {
      * @return 注册开关 true 开 false 关
      */
     fun selectRegisterEnabled(tenantId: String?): Boolean
+
+    /**
+     * 根据ID查询参数配置信息
+     *
+     * @param configId 参数ID
+     * @return 参数配置信息
+     */
+    fun selectConfigById(configId: Long): SysConfigVo
 
     /**
      * 根据键名查询参数配置信息
@@ -65,24 +73,25 @@ interface SysConfigService {
      * 新增参数配置
      *
      * @param bo 参数配置信息
-     * @return 结果
+     * @return 参数配置信息
      */
-    fun insertConfig(bo: SysConfigBo): Int
+    fun insertConfig(bo: SysConfigBo): String
 
     /**
      * 修改参数配置
      *
      * @param bo 参数配置信息
-     * @return 结果
+     * @return 参数配置信息
      */
-    fun updateConfig(bo: SysConfigBo): Int
+    fun updateConfig(bo: SysConfigBo): String
 
     /**
      * 批量删除参数信息
      *
      * @param configIds 需要删除的参数ID
+     * @return 结果
      */
-    fun deleteConfigByIds(configIds: Array<Long>)
+    fun deleteConfigByIds(configIds: Array<Long>): Int
 
     /**
      * 重置参数缓存数据

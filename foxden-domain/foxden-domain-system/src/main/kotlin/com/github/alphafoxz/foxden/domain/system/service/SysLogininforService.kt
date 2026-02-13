@@ -19,7 +19,7 @@ interface SysLogininforService {
      * @param pageQuery 分页参数
      * @return 登录日志集合
      */
-    fun selectPageList(bo: SysLogininforBo, pageQuery: PageQuery): TableDataInfo<SysLogininforVo>
+    fun selectPageLogininforList(bo: SysLogininforBo, pageQuery: PageQuery): TableDataInfo<SysLogininforVo>
 
     /**
      * 新增登录日志

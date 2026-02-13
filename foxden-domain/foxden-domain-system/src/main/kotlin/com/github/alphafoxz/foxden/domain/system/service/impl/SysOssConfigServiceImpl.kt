@@ -23,6 +23,7 @@ import org.babyfish.jimmer.sql.kt.ast.expression.like
 import org.babyfish.jimmer.sql.kt.ast.expression.ne
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
 
 /**
  * 对象存储配置Service业务层处理
@@ -190,27 +191,29 @@ class SysOssConfigServiceImpl(
         return result.totalAffectedRowCount > 0
     }
 
+    @Transactional
     override fun updateOssConfigStatus(bo: SysOssConfigBo): Int {
-        // 先将所有配置状态设置为1（停用）
-        sqlClient.createUpdate(SysOssConfig::class) {
+        // 1. 先将所有配置状态设置为 "1"（停用）
+        val row1 = sqlClient.createUpdate(SysOssConfig::class) {
             set(table.status, "1")
-            where(table.status ne "1")
         }.execute()
 
-        // 更新指定配置的状态
-        val ossConfigId = bo.ossConfigId ?: return 0
-        val config = sqlClient.findById(SysOssConfig::class, ossConfigId) ?: return 0
+        // 2. 更新指定配置的状态（使用 bo 中的 status）
+        val ossConfigId = bo.ossConfigId ?: return row1
+        val config = sqlClient.findById(SysOssConfig::class, ossConfigId) ?: return row1
 
         val updated = SysOssConfigDraft.`$`.produce(config) {
-            status = "0"
+            bo.status?.let { status = it }
         }
 
-        val result = sqlClient.save(updated)
-        if (result.isModified) {
+        val row2 = if (sqlClient.save(updated).isModified) 1 else 0
+
+        // 3. 如果有任何更新，缓存默认配置 key
+        if (row1 + row2 > 0) {
             RedisUtils.setCacheObject(OssConstant.DEFAULT_CONFIG_KEY, config.configKey)
-            return 1
         }
-        return 0
+
+        return row1 + row2
     }
 
     /**

@@ -4,6 +4,8 @@ import com.github.alphafoxz.foxden.common.core.constant.CacheNames
 import com.github.alphafoxz.foxden.common.core.constant.SystemConstants
 import com.github.alphafoxz.foxden.common.core.exception.ServiceException
 import com.github.alphafoxz.foxden.common.core.service.DeptService
+import com.github.alphafoxz.foxden.common.jimmer.core.page.PageQuery
+import com.github.alphafoxz.foxden.common.jimmer.core.page.TableDataInfo
 import com.github.alphafoxz.foxden.domain.system.bo.SysDeptBo
 import com.github.alphafoxz.foxden.domain.system.entity.*
 import com.github.alphafoxz.foxden.domain.system.service.SysDeptService
@@ -32,12 +34,30 @@ class SysDeptServiceImpl(
             where(table.delFlag eq "0")
             dept.deptId?.let { where(table.id eq it) }
             dept.deptName?.takeIf { it.isNotBlank() }?.let { where(table.deptName like "%${it}%") }
+            dept.deptCategory?.let { where { table.deptCategory eq it } }
             dept.status?.takeIf { it.isNotBlank() }?.let { where(table.status eq it) }
             orderBy(table.orderNum.asc())
             select(table)
         }.execute()
 
         return depts.map { entityToVo(it) }
+    }
+
+    override fun selectPageDeptList(dept: SysDeptBo, pageQuery: PageQuery): TableDataInfo<SysDeptVo> {
+        val pager = sqlClient.createQuery(SysDept::class) {
+            where(table.delFlag eq "0")
+            dept.deptId?.let { where(table.id eq it) }
+            dept.deptName?.takeIf { it.isNotBlank() }?.let { where(table.deptName like "%${it}%") }
+            dept.deptCategory?.let { where { table.deptCategory eq it } }
+            dept.status?.takeIf { it.isNotBlank() }?.let { where(table.status eq it) }
+            orderBy(table.orderNum.asc())
+            select(table)
+        }.fetchPage(
+            (pageQuery.pageNum ?: 1) - 1,  // Jimmer fetchPage expects 0-based index
+            pageQuery.pageSize ?: 10
+        )
+
+        return TableDataInfo(pager.rows.map { entityToVo(it) }, pager.totalRowCount)
     }
 
     @Cacheable(cacheNames = [CacheNames.SYS_DEPT], key = "#deptId")
@@ -135,7 +155,7 @@ class SysDeptServiceImpl(
 
     override fun deleteDeptById(deptId: Long): Int {
         val result = sqlClient.deleteById(SysDept::class, deptId)
-        return result.totalAffectedRowCount.toInt()
+        return result.totalAffectedRowCount
     }
 
     override fun buildDeptTreeSelect(depts: List<SysDeptVo>): List<com.github.alphafoxz.foxden.common.core.domain.Tree<Long>> {
@@ -264,7 +284,7 @@ class SysDeptServiceImpl(
             phone = dept.phone,
             email = dept.email,
             status = dept.status,
-            delFlag = dept.delFlag.toString(),
+            delFlag = dept.delFlag,
             createTime = dept.createTime,
             // leaderName 需要通过用户ID查询用户名，这里留空由调用方按需查询
             leaderName = null,

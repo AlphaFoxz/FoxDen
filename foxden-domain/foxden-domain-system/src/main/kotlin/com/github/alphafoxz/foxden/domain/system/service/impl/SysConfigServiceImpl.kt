@@ -28,7 +28,7 @@ class SysConfigServiceImpl(
     private val sqlClient: KSqlClient
 ) : SysConfigService {
 
-    override fun selectConfigList(config: SysConfigBo, pageQuery: PageQuery): TableDataInfo<SysConfigVo> {
+    override fun selectPageConfigList(config: SysConfigBo, pageQuery: PageQuery): TableDataInfo<SysConfigVo> {
         val configs = sqlClient.createQuery(SysConfig::class) {
             config.configId?.let { where(table.id eq it) }
             config.configName?.takeIf { it.isNotBlank() }?.let { where(table.configName like "%${it}%") }
@@ -49,6 +49,12 @@ class SysConfigServiceImpl(
         }.fetchOneOrNull()
 
         return config
+    }
+
+    override fun selectConfigById(configId: Long): SysConfigVo {
+        val config = sqlClient.findById(SysConfig::class, configId)
+            ?: throw ServiceException("配置不存在")
+        return entityToVo(config)
     }
 
     override fun selectRegisterEnabled(tenantId: String?): Boolean {
@@ -75,7 +81,7 @@ class SysConfigServiceImpl(
     }
 
     @CachePut(cacheNames = [CacheNames.SYS_CONFIG], key = "#bo.configKey")
-    override fun insertConfig(bo: SysConfigBo): Int {
+    override fun insertConfig(bo: SysConfigBo): String {
         val newConfig = com.github.alphafoxz.foxden.domain.system.entity.SysConfigDraft.`$`.produce {
             configName = bo.configName ?: throw ServiceException("参数名称不能为空")
             configKey = bo.configKey ?: throw ServiceException("参数键名不能为空")
@@ -86,35 +92,58 @@ class SysConfigServiceImpl(
         }
 
         val result = sqlClient.saveWithAutoId(newConfig)
-        return if (result.isModified) 1 else 0
+        if (!result.isModified) {
+            throw ServiceException("操作失败")
+        }
+        return bo.configValue ?: throw ServiceException("参数值不能为空")
     }
 
     @CachePut(cacheNames = [CacheNames.SYS_CONFIG], key = "#bo.configKey")
-    override fun updateConfig(bo: SysConfigBo): Int {
-        val configIdVal = bo.configId ?: return 0
+    override fun updateConfig(bo: SysConfigBo): String {
+        var row = 0
 
-        // 如果configKey发生变化，需要清除旧的缓存
-        if (bo.configKey != null && configIdVal > 0) {
-            val oldConfig = sqlClient.findById(SysConfig::class, configIdVal)
-            if (oldConfig != null && oldConfig.configKey != bo.configKey) {
-                CacheUtils.evict(CacheNames.SYS_CONFIG, oldConfig.configKey)
+        // 路径1: 按 ID 更新
+        if (bo.configId != null) {
+            val temp = sqlClient.findById(SysConfig::class, bo.configId!!)
+            if (temp != null && bo.configKey != null && temp.configKey != bo.configKey) {
+                // 如果 configKey 发生变化，需要清除旧的缓存
+                CacheUtils.evict(CacheNames.SYS_CONFIG, temp.configKey)
             }
+
+            row = sqlClient.createUpdate(SysConfig::class) {
+                where(table.id eq bo.configId!!)
+                bo.configName?.let { set(table.configName, it) }
+                bo.configKey?.let { set(table.configKey, it) }
+                bo.configValue?.let { set(table.configValue, it) }
+                bo.configType?.let { set(table.configType, it) }
+                bo.remark?.let { set(table.remark, it) }
+                set(table.updateTime, java.time.LocalDateTime.now())
+            }.execute()
+        }
+        // 路径2: 按 configKey 更新（当 configId 为 null 时）
+        else {
+            // 先清除缓存
+            bo.configKey?.let { CacheUtils.evict(CacheNames.SYS_CONFIG, it) }
+
+            row = sqlClient.createUpdate(SysConfig::class) {
+                where(table.configKey eq (bo.configKey ?: throw ServiceException("参数键名不能为空")))
+                bo.configName?.let { set(table.configName, it) }
+                bo.configValue?.let { set(table.configValue, it) }
+                bo.configType?.let { set(table.configType, it) }
+                bo.remark?.let { set(table.remark, it) }
+                set(table.updateTime, java.time.LocalDateTime.now())
+            }.execute()
         }
 
-        val result = sqlClient.createUpdate(SysConfig::class) {
-            where(table.id eq configIdVal)
-            bo.configName?.let { set(table.configName, it) }
-            bo.configKey?.let { set(table.configKey, it) }
-            bo.configValue?.let { set(table.configValue, it) }
-            bo.configType?.let { set(table.configType, it) }
-            bo.remark?.let { set(table.remark, it) }
-            set(table.updateTime, java.time.LocalDateTime.now())
-        }.execute()
-        return result
+        if (row > 0) {
+            return bo.configValue ?: throw ServiceException("参数值不能为空")
+        }
+        throw ServiceException("操作失败")
     }
 
-    override fun deleteConfigByIds(configIds: Array<Long>) {
+    override fun deleteConfigByIds(configIds: Array<Long>): Int {
         sqlClient.deleteByIds(SysConfig::class, configIds.toList())
+        return configIds.size
     }
 
     override fun resetConfigCache() {

@@ -1,5 +1,7 @@
 package com.github.alphafoxz.foxden.domain.system.service
 
+import com.github.alphafoxz.foxden.common.jimmer.core.page.PageQuery
+import com.github.alphafoxz.foxden.common.jimmer.core.page.TableDataInfo
 import com.github.alphafoxz.foxden.domain.system.bo.SysNoticeBo
 import com.github.alphafoxz.foxden.domain.system.vo.SysNoticeVo
 
@@ -17,6 +19,15 @@ interface SysNoticeService {
      * @return 公告信息集合
      */
     fun selectNoticeList(notice: SysNoticeBo): List<SysNoticeVo>
+
+    /**
+     * 分页查询公告信息
+     *
+     * @param notice 公告信息
+     * @param pageQuery 分页参数
+     * @return 分页公告信息
+     */
+    fun selectPageNoticeList(notice: SysNoticeBo, pageQuery: PageQuery): TableDataInfo<SysNoticeVo>
 
     /**
      * 根据公告ID查询信息
@@ -53,6 +64,7 @@ interface SysNoticeService {
      * 批量删除公告信息
      *
      * @param noticeIds 需要删除的公告ID
+     * @return 结果
      */
-    fun deleteNoticeByIds(noticeIds: Array<Long>)
+    fun deleteNoticeByIds(noticeIds: Array<Long>): Int
 }

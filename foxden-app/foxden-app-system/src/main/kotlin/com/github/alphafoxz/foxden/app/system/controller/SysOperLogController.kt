@@ -35,7 +35,7 @@ class SysOperLogController(
     @SaCheckPermission("monitor:operlog:list")
     @GetMapping("/list")
     fun list(bo: SysOperLogBo, pageQuery: PageQuery): TableDataInfo<SysOperLogVo> {
-        return operLogService.selectPageList(bo, pageQuery)
+        return operLogService.selectPageOperLogList(bo, pageQuery)
     }
 
     /**

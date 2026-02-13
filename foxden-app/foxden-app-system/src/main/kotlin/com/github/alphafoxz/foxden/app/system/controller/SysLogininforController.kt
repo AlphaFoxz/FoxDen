@@ -15,7 +15,6 @@ import com.github.alphafoxz.foxden.domain.system.bo.SysLogininforBo
 import com.github.alphafoxz.foxden.domain.system.service.SysLogininforService
 import com.github.alphafoxz.foxden.domain.system.service.extensions.clean
 import com.github.alphafoxz.foxden.domain.system.service.extensions.deleteByIds
-import com.github.alphafoxz.foxden.domain.system.service.extensions.selectList
 import com.github.alphafoxz.foxden.domain.system.vo.SysLogininforVo
 import jakarta.servlet.http.HttpServletResponse
 import org.springframework.web.bind.annotation.*
@@ -37,7 +36,7 @@ class SysLogininforController(
     @SaCheckPermission("monitor:logininfor:list")
     @GetMapping("/list")
     fun list(bo: SysLogininforBo, pageQuery: PageQuery): TableDataInfo<SysLogininforVo> {
-        return logininforService.selectPageList(bo, pageQuery)
+        return logininforService.selectPageLogininforList(bo, pageQuery)
     }
 
     /**

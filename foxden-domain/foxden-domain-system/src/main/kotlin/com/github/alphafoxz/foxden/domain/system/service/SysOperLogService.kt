@@ -19,7 +19,7 @@ interface SysOperLogService {
      * @param pageQuery 分页参数
      * @return 操作日志集合
      */
-    fun selectPageList(bo: SysOperLogBo, pageQuery: PageQuery): TableDataInfo<SysOperLogVo>
+    fun selectPageOperLogList(bo: SysOperLogBo, pageQuery: PageQuery): TableDataInfo<SysOperLogVo>
 
     /**
      * 新增操作日志

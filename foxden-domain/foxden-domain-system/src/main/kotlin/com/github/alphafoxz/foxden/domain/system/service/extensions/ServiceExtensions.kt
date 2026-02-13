@@ -1,9 +1,12 @@
 package com.github.alphafoxz.foxden.domain.system.service.extensions
 
+import com.github.alphafoxz.foxden.common.jimmer.core.page.PageQuery
+import com.github.alphafoxz.foxden.common.jimmer.core.page.TableDataInfo
 import com.github.alphafoxz.foxden.domain.system.bo.SysTenantBo
 import com.github.alphafoxz.foxden.domain.system.service.SysSocialService
 import com.github.alphafoxz.foxden.domain.system.service.SysTenantService
 import com.github.alphafoxz.foxden.domain.system.vo.SysSocialVo
+import com.github.alphafoxz.foxden.domain.system.vo.SysTenantVo
 import org.babyfish.jimmer.sql.ast.mutation.SaveMode
 import org.babyfish.jimmer.sql.kt.ast.mutation.KSaveOperations
 
@@ -33,7 +36,10 @@ fun SysTenantService.queryList(bo: SysTenantBo): List<com.github.alphafoxz.foxde
 /**
  * SysTenantService 扩展 - queryPageList 方法别名
  */
-fun SysTenantService.queryPageList(bo: SysTenantBo, pageQuery: com.github.alphafoxz.foxden.common.jimmer.core.page.PageQuery): com.github.alphafoxz.foxden.common.jimmer.core.page.TableDataInfo<com.github.alphafoxz.foxden.domain.system.vo.SysTenantVo> {
+fun SysTenantService.queryPageList(
+    bo: SysTenantBo,
+    pageQuery: PageQuery
+): TableDataInfo<SysTenantVo> {
     return this.selectPageTenantList(bo, pageQuery)
 }
 
@@ -191,7 +197,7 @@ fun com.github.alphafoxz.foxden.domain.system.service.SysLogininforService.selec
         pageNum = 1
         pageSize = 1000
     }
-    return this.selectPageList(bo, pageQuery).rows
+    return this.selectPageLogininforList(bo, pageQuery).rows
 }
 
 /**
@@ -234,7 +240,7 @@ fun com.github.alphafoxz.foxden.domain.system.service.SysOperLogService.selectLi
         pageNum = 1
         pageSize = 1000
     }
-    return this.selectPageList(bo, pageQuery).rows
+    return this.selectPageOperLogList(bo, pageQuery).rows
 }
 
 /**

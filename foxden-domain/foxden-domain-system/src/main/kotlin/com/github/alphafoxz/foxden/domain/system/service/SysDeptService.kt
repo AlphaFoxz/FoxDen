@@ -1,6 +1,8 @@
 package com.github.alphafoxz.foxden.domain.system.service
 
 import com.github.alphafoxz.foxden.common.core.service.DeptService
+import com.github.alphafoxz.foxden.common.jimmer.core.page.PageQuery
+import com.github.alphafoxz.foxden.common.jimmer.core.page.TableDataInfo
 import com.github.alphafoxz.foxden.domain.system.bo.SysDeptBo
 import com.github.alphafoxz.foxden.domain.system.vo.SysDeptVo
 
@@ -18,6 +20,15 @@ interface SysDeptService : DeptService {
      * @return 部门列表
      */
     fun selectDeptList(dept: SysDeptBo): List<SysDeptVo>
+
+    /**
+     * 分页查询部门列表
+     *
+     * @param dept 部门信息
+     * @param pageQuery 分页参数
+     * @return 分页部门信息
+     */
+    fun selectPageDeptList(dept: SysDeptBo, pageQuery: PageQuery): TableDataInfo<SysDeptVo>
 
     /**
      * 根据部门ID查询信息

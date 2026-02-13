@@ -51,6 +51,7 @@ class RedisConfig {
                 .enable(SerializationFeature.INDENT_OUTPUT)
                 // 使用 EVERYTHING 为所有类型（包括 final 的 Kotlin data class）添加类型信息
                 // 这样 Spring Cache 才能正确反序列化为目标类型
+                // 注意：Kotlin data class 默认是 final 的，必须使用 EVERYTHING 而不是 NON_FINAL
                 .activateDefaultTyping(
                     LaissezFaireSubTypeValidator.instance,
                     ObjectMapper.DefaultTyping.EVERYTHING

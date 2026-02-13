@@ -33,7 +33,7 @@ class SysConfigController(
     @SaCheckPermission("system:config:list")
     @GetMapping("/list")
     fun list(config: SysConfigBo, pageQuery: PageQuery): TableDataInfo<SysConfigVo> {
-        return configService.selectConfigList(config, pageQuery)
+        return configService.selectPageConfigList(config, pageQuery)
     }
 
     /**
@@ -64,7 +64,8 @@ class SysConfigController(
         if (!configService.checkConfigKeyUnique(config)) {
             return R.fail("新增参数'" + config.configName + "'失败，参数键名已存在")
         }
-        return toAjax(configService.insertConfig(config))
+        configService.insertConfig(config)
+        return R.ok()
     }
 
     /**
@@ -78,7 +79,20 @@ class SysConfigController(
         if (!configService.checkConfigKeyUnique(config)) {
             return R.fail("修改参数'" + config.configName + "'失败，参数键名已存在")
         }
-        return toAjax(configService.updateConfig(config))
+        configService.updateConfig(config)
+        return R.ok()
+    }
+
+    /**
+     * 根据参数键名修改参数配置
+     */
+    @SaCheckPermission("system:config:edit")
+    @Log(title = "参数管理", businessType = BusinessType.UPDATE)
+    @RepeatSubmit
+    @PutMapping("/updateByKey")
+    fun updateByKey(@RequestBody config: SysConfigBo): R<Void> {
+        configService.updateConfig(config)
+        return R.ok()
     }
 
     /**

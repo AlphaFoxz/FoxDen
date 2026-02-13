@@ -20,7 +20,7 @@ class SysLogininforServiceImpl(
     private val sqlClient: KSqlClient
 ) : SysLogininforService {
 
-    override fun selectPageList(bo: SysLogininforBo, pageQuery: PageQuery): TableDataInfo<SysLogininforVo> {
+    override fun selectPageLogininforList(bo: SysLogininforBo, pageQuery: PageQuery): TableDataInfo<SysLogininforVo> {
         // 使用 Jimmer DSL 查询
         val pager = sqlClient.createQuery(SysLogininfor::class) {
             // IP地址模糊查询

@@ -21,7 +21,7 @@ class SysOperLogServiceImpl(
     private val sqlClient: KSqlClient
 ) : SysOperLogService {
 
-    override fun selectPageList(bo: SysOperLogBo, pageQuery: PageQuery): TableDataInfo<SysOperLogVo> {
+    override fun selectPageOperLogList(bo: SysOperLogBo, pageQuery: PageQuery): TableDataInfo<SysOperLogVo> {
         // TODO: Implement proper pagination when needed
         val operLogs = sqlClient.createQuery(SysOperLog::class) {
             bo.operId?.let { where(table.id eq it) }

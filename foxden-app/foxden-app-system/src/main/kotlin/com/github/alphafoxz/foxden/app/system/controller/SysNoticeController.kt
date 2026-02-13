@@ -33,10 +33,7 @@ class SysNoticeController(
     @SaCheckPermission("system:notice:list")
     @GetMapping("/list")
     fun list(notice: SysNoticeBo, pageQuery: PageQuery): TableDataInfo<SysNoticeVo> {
-        val list = noticeService.selectNoticeList(notice)
-        val pageNum = pageQuery.pageNum ?: 1
-        val pageSize = pageQuery.pageSize ?: list.size
-        return TableDataInfo.build(list, pageNum, pageSize)
+        return noticeService.selectPageNoticeList(notice, pageQuery)
     }
 
     /**
