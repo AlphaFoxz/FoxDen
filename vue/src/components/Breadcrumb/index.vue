@@ -20,7 +20,7 @@ const router = useRouter();
 const permissionStore = usePermissionStore();
 const levelList = ref<RouteLocationMatched[]>([]);
 
-const getBreadcrumb = () => {
+function getBreadcrumb() {
   // only show routes with meta.title
   let matched = [];
   const pathNum = findPathNum(route.path);
@@ -40,12 +40,12 @@ const getBreadcrumb = () => {
     matched = [{ path: '/index', meta: { title: '首页' } }].concat(matched);
   }
   levelList.value = matched.filter((item) => item.meta && item.meta.title && item.meta.breadcrumb !== false);
-};
+}
 const findPathNum = (str, char = '/') => {
   if (typeof str !== 'string' || str.length === 0) return 0;
   return str.split(char).length - 1;
 };
-const getMatched = (pathList, routeList, matched) => {
+function getMatched(pathList, routeList, matched) {
   const data = routeList.find((item) => item.path == pathList[0] || (item.name += '').toLowerCase() == pathList[0]);
   if (data) {
     matched.push(data);
@@ -54,18 +54,18 @@ const getMatched = (pathList, routeList, matched) => {
       getMatched(pathList, data.children, matched);
     }
   }
-};
-const isDashboard = (route: RouteLocationMatched) => {
+}
+function isDashboard(route: RouteLocationMatched) {
   const name = route && (route.name as string);
   if (!name) {
     return false;
   }
   return name.trim() === 'Index';
-};
-const handleLink = (item) => {
+}
+function handleLink(item) {
   const { redirect, path } = item;
   redirect ? router.push(redirect) : router.push(path);
-};
+}
 
 watchEffect(() => {
   // if you go to the redirect page, do not update the breadcrumbs

@@ -111,7 +111,7 @@ const prop = withDefaults(defineProps<PropType>(), {
 const emit = defineEmits(['update:modelValue', 'confirmCallBack']);
 
 const router = useRouter();
-const { proxy } = getCurrentInstance() as ComponentInternalInstance;
+const { proxy } = getCurrentInstance();
 const { sys_normal_disable } = toRefs<any>(proxy?.useDict('sys_normal_disable'));
 
 const roleList = ref<RoleVO[]>();
@@ -138,13 +138,13 @@ const queryParams = ref<RoleQuery>({
 
 const defaultSelectRoleIds = computed(() => computedIds(prop.data));
 
-const confirm = () => {
+function confirm() {
   emit('update:modelValue', selectRoleList.value);
   emit('confirmCallBack', selectRoleList.value);
   roleDialog.closeDialog();
-};
+}
 
-const computedIds = (data) => {
+function computedIds(data) {
   if (data instanceof Array) {
     return [...data];
   } else if (typeof data === 'string') {
@@ -155,44 +155,44 @@ const computedIds = (data) => {
     console.warn('<RoleSelect> The data type of data should be array or string or number, but I received other');
     return [];
   }
-};
+}
 
 /**
  * 查询角色列表
  */
-const getList = () => {
+function getList() {
   loading.value = true;
   api.listRole(proxy?.addDateRange(queryParams.value, dateRange.value)).then((res) => {
     roleList.value = res.rows;
     total.value = res.total;
     loading.value = false;
   });
-};
-const pageList = async () => {
+}
+async function pageList() {
   await getList();
-  const roles = roleList.value.filter((item) => {
+  const roles = roleList.value?.filter((item) => {
     return selectRoleList.value.some((role) => role.roleId === item.roleId);
   });
-  await tableRef.value.setCheckboxRow(roles, true);
-};
+  await tableRef.value?.setCheckboxRow(roles, true);
+}
 /**
  * 搜索按钮操作
  */
-const handleQuery = () => {
+function handleQuery() {
   queryParams.value.pageNum = 1;
   getList();
-};
+}
 
 /** 重置 */
-const resetQuery = () => {
+function resetQuery() {
   dateRange.value = ['', ''];
   queryFormRef.value?.resetFields();
   handleQuery();
-};
+}
 
-const handleCheckboxChange = (checked) => {
+function handleCheckboxChange(checked) {
   if (!prop.multiple && checked.checked) {
-    tableRef.value.setCheckboxRow(selectRoleList.value, false);
+    tableRef.value?.setCheckboxRow(selectRoleList.value, false);
     selectRoleList.value = [];
   }
   const row = checked.row;
@@ -203,56 +203,56 @@ const handleCheckboxChange = (checked) => {
       return item.roleId !== row.roleId;
     });
   }
-};
-const handleCheckboxAll = (checked) => {
+}
+function handleCheckboxAll(checked) {
   const rows = roleList.value;
   if (checked.checked) {
-    rows.forEach((row) => {
+    rows?.forEach((row) => {
       if (!selectRoleList.value.some((item) => item.roleId === row.roleId)) {
         selectRoleList.value.push(row);
       }
     });
   } else {
     selectRoleList.value = selectRoleList.value.filter((item) => {
-      return !rows.some((row) => row.roleId === item.roleId);
+      return !rows?.some((row) => row.roleId === item.roleId);
     });
   }
-};
+}
 
-const handleCloseTag = (user: RoleVO) => {
+function handleCloseTag(user: UserVO) {
   const roleId = user.roleId;
   // 使用split删除用户
   const index = selectRoleList.value.findIndex((item) => item.roleId === roleId);
   const rows = selectRoleList.value[index];
   tableRef.value?.setCheckboxRow(rows, false);
   selectRoleList.value.splice(index, 1);
-};
+}
 /**
  * 初始化选中数据
  */
-const initSelectRole = async () => {
+async function initSelectRole() {
   if (defaultSelectRoleIds.value.length > 0) {
     const { data } = await api.optionSelect(defaultSelectRoleIds.value);
     selectRoleList.value = data;
-    const users = roleList.value.filter((item) => {
+    const users = roleList.value?.filter((item) => {
       return defaultSelectRoleIds.value.includes(String(item.roleId));
     });
     await nextTick(() => {
-      tableRef.value.setCheckboxRow(users, true);
+      tableRef.value?.setCheckboxRow(users, true);
     });
   }
-};
-const close = () => {
+}
+function close() {
   roleDialog.closeDialog();
-};
+}
 watch(
   () => roleDialog.visible.value,
   (newValue: boolean) => {
     if (newValue) {
       initSelectRole();
     } else {
-      tableRef.value.clearCheckboxReserve();
-      tableRef.value.clearCheckboxRow();
+      tableRef.value?.clearCheckboxReserve();
+      tableRef.value?.clearCheckboxRow();
       resetQuery();
       selectRoleList.value = [];
     }

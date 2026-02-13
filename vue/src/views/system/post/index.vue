@@ -228,7 +228,7 @@ import { listPost, addPost, delPost, getPost, updatePost, deptTreeSelect } from 
 import type { PostForm, PostQuery, PostVO } from '@/api/system/post/types';
 import type { DeptTreeVO, DeptVO } from '@/api/system/dept/types';
 
-const { proxy } = getCurrentInstance() as ComponentInternalInstance;
+const { proxy } = getCurrentInstance();
 const { sys_normal_disable } = toRefs<any>(proxy?.useDict('sys_normal_disable'));
 
 const postList = ref<PostVO[]>([]);
@@ -283,10 +283,10 @@ const data = reactive<PageData<PostForm, PostQuery>>({
 const { queryParams, form, rules } = toRefs<PageData<PostForm, PostQuery>>(data);
 
 /** 通过条件过滤节点  */
-const filterNode = (value: string, data: any) => {
+function filterNode(value: string, data: any) {
   if (!value) return true;
   return data.label.indexOf(value) !== -1;
-};
+}
 
 /** 根据名称筛选部门树 */
 watchEffect(
@@ -299,50 +299,50 @@ watchEffect(
 );
 
 /** 查询部门下拉树结构 */
-const getTreeSelect = async () => {
+async function getTreeSelect() {
   const res = await deptTreeSelect();
   deptOptions.value = res.data;
-};
+}
 
 /** 节点单击事件 */
-const handleNodeClick = (data: DeptVO) => {
+function handleNodeClick(data: DeptVO) {
   queryParams.value.belongDeptId = data.id;
   queryParams.value.deptId = undefined;
   handleQuery();
-};
+}
 
 /** 查询岗位列表 */
-const getList = async () => {
+async function getList() {
   loading.value = true;
   const res = await listPost(queryParams.value);
   postList.value = res.rows;
   total.value = res.total;
   loading.value = false;
-};
+}
 
 /** 取消按钮 */
-const cancel = () => {
+function cancel() {
   reset();
   dialog.visible = false;
-};
+}
 
 /** 表单重置 */
-const reset = () => {
+function reset() {
   form.value = { ...initFormData };
   postFormRef.value?.resetFields();
-};
+}
 
 /** 搜索按钮操作 */
-const handleQuery = () => {
+function handleQuery() {
   queryParams.value.pageNum = 1;
   if (queryParams.value.deptId) {
     queryParams.value.belongDeptId = undefined;
   }
   getList();
-};
+}
 
 /** 重置按钮操作 */
-const resetQuery = () => {
+function resetQuery() {
   queryFormRef.value?.resetFields();
   queryParams.value.pageNum = 1;
   queryParams.value.deptId = undefined;
@@ -350,34 +350,34 @@ const resetQuery = () => {
   /** 清空左边部门树选中值 */
   queryParams.value.belongDeptId = undefined;
   handleQuery();
-};
+}
 
 /** 多选框选中数据 */
-const handleSelectionChange = (selection: PostVO[]) => {
+function handleSelectionChange(selection: PostVO[]) {
   ids.value = selection.map((item) => item.postId);
   single.value = selection.length != 1;
   multiple.value = !selection.length;
-};
+}
 
 /** 新增按钮操作 */
-const handleAdd = () => {
+function handleAdd() {
   reset();
   dialog.visible = true;
   dialog.title = '添加岗位';
-};
+}
 
 /** 修改按钮操作 */
-const handleUpdate = async (row?: PostVO) => {
+async function handleUpdate(row?: PostVO) {
   reset();
   const postId = row?.postId || ids.value[0];
   const res = await getPost(postId);
   Object.assign(form.value, res.data);
   dialog.visible = true;
   dialog.title = '修改岗位';
-};
+}
 
 /** 提交按钮 */
-const submitForm = () => {
+function submitForm() {
   postFormRef.value?.validate(async (valid: boolean) => {
     if (valid) {
       form.value.postId ? await updatePost(form.value) : await addPost(form.value);
@@ -386,19 +386,19 @@ const submitForm = () => {
       await getList();
     }
   });
-};
+}
 
 /** 删除按钮操作 */
-const handleDelete = async (row?: PostVO) => {
+async function handleDelete(row?: PostVO) {
   const postIds = row?.postId || ids.value;
   await proxy?.$modal.confirm('是否确认删除岗位编号为"' + postIds + '"的数据项？');
   await delPost(postIds);
   await getList();
   proxy?.$modal.msgSuccess('删除成功');
-};
+}
 
 /** 导出按钮操作 */
-const handleExport = () => {
+function handleExport() {
   proxy?.download(
     'system/post/export',
     {
@@ -406,7 +406,7 @@ const handleExport = () => {
     },
     `post_${new Date().getTime()}.xlsx`,
   );
-};
+}
 
 onMounted(() => {
   getTreeSelect(); // 初始化部门数据

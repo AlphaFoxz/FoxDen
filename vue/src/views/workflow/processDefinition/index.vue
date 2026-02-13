@@ -360,22 +360,22 @@ const form = ref<FlowDefinitionForm>({
 });
 onMounted(() => {
   getPageList();
-  getTreeselect();
+  getTreeSelect();
 });
 
 /** 节点单击事件 */
-const handleNodeClick = (data: CategoryTreeVO) => {
+function handleNodeClick(data: CategoryTreeVO) {
   queryParams.value.category = data.id;
   if (data.id === '0') {
     queryParams.value.category = '';
   }
   handleQuery();
-};
+}
 /** 通过条件过滤节点  */
-const filterNode = (value: string, data: any) => {
+function filterNode(value: string, data: any) {
   if (!value) return true;
   return data.categoryName.indexOf(value) !== -1;
-};
+}
 /** 根据名称筛选部门树 */
 watchEffect(
   () => {
@@ -387,41 +387,41 @@ watchEffect(
 );
 
 /** 查询流程分类下拉树结构 */
-const getTreeselect = async () => {
+async function getTreeSelect() {
   const res = await categoryTree();
   categoryOptions.value = res.data;
-};
-const handleClick = (tab: TabsPaneContext, event: Event) => {
+}
+function handleClick(tab: TabsPaneContext, event: Event) {
   // v-model处理有延迟 需要手动处理
   activeName.value = tab.index;
   handleQuery();
-};
+}
 /** 搜索按钮操作 */
-const handleQuery = () => {
+function handleQuery() {
   queryParams.value.pageNum = 1;
   if (activeName.value === '0') {
     getList();
   } else {
     getUnPublishList();
   }
-};
+}
 /** 重置按钮操作 */
-const resetQuery = () => {
+function resetQuery() {
   queryFormRef.value?.resetFields();
   queryParams.value.category = '';
   queryParams.value.pageNum = 1;
   queryParams.value.pageSize = 10;
   handleQuery();
-};
+}
 // 多选框选中数据
-const handleSelectionChange = (selection: any) => {
+function handleSelectionChange(selection: any) {
   ids.value = selection.map((item: any) => item.id);
   flowCodeList.value = selection.map((item: any) => item.flowCode);
   single.value = selection.length !== 1;
   multiple.value = !selection.length;
-};
+}
 //分页
-const getPageList = async () => {
+async function getPageList() {
   const query = proxy.$route.query;
   if (query.activeName) {
     activeName.value = query.activeName;
@@ -432,26 +432,26 @@ const getPageList = async () => {
   } else {
     getUnPublishList();
   }
-};
+}
 //分页
-const getList = async () => {
+async function getList() {
   loading.value = true;
   const resp = await listDefinition(queryParams.value);
   processDefinitionList.value = resp.rows;
   total.value = resp.total;
   loading.value = false;
-};
+}
 //查询未发布的流程定义列表
-const getUnPublishList = async () => {
+async function getUnPublishList() {
   loading.value = true;
   const resp = await unPublishList(queryParams.value);
   processDefinitionList.value = resp.rows;
   total.value = resp.total;
   loading.value = false;
-};
+}
 
 /** 删除按钮操作 */
-const handleDelete = async (row?: FlowDefinitionVo) => {
+async function handleDelete(row?: FlowDefinitionVo) {
   const id = row?.id || ids.value;
   const defList = processDefinitionList.value.filter((x) => id.indexOf(x.id) != -1).map((x) => x.flowCode);
   await proxy?.$modal.confirm('是否确认删除流程定义编码为【' + defList + '】的数据项？');
@@ -459,10 +459,10 @@ const handleDelete = async (row?: FlowDefinitionVo) => {
   await deleteDefinition(id).finally(() => (loading.value = false));
   await handleQuery();
   proxy?.$modal.msgSuccess('删除成功');
-};
+}
 
 /** 发布流程定义 */
-const handlePublish = async (row?: FlowDefinitionVo) => {
+async function handlePublish(row?: FlowDefinitionVo) {
   await proxy?.$modal.confirm(
     '是否确认发布流程定义编码为【' +
       row.flowCode +
@@ -476,9 +476,9 @@ const handlePublish = async (row?: FlowDefinitionVo) => {
   activeName.value = '0';
   await handleQuery();
   proxy?.$modal.msgSuccess('发布成功');
-};
+}
 /** 挂起/激活 */
-const handleProcessDefState = async (row: FlowDefinitionVo, status: number | string | boolean) => {
+async function handleProcessDefState(row: FlowDefinitionVo, status: number | string | boolean) {
   let msg: string;
   if (status === 0) {
     msg = `暂停后，此流程下的所有任务都不允许往后流转，您确定挂起【${row.flowName || row.flowCode}】吗？`;
@@ -497,10 +497,10 @@ const handleProcessDefState = async (row: FlowDefinitionVo, status: number | str
   } finally {
     loading.value = false;
   }
-};
+}
 
 //上传文件前的钩子
-const handlerBeforeUpload = () => {
+function handlerBeforeUpload() {
   if (selectCategory.value === 'ALL') {
     proxy?.$modal.msgError('顶级节点不可作为分类！');
     return false;
@@ -509,9 +509,9 @@ const handlerBeforeUpload = () => {
     proxy?.$modal.msgError('请选择左侧要上传的分类！');
     return false;
   }
-};
+}
 //部署文件
-const handlerImportDefinition = (data: UploadRequestOptions): XMLHttpRequest => {
+function handlerImportDefinition(data: UploadRequestOptions): XMLHttpRequest {
   const formData = new FormData();
   uploadDialogLoading.value = true;
   formData.append('file', data.file);
@@ -527,12 +527,12 @@ const handlerImportDefinition = (data: UploadRequestOptions): XMLHttpRequest => 
       uploadDialogLoading.value = false;
     });
   return;
-};
+}
 /**
  * 设计流程
  * @param row
  */
-const design = async (row: FlowDefinitionVo) => {
+async function design(row: FlowDefinitionVo) {
   proxy.$router.push({
     path: `/workflow/design/index`,
     query: {
@@ -541,13 +541,13 @@ const design = async (row: FlowDefinitionVo) => {
       activeName: activeName.value,
     },
   });
-};
+}
 
 /**
  * 查看流程
  * @param row
  */
-const designView = async (row: FlowDefinitionVo) => {
+async function designView(row: FlowDefinitionVo) {
   proxy.$router.push({
     path: `/workflow/design/index`,
     query: {
@@ -556,16 +556,16 @@ const designView = async (row: FlowDefinitionVo) => {
       activeName: activeName.value,
     },
   });
-};
+}
 /** 表单重置 */
-const reset = () => {
+function reset() {
   form.value = { ...initFormData };
   defFormRef.value?.resetFields();
-};
+}
 /**
  * 新增
  */
-const handleAdd = async () => {
+async function handleAdd() {
   reset();
   if (queryParams.value.category != '') {
     form.value.category = queryParams.value.category;
@@ -574,9 +574,9 @@ const handleAdd = async () => {
   form.value.formCustom = 'N';
   modelDialog.visible = true;
   modelDialog.title = '新增流程';
-};
+}
 /** 修改按钮操作 */
-const handleUpdate = async (row?: FlowDefinitionVo) => {
+async function handleUpdate(row?: FlowDefinitionVo) {
   reset();
   const id = row?.id || ids.value[0];
   const res = await getInfo(id);
@@ -590,7 +590,7 @@ const handleUpdate = async (row?: FlowDefinitionVo) => {
   }
   modelDialog.visible = true;
   modelDialog.title = '修改流程';
-};
+}
 
 const handleSubmit = async () => {
   defFormRef.value.validate(async (valid: boolean) => {
@@ -632,7 +632,7 @@ const handleCopyDef = async (row: FlowDefinitionVo) => {
 };
 
 /** 导出按钮操作 */
-const handleExportDef = () => {
+function handleExportDef() {
   proxy?.download(`/workflow/definition/exportDef/${ids.value[0]}`, {}, `${flowCodeList.value[0]}.json`);
-};
+}
 </script>

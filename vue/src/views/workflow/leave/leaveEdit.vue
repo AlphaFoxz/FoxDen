@@ -167,20 +167,20 @@ const data = reactive<PageData<LeaveForm, LeaveQuery>>({
 const { form, rules } = toRefs(data);
 
 /** 表单重置 */
-const reset = () => {
+function reset() {
   form.value = { ...initFormData };
   leaveTime.value = [];
   leaveFormRef.value?.resetFields();
-};
+}
 
-const changeLeaveTime = () => {
+function changeLeaveTime() {
   const startDate = new Date(leaveTime.value[0]).getTime();
   const endDate = new Date(leaveTime.value[1]).getTime();
   const diffInMilliseconds = endDate - startDate;
   form.value.leaveDays = Math.floor(diffInMilliseconds / (1000 * 60 * 60 * 24)) + 1;
-};
+}
 /** 获取详情 */
-const getInfo = () => {
+function getInfo() {
   loading.value = true;
   buttonLoading.value = false;
   nextTick(async () => {
@@ -192,10 +192,10 @@ const getInfo = () => {
     loading.value = false;
     buttonLoading.value = false;
   });
-};
+}
 
 /** 提交按钮 */
-const submitForm = (status: string, mode: boolean) => {
+function submitForm(status: string, mode: boolean) {
   if (leaveTime.value.length === 0) {
     proxy?.$modal.msgError('请假时间不能为空');
     return;
@@ -236,7 +236,7 @@ const submitForm = (status: string, mode: boolean) => {
   } finally {
     buttonLoading.value = false;
   }
-};
+}
 
 //提交申请
 const handleStartWorkFlow = async (data: LeaveForm) => {
@@ -267,9 +267,9 @@ const handleStartWorkFlow = async (data: LeaveForm) => {
   }
 };
 //审批记录
-const handleApprovalRecord = () => {
+function handleApprovalRecord() {
   approvalRecordRef.value.init(form.value.id);
-};
+}
 //提交回调
 const submitCallback = async () => {
   await proxy.$tab.closePage(proxy.$route);

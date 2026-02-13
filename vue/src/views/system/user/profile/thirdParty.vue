@@ -67,7 +67,7 @@ const props = defineProps({
 });
 const auths = computed(() => props.auths);
 
-const unlockAuth = (row: any) => {
+function unlockAuth(row: any) {
   ElMessageBox.confirm('您确定要解除"' + row.source + '"的账号绑定吗？')
     .then(() => {
       return authUnlock(row.id);
@@ -81,9 +81,9 @@ const unlockAuth = (row: any) => {
       }
     })
     .catch(() => {});
-};
+}
 
-const authUrl = (source: string) => {
+function authUrl(source: string) {
   authRouterUrl(source, useUserStore().tenantId).then((res: any) => {
     if (res.code === 200) {
       window.location.href = res.data;
@@ -91,7 +91,7 @@ const authUrl = (source: string) => {
       proxy?.$modal.msgError(res.msg);
     }
   });
-};
+}
 </script>
 
 <style lang="scss" scoped>

@@ -432,30 +432,30 @@ const cancel = async () => {
   emits('cancelCallback');
 };
 //打开抄送人员
-const openUserSelectCopy = () => {
+function openUserSelectCopy() {
   userSelectCopyRef.value.open();
-};
+}
 //确认抄送人员
-const userSelectCopyCallBack = (data: FlowCopyVo[]) => {
+function userSelectCopyCallBack(data: FlowCopyVo[]) {
   if (data && data.length > 0) {
     selectCopyUserList.value = data;
     selectCopyUserIds.value = selectCopyUserList.value.map((item) => item.userId).join(',');
   }
-};
+}
 //删除抄送人员
-const handleCopyCloseTag = (user: FlowCopyVo) => {
+function handleCopyCloseTag(user: FlowCopyVo) {
   const userId = user.userId;
   // 使用split删除用户
   const index = selectCopyUserList.value.findIndex((item) => item.userId === userId);
   selectCopyUserList.value.splice(index, 1);
   selectCopyUserIds.value = selectCopyUserList.value.map((item) => item.userId).join(',');
-};
+}
 //加签
-const openMultiInstanceUser = async () => {
+async function openMultiInstanceUser() {
   multiInstanceUserRef.value.open();
-};
+}
 //加签
-const addMultiInstanceUser = async (data) => {
+async function addMultiInstanceUser(data) {
   if (data && data.length > 0) {
     const taskOperationBo = reactive<TaskOperationBo>({
       userIds: data.map((e) => e.userId),
@@ -475,9 +475,9 @@ const addMultiInstanceUser = async (data) => {
   } else {
     proxy?.$modal.msgWarning('请选择用户！');
   }
-};
+}
 //减签
-const deleteMultiInstanceUser = async (row) => {
+async function deleteMultiInstanceUser(row) {
   await proxy?.$modal.confirm('是否确认提交？');
   loading.value = true;
   buttonDisabled.value = true;
@@ -493,13 +493,13 @@ const deleteMultiInstanceUser = async (row) => {
   dialog.visible = false;
   emits('submitCallback');
   proxy?.$modal.msgSuccess('操作成功');
-};
+}
 //打开转办
-const openTransferTask = () => {
+function openTransferTask() {
   transferTaskRef.value.open();
-};
+}
 //转办
-const handleTransferTask = async (data) => {
+async function handleTransferTask(data) {
   if (data && data.length > 0) {
     const taskOperationBo = reactive<TaskOperationBo>({
       userId: data[0].userId,
@@ -519,14 +519,14 @@ const handleTransferTask = async (data) => {
   } else {
     proxy?.$modal.msgWarning('请选择用户！');
   }
-};
+}
 
 //打开委托
-const openDelegateTask = () => {
+function openDelegateTask() {
   delegateTaskRef.value.open();
-};
+}
 //委托
-const handleDelegateTask = async (data) => {
+async function handleDelegateTask(data) {
   if (data && data.length > 0) {
     const taskOperationBo = reactive<TaskOperationBo>({
       userId: data[0].userId,
@@ -546,7 +546,7 @@ const handleDelegateTask = async (data) => {
   } else {
     proxy?.$modal.msgWarning('请选择用户！');
   }
-};
+}
 //终止任务
 const handleTerminationTask = async () => {
   const params = {
@@ -564,7 +564,7 @@ const handleTerminationTask = async () => {
   emits('submitCallback');
   proxy?.$modal.msgSuccess('操作成功');
 };
-const handleTaskUser = async () => {
+async function handleTaskUser() {
   const data = await currentTaskAllUser(taskId.value);
   deleteUserList.value = data.data;
   if (deleteUserList.value && deleteUserList.value.length > 0) {
@@ -573,7 +573,7 @@ const handleTaskUser = async () => {
     });
   }
   deleteSignatureVisible.value = true;
-};
+}
 // 选择人员
 const choosePeople = async (data) => {
   if (!data.permissionFlag) {

@@ -167,7 +167,7 @@ const data = reactive<PageData<TreeForm, TreeQuery>>({
 const { queryParams, form, rules } = toRefs(data);
 
 /** 查询测试树列表 */
-const getList = async () => {
+async function getList() {
   loading.value = true;
   const res = await listTree(queryParams.value);
   const data = proxy?.handleTree<TreeVO>(res.data, 'id', 'parentId');
@@ -175,44 +175,44 @@ const getList = async () => {
     treeList.value = data;
     loading.value = false;
   }
-};
+}
 
 /** 查询测试树下拉树结构 */
-const getTreeselect = async () => {
+async function getTreeSelect() {
   const res = await listTree();
   treeOptions.value = [];
   const data: TreeOption = { id: 0, treeName: '顶级节点', children: [] };
   data.children = proxy?.handleTree<TreeOption>(res.data, 'id', 'parentId');
   treeOptions.value.push(data);
-};
+}
 
 // 取消按钮
-const cancel = () => {
+function cancel() {
   reset();
   dialog.visible = false;
-};
+}
 
 // 表单重置
-const reset = () => {
+function reset() {
   form.value = { ...initFormData };
   treeFormRef.value?.resetFields();
-};
+}
 
 /** 搜索按钮操作 */
-const handleQuery = () => {
+function handleQuery() {
   getList();
-};
+}
 
 /** 重置按钮操作 */
-const resetQuery = () => {
+function resetQuery() {
   queryFormRef.value?.resetFields();
   handleQuery();
-};
+}
 
 /** 新增按钮操作 */
-const handleAdd = (row?: TreeVO) => {
+function handleAdd(row?: TreeVO) {
   reset();
-  getTreeselect();
+  getTreeSelect();
   if (row && row.id) {
     form.value.parentId = row.id;
   } else {
@@ -220,26 +220,26 @@ const handleAdd = (row?: TreeVO) => {
   }
   dialog.visible = true;
   dialog.title = '添加测试树';
-};
+}
 
 /** 展开/折叠操作 */
-const handleToggleExpandAll = () => {
+function handleToggleExpandAll() {
   isExpandAll.value = !isExpandAll.value;
   toggleExpandAll(treeList.value, isExpandAll.value);
-};
+}
 
 /** 展开/折叠操作 */
-const toggleExpandAll = (data: TreeVO[], status: boolean) => {
+function toggleExpandAll(data: TreeVO[], status: boolean) {
   data.forEach((item) => {
     treeTableRef.value?.toggleRowExpansion(item, status);
     if (item.children && item.children.length > 0) toggleExpandAll(item.children, status);
   });
-};
+}
 
 /** 修改按钮操作 */
 const handleUpdate = async (row: TreeVO) => {
   reset();
-  await getTreeselect();
+  await getTreeSelect();
   if (row) {
     form.value.parentId = row.id;
   }
@@ -250,7 +250,7 @@ const handleUpdate = async (row: TreeVO) => {
 };
 
 /** 提交按钮 */
-const submitForm = () => {
+function submitForm() {
   treeFormRef.value?.validate(async (valid: boolean) => {
     if (valid) {
       buttonLoading.value = true;
@@ -264,7 +264,7 @@ const submitForm = () => {
       await getList();
     }
   });
-};
+}
 
 /** 删除按钮操作 */
 const handleDelete = async (row: TreeVO) => {

@@ -242,7 +242,7 @@ const data = reactive<PageData<OssForm, OssQuery>>({
 const { queryParams, form, rules } = toRefs(data);
 
 /** 查询OSS对象存储列表 */
-const getList = async () => {
+async function getList() {
   loading.value = true;
   const res = await proxy?.getConfigKey('sys.oss.previewListResource');
   previewListResource.value = res?.data === undefined ? true : res.data === 'true';
@@ -251,7 +251,7 @@ const getList = async () => {
   total.value = response.total;
   loading.value = false;
   showTable.value = true;
-};
+}
 function checkFileSuffix(fileSuffix: string | string[]) {
   const arr = ['.png', '.jpg', '.jpeg'];
   const suffixArray = Array.isArray(fileSuffix) ? fileSuffix : [fileSuffix];
@@ -288,11 +288,11 @@ function handleSelectionChange(selection: OssVO[]) {
   multiple.value = !selection.length;
 }
 /** 设置列的排序为我们自定义的排序 */
-const handleHeaderClass = ({ column }: any): any => {
+function handleHeaderClass({ column }: any): any {
   column.order = column.multiOrder;
-};
+}
 /** 点击表头进行排序 */
-const handleHeaderCLick = (column: any) => {
+function handleHeaderCLick(column: any) {
   if (column.sortable !== 'custom') {
     return;
   }
@@ -308,8 +308,8 @@ const handleHeaderCLick = (column: any) => {
       break;
   }
   handleOrderChange(column.property, column.multiOrder);
-};
-const handleOrderChange = (prop: string, order: string) => {
+}
+function handleOrderChange(prop: string, order: string) {
   const orderByArr = queryParams.value.orderByColumn ? queryParams.value.orderByColumn.split(',') : [];
   const isAscArr = queryParams.value.isAsc ? queryParams.value.isAsc.split(',') : [];
   const propIndex = orderByArr.indexOf(prop);
@@ -331,36 +331,36 @@ const handleOrderChange = (prop: string, order: string) => {
   queryParams.value.orderByColumn = orderByArr.join(',');
   queryParams.value.isAsc = isAscArr.join(',');
   getList();
-};
+}
 /** 任务日志列表查询 */
-const handleOssConfig = () => {
+function handleOssConfig() {
   router.push('/system/oss-config/index');
-};
+}
 /** 文件按钮操作 */
-const handleFile = () => {
+function handleFile() {
   reset();
   type.value = 0;
   dialog.visible = true;
   dialog.title = '上传文件';
-};
+}
 /** 图片按钮操作 */
-const handleImage = () => {
+function handleImage() {
   reset();
   type.value = 1;
   dialog.visible = true;
   dialog.title = '上传图片';
-};
+}
 /** 提交按钮 */
-const submitForm = () => {
+function submitForm() {
   dialog.visible = false;
   getList();
-};
+}
 /** 下载按钮操作 */
-const handleDownload = (row: OssVO) => {
+function handleDownload(row: OssVO) {
   proxy?.$download.oss(row.ossId);
-};
+}
 /** 预览开关按钮  */
-const handlePreviewListResource = async (preview: boolean) => {
+async function handlePreviewListResource(preview: boolean) {
   const text = preview ? '启用' : '停用';
   try {
     await proxy?.$modal.confirm('确认要"' + text + '""预览列表图片"配置吗?');
@@ -370,16 +370,16 @@ const handlePreviewListResource = async (preview: boolean) => {
   } catch {
     return;
   }
-};
+}
 /** 删除按钮操作 */
-const handleDelete = async (row?: OssVO) => {
+async function handleDelete(row?: OssVO) {
   const ossIds = row?.ossId || ids.value;
   await proxy?.$modal.confirm('是否确认删除OSS对象存储编号为"' + ossIds + '"的数据项?');
   loading.value = true;
   await delOss(ossIds).finally(() => (loading.value = false));
   await getList();
   proxy?.$modal.msgSuccess('删除成功');
-};
+}
 
 onMounted(() => {
   getList();

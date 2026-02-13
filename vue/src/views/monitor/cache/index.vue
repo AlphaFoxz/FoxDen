@@ -138,7 +138,7 @@ const commandstats = ref();
 const usedmemory = ref();
 const { proxy } = getCurrentInstance() as ComponentInternalInstance;
 
-const getList = async () => {
+async function getList() {
   proxy?.$modal.loading('正在加载缓存监控数据，请稍候！');
   const res = await getCache();
   proxy?.$modal.closeLoading();
@@ -189,7 +189,7 @@ const getList = async () => {
     commandstatsIntance.resize();
     usedmemoryInstance.resize();
   });
-};
+}
 
 onMounted(() => {
   getList();

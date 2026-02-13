@@ -145,9 +145,9 @@ const getIds = async (ids: string | number) => {
 };
 
 /** 下载按钮操作 */
-const handleDownload = (ossId: string) => {
+function handleDownload(ossId: string) {
   proxy?.$download.oss(ossId);
-};
+}
 
 /**
  * 对外暴露子组件方法

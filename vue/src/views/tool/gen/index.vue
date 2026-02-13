@@ -236,18 +236,18 @@ const getDataNameList = async () => {
 };
 
 /** 查询表集合 */
-const getList = async () => {
+async function getList() {
   loading.value = true;
   const res = await listTable(proxy?.addDateRange(queryParams.value, dateRange.value));
   tableList.value = res.rows;
   total.value = res.total;
   loading.value = false;
-};
+}
 /** 搜索按钮操作 */
-const handleQuery = () => {
+function handleQuery() {
   queryParams.value.pageNum = 1;
   getList();
-};
+}
 /** 生成代码操作 */
 const handleGenTable = async (row?: TableVO) => {
   const tbIds = row?.tableId || ids.value;
@@ -263,52 +263,52 @@ const handleGenTable = async (row?: TableVO) => {
   }
 };
 /** 同步数据库操作 */
-const handleSynchDb = async (row: TableVO) => {
+async function handleSynchDb(row: TableVO) {
   const tableId = row.tableId;
   await proxy?.$modal.confirm('确认要强制同步"' + row.tableName + '"表结构吗？');
   await synchDb(tableId);
   proxy?.$modal.msgSuccess('同步成功');
-};
+}
 /** 打开导入表弹窗 */
-const openImportTable = () => {
+function openImportTable() {
   importRef.value?.show(queryParams.value.dataName);
-};
+}
 /** 重置按钮操作 */
-const resetQuery = () => {
+function resetQuery() {
   dateRange.value = ['', ''];
   queryFormRef.value?.resetFields();
   handleQuery();
-};
+}
 /** 预览按钮 */
-const handlePreview = async (row: TableVO) => {
+async function handlePreview(row: TableVO) {
   const res = await previewTable(row.tableId);
   preview.value.data = res.data;
   dialog.visible = true;
   preview.value.activeName = 'domain.java';
-};
+}
 /** 复制代码成功 */
-const copyTextSuccess = () => {
+function copyTextSuccess() {
   proxy?.$modal.msgSuccess('复制成功');
-};
+}
 // 多选框选中数据
-const handleSelectionChange = (selection: TableVO[]) => {
+function handleSelectionChange(selection: TableVO[]) {
   ids.value = selection.map((item) => item.tableId);
   single.value = selection.length != 1;
   multiple.value = !selection.length;
-};
+}
 /** 修改按钮操作 */
-const handleEditTable = (row?: TableVO) => {
+function handleEditTable(row?: TableVO) {
   const tableId = row?.tableId || ids.value[0];
   router.push({ path: '/tool/gen-edit/index/' + tableId, query: { pageNum: queryParams.value.pageNum } });
-};
+}
 /** 删除按钮操作 */
-const handleDelete = async (row?: TableVO) => {
+async function handleDelete(row?: TableVO) {
   const tableIds = row?.tableId || ids.value;
   await proxy?.$modal.confirm('是否确认删除表编号为"' + tableIds + '"的数据项？');
   await delTable(tableIds);
   await getList();
   proxy?.$modal.msgSuccess('删除成功');
-};
+}
 
 onMounted(() => {
   const time = route.query.t;

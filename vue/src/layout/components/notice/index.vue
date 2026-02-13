@@ -46,16 +46,16 @@ const getTableData = async () => {
 };
 
 //点击消息，写入已读
-const onNewsClick = (item: any) => {
+function onNewsClick(item: any) {
   newsList.value[item].read = true;
   //并且写入pinia
   noticeStore.state.notices = newsList.value;
-};
+}
 
 // 前往通知中心点击
-const onGoToGiteeClick = () => {
+function onGoToGiteeClick() {
   window.open('https://github.com/AlphaFoxz/FoxDen');
-};
+}
 
 onMounted(() => {
   nextTick(() => {

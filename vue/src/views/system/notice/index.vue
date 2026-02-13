@@ -222,56 +222,56 @@ const data = reactive<PageData<NoticeForm, NoticeQuery>>({
 const { queryParams, form, rules } = toRefs(data);
 
 /** 查询公告列表 */
-const getList = async () => {
+async function getList() {
   loading.value = true;
   const res = await listNotice(queryParams.value);
   noticeList.value = res.rows;
   total.value = res.total;
   loading.value = false;
-};
+}
 /** 取消按钮 */
-const cancel = () => {
+function cancel() {
   reset();
   dialog.visible = false;
-};
+}
 /** 表单重置 */
-const reset = () => {
+function reset() {
   form.value = { ...initFormData };
   noticeFormRef.value?.resetFields();
-};
+}
 /** 搜索按钮操作 */
-const handleQuery = () => {
+function handleQuery() {
   queryParams.value.pageNum = 1;
   getList();
-};
+}
 /** 重置按钮操作 */
-const resetQuery = () => {
+function resetQuery() {
   queryFormRef.value?.resetFields();
   handleQuery();
-};
+}
 /** 多选框选中数据 */
-const handleSelectionChange = (selection: NoticeVO[]) => {
+function handleSelectionChange(selection: NoticeVO[]) {
   ids.value = selection.map((item) => item.noticeId);
   single.value = selection.length != 1;
   multiple.value = !selection.length;
-};
+}
 /** 新增按钮操作 */
-const handleAdd = () => {
+function handleAdd() {
   reset();
   dialog.visible = true;
   dialog.title = '添加公告';
-};
+}
 /**修改按钮操作 */
-const handleUpdate = async (row?: NoticeVO) => {
+async function handleUpdate(row?: NoticeVO) {
   reset();
   const noticeId = row?.noticeId || ids.value[0];
   const { data } = await getNotice(noticeId);
   Object.assign(form.value, data);
   dialog.visible = true;
   dialog.title = '修改公告';
-};
+}
 /** 提交按钮 */
-const submitForm = () => {
+function submitForm() {
   noticeFormRef.value?.validate(async (valid: boolean) => {
     if (valid) {
       form.value.noticeId ? await updateNotice(form.value) : await addNotice(form.value);
@@ -280,15 +280,15 @@ const submitForm = () => {
       await getList();
     }
   });
-};
+}
 /** 删除按钮操作 */
-const handleDelete = async (row?: NoticeVO) => {
+async function handleDelete(row?: NoticeVO) {
   const noticeIds = row?.noticeId || ids.value;
   await proxy?.$modal.confirm('是否确认删除公告编号为"' + noticeIds + '"的数据项？');
   await delNotice(noticeIds);
   await getList();
   proxy?.$modal.msgSuccess('删除成功');
-};
+}
 
 onMounted(() => {
   getList();

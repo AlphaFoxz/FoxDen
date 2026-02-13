@@ -84,16 +84,16 @@ const unmatchArray = computed(() => {
   return handleArray(itemUnmatchArray);
 });
 
-const handleArray = (array: Array<string | number>) => {
+function handleArray(array: Array<string | number>) {
   if (array.length === 0) return '';
   return array.reduce((pre, cur) => {
     return pre + ' ' + cur;
   });
-};
+}
 
-const isValueMatch = (itemValue: any) => {
+function isValueMatch(itemValue: any) {
   return values.value.some((val) => val == itemValue);
-};
+}
 </script>
 
 <style lang="scss" scoped>

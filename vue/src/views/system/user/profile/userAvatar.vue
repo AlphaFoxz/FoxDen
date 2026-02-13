@@ -96,30 +96,30 @@ const options = reactive<Options>({
 });
 
 /** 编辑头像 */
-const editCropper = () => {
+function editCropper() {
   open.value = true;
-};
+}
 /** 打开弹出层结束时的回调 */
-const modalOpened = () => {
+function modalOpened() {
   visible.value = true;
-};
+}
 /** 覆盖默认上传行为 */
-const requestUpload = (): any => {};
+function requestUpload(): any {}
 /** 向左旋转 */
-const rotateLeft = () => {
+function rotateLeft() {
   cropper.value.rotateLeft();
-};
+}
 /** 向右旋转 */
-const rotateRight = () => {
+function rotateRight() {
   cropper.value.rotateRight();
-};
+}
 /** 图片缩放 */
-const changeScale = (num: number) => {
+function changeScale(num: number) {
   num = num || 1;
   cropper.value.changeScale(num);
-};
+}
 /** 上传预处理 */
-const beforeUpload = (file: UploadRawFile): any => {
+function beforeUpload(file: UploadRawFile): any {
   if (file.type.indexOf('image/') == -1) {
     proxy?.$modal.msgError('文件格式错误，请上传图片类型,如：JPG，PNG后缀的文件。');
   } else {
@@ -130,9 +130,9 @@ const beforeUpload = (file: UploadRawFile): any => {
       options.fileName = file.name;
     };
   }
-};
+}
 /** 上传图片 */
-const uploadImg = async () => {
+async function uploadImg() {
   cropper.value.getCropBlob(async (data: any) => {
     const formData = new FormData();
     formData.append('avatarfile', data, options.fileName);
@@ -143,16 +143,16 @@ const uploadImg = async () => {
     proxy?.$modal.msgSuccess('修改成功');
     visible.value = false;
   });
-};
+}
 /** 实时预览 */
-const realTime = (data: any) => {
+function realTime(data: any) {
   options.previews = data;
-};
+}
 /** 关闭窗口 */
-const closeDialog = () => {
+function closeDialog() {
   options.img = userStore.avatar;
   options.visible = false;
-};
+}
 </script>
 
 <style lang="scss" scoped>

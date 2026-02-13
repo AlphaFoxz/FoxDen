@@ -246,66 +246,66 @@ const data = reactive<PageData<OperLogForm, OperLogQuery>>({
 const { queryParams, form } = toRefs(data);
 
 /** 查询登录日志 */
-const getList = async () => {
+async function getList() {
   loading.value = true;
   const res = await list(proxy?.addDateRange(queryParams.value, dateRange.value));
   operlogList.value = res.rows;
   total.value = res.total;
   loading.value = false;
-};
+}
 /** 操作日志类型字典翻译 */
-const typeFormat = (row: OperLogForm) => {
+function typeFormat(row: OperLogForm) {
   return proxy?.selectDictLabel(sys_oper_type.value, row.businessType);
-};
+}
 /** 搜索按钮操作 */
-const handleQuery = () => {
+function handleQuery() {
   queryParams.value.pageNum = 1;
   getList();
-};
+}
 /** 重置按钮操作 */
-const resetQuery = () => {
+function resetQuery() {
   dateRange.value = ['', ''];
   queryFormRef.value?.resetFields();
   queryParams.value.pageNum = 1;
   operLogTableRef.value?.sort(defaultSort.value.prop, defaultSort.value.order);
-};
+}
 /** 多选框选中数据 */
-const handleSelectionChange = (selection: OperLogVO[]) => {
+function handleSelectionChange(selection: OperLogVO[]) {
   ids.value = selection.map((item) => item.operId);
   multiple.value = !selection.length;
-};
+}
 /** 排序触发事件 */
-const handleSortChange = (column: any) => {
+function handleSortChange(column: any) {
   queryParams.value.orderByColumn = column.prop;
   queryParams.value.isAsc = column.order;
   getList();
-};
+}
 
 const operInfoDialogRef = ref<InstanceType<typeof OperInfoDialog>>();
 /** 详细按钮操作 */
-const handleView = (row: OperLogVO) => {
+function handleView(row: OperLogVO) {
   operInfoDialogRef.value.openDialog(row);
-};
+}
 
 /** 删除按钮操作 */
-const handleDelete = async (row?: OperLogVO) => {
+async function handleDelete(row?: OperLogVO) {
   const operIds = row?.operId || ids.value;
   await proxy?.$modal.confirm('是否确认删除日志编号为"' + operIds + '"的数据项?');
   await delOperlog(operIds);
   await getList();
   proxy?.$modal.msgSuccess('删除成功');
-};
+}
 
 /** 清空按钮操作 */
-const handleClean = async () => {
+async function handleClean() {
   await proxy?.$modal.confirm('是否确认清空所有操作日志数据项?');
   await cleanOperlog();
   await getList();
   proxy?.$modal.msgSuccess('清空成功');
-};
+}
 
 /** 导出按钮操作 */
-const handleExport = () => {
+function handleExport() {
   proxy?.download(
     'monitor/operlog/export',
     {
@@ -313,7 +313,7 @@ const handleExport = () => {
     },
     `config_${new Date().getTime()}.xlsx`,
   );
-};
+}
 onMounted(() => {
   getList();
 });

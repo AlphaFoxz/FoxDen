@@ -176,22 +176,22 @@ const queryParams = ref<FlowInstanceQuery>({
 
 onMounted(() => {
   getList();
-  getTreeselect();
+  getTreeSelect();
 });
 
 /** 节点单击事件 */
-const handleNodeClick = (data: CategoryTreeVO) => {
+function handleNodeClick(data: CategoryTreeVO) {
   queryParams.value.category = data.id;
   if (data.id === '0') {
     queryParams.value.category = '';
   }
   handleQuery();
-};
-/** 通过条件过滤节点  */
-const filterNode = (value: string, data: any) => {
+}
+/** 通过条件过滤节点 */
+function filterNode(value: string, data: any) {
   if (!value) return true;
   return data.categoryName.indexOf(value) !== -1;
-};
+}
 /** 根据名称筛选部门树 */
 watchEffect(
   () => {
@@ -203,42 +203,42 @@ watchEffect(
 );
 
 /** 查询流程分类下拉树结构 */
-const getTreeselect = async () => {
+async function getTreeSelect() {
   const res = await categoryTree();
   categoryOptions.value = res.data;
-};
+}
 
 /** 搜索按钮操作 */
-const handleQuery = () => {
+function handleQuery() {
   getList();
-};
+}
 /** 重置按钮操作 */
-const resetQuery = () => {
+function resetQuery() {
   queryFormRef.value?.resetFields();
   queryParams.value.category = '';
   queryParams.value.pageNum = 1;
   queryParams.value.pageSize = 10;
   handleQuery();
-};
+}
 // 多选框选中数据
-const handleSelectionChange = (selection: FlowInstanceVO[]) => {
+function handleSelectionChange(selection: FlowInstanceVO[]) {
   businessIds.value = selection.map((item: any) => item.businessId);
   instanceIds.value = selection.map((item: FlowInstanceVO) => item.id);
   single.value = selection.length !== 1;
   multiple.value = !selection.length;
-};
+}
 //分页
-const getList = () => {
+function getList() {
   loading.value = true;
   pageByCurrent(queryParams.value).then((resp) => {
     processInstanceList.value = resp.rows;
     total.value = resp.total;
     loading.value = false;
   });
-};
+}
 
 /** 删除按钮操作 */
-const handleDelete = async (row: FlowInstanceVO) => {
+async function handleDelete(row: FlowInstanceVO) {
   const instanceIdList = row.id || instanceIds.value;
   await proxy?.$modal.confirm('是否确认删除？');
   loading.value = true;
@@ -247,10 +247,10 @@ const handleDelete = async (row: FlowInstanceVO) => {
     getList();
   }
   proxy?.$modal.msgSuccess('删除成功');
-};
+}
 
 /** 撤销按钮操作 */
-const handleCancelProcessApply = async (businessId: string) => {
+async function handleCancelProcessApply(businessId: string) {
   await proxy?.$modal.confirm('是否确认撤销当前单据？');
   loading.value = true;
   if ('running' === tab.value) {
@@ -262,10 +262,10 @@ const handleCancelProcessApply = async (businessId: string) => {
     getList();
   }
   proxy?.$modal.msgSuccess('撤销成功');
-};
+}
 
 //办理
-const handleOpen = async (row, type) => {
+async function handleOpen(row, type) {
   const routerJumpVo = reactive<RouterJumpVo>({
     businessId: row.businessId,
     taskId: row.id,
@@ -274,5 +274,5 @@ const handleOpen = async (row, type) => {
     formPath: row.formPath,
   });
   workflowCommon.routerJump(routerJumpVo, proxy);
-};
+}
 </script>

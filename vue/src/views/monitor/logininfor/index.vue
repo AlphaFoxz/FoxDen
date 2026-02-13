@@ -192,53 +192,53 @@ const queryParams = ref<LoginInfoQuery>({
 });
 
 /** 查询登录日志列表 */
-const getList = async () => {
+async function getList() {
   loading.value = true;
   const res = await list(proxy?.addDateRange(queryParams.value, dateRange.value));
   loginInfoList.value = res.rows;
   total.value = res.total;
   loading.value = false;
-};
+}
 /** 搜索按钮操作 */
-const handleQuery = () => {
+function handleQuery() {
   queryParams.value.pageNum = 1;
   getList();
-};
+}
 /** 重置按钮操作 */
-const resetQuery = () => {
+function resetQuery() {
   dateRange.value = ['', ''];
   queryFormRef.value?.resetFields();
   queryParams.value.pageNum = 1;
   loginInfoTableRef.value?.sort(defaultSort.value.prop, defaultSort.value.order);
-};
+}
 /** 多选框选中数据 */
-const handleSelectionChange = (selection: LoginInfoVO[]) => {
+function handleSelectionChange(selection: LoginInfoVO[]) {
   ids.value = selection.map((item) => item.infoId);
   multiple.value = !selection.length;
   single.value = selection.length != 1;
   selectName.value = selection.map((item) => item.userName);
-};
+}
 /** 排序触发事件 */
-const handleSortChange = (column: any) => {
+function handleSortChange(column: any) {
   queryParams.value.orderByColumn = column.prop;
   queryParams.value.isAsc = column.order;
   getList();
-};
+}
 /** 删除按钮操作 */
-const handleDelete = async (row?: LoginInfoVO) => {
+async function handleDelete(row?: LoginInfoVO) {
   const infoIds = row?.infoId || ids.value;
   await proxy?.$modal.confirm('是否确认删除访问编号为"' + infoIds + '"的数据项?');
   await delLoginInfo(infoIds);
   await getList();
   proxy?.$modal.msgSuccess('删除成功');
-};
+}
 /** 清空按钮操作 */
-const handleClean = async () => {
+async function handleClean() {
   await proxy?.$modal.confirm('是否确认清空所有登录日志数据项?');
   await cleanLoginInfo();
   await getList();
   proxy?.$modal.msgSuccess('清空成功');
-};
+}
 /** 解锁按钮操作 */
 const handleUnlock = async () => {
   const username = selectName.value;
@@ -247,7 +247,7 @@ const handleUnlock = async () => {
   proxy?.$modal.msgSuccess('用户' + username + '解锁成功');
 };
 /** 导出按钮操作 */
-const handleExport = () => {
+function handleExport() {
   proxy?.download(
     'monitor/logininfor/export',
     {
@@ -255,7 +255,7 @@ const handleExport = () => {
     },
     `logininfor_${new Date().getTime()}.xlsx`,
   );
-};
+}
 
 onMounted(() => {
   getList();

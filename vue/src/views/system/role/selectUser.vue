@@ -92,44 +92,44 @@ const queryParams = reactive<UserQuery>({
 const tableRef = ref<ElTableInstance>();
 const queryFormRef = ref<ElFormInstance>();
 
-const show = () => {
+function show() {
   queryParams.roleId = props.roleId;
   getList();
   visible.value = true;
-};
+}
 
 /**
  * 选择行
  */
-const clickRow = (row: any) => {
+function clickRow(row: any) {
   // ele的bug
   tableRef.value?.toggleRowSelection(row, false);
-};
+}
 /** 多选框选中数据 */
-const handleSelectionChange = (selection: UserVO[]) => {
+function handleSelectionChange(selection: UserVO[]) {
   userIds.value = selection.map((item: UserVO) => item.userId);
-};
+}
 
 /** 查询数据 */
-const getList = async () => {
+async function getList() {
   const res = await unallocatedUserList(queryParams);
   userList.value = res.rows;
   total.value = res.total;
-};
+}
 /** 搜索按钮操作 */
-const handleQuery = () => {
+function handleQuery() {
   queryParams.pageNum = 1;
   getList();
-};
+}
 /** 重置按钮操作 */
-const resetQuery = () => {
+function resetQuery() {
   queryFormRef.value?.resetFields();
   getList();
-};
+}
 
 const emit = defineEmits(['ok']);
 /**选择授权用户操作 */
-const handleSelectUser = async () => {
+async function handleSelectUser() {
   const roleId = queryParams.roleId;
   const ids = userIds.value.join(',');
   if (ids == '') {
@@ -140,7 +140,7 @@ const handleSelectUser = async () => {
   proxy?.$modal.msgSuccess('分配成功');
   emit('ok');
   visible.value = false;
-};
+}
 // 暴露
 defineExpose({
   show,

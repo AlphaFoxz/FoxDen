@@ -217,7 +217,7 @@ const data = reactive<PageData<TenantPkgForm, TenantPkgQuery>>({
 const { queryParams, form, rules } = toRefs(data);
 
 // 所有菜单节点数据
-const getMenuAllCheckedKeys = (): any => {
+function getMenuAllCheckedKeys(): any {
   // 目前被选中的菜单节点
   const checkedKeys = menuTreeRef.value?.getCheckedKeys();
   // 半选中的菜单节点
@@ -226,26 +226,26 @@ const getMenuAllCheckedKeys = (): any => {
     checkedKeys?.unshift(...halfCheckedKeys);
   }
   return checkedKeys;
-};
+}
 
 /** 根据租户套餐ID查询菜单树结构 */
-const getPackageMenuTreeselect = async (packageId: string | number) => {
+async function getPackageMenuTreeselect(packageId: string | number) {
   const res = await tenantPackageMenuTreeselect(packageId);
   menuOptions.value = res.data.menus;
   return Promise.resolve(res);
-};
+}
 
 /** 查询租户套餐列表 */
-const getList = async () => {
+async function getList() {
   loading.value = true;
   const res = await listTenantPackage(queryParams.value);
   tenantPackageList.value = res.rows;
   total.value = res.total;
   loading.value = false;
-};
+}
 
 // 租户套餐状态修改
-const handleStatusChange = async (row: TenantPkgVO) => {
+async function handleStatusChange(row: TenantPkgVO) {
   const text = row.status === '0' ? '启用' : '停用';
   const [err] = await to(
     proxy?.$modal.confirm('确认要"' + text + '""' + row.packageName + '"套餐吗？') as Promise<any>,
@@ -256,44 +256,44 @@ const handleStatusChange = async (row: TenantPkgVO) => {
     await changePackageStatus(row.packageId, row.status);
     proxy?.$modal.msgSuccess(text + '成功');
   }
-};
+}
 
 // 取消按钮
-const cancel = () => {
+function cancel() {
   reset();
   dialog.visible = false;
-};
+}
 
 // 表单重置
-const reset = () => {
+function reset() {
   menuTreeRef.value?.setCheckedKeys([]);
   menuExpand.value = false;
   menuNodeAll.value = false;
   form.value = { ...initFormData };
   tenantPackageFormRef.value?.resetFields();
-};
+}
 
 /** 搜索按钮操作 */
-const handleQuery = () => {
+function handleQuery() {
   queryParams.value.pageNum = 1;
   getList();
-};
+}
 
 /** 重置按钮操作 */
-const resetQuery = () => {
+function resetQuery() {
   queryFormRef.value?.resetFields();
   handleQuery();
-};
+}
 
 // 多选框选中数据
-const handleSelectionChange = (selection: TenantPkgVO[]) => {
+function handleSelectionChange(selection: TenantPkgVO[]) {
   ids.value = selection.map((item) => item.packageId);
   single.value = selection.length != 1;
   multiple.value = !selection.length;
-};
+}
 
 // 树权限（展开/折叠）
-const handleCheckedTreeExpand = (value: CheckboxValueType, type: string) => {
+function handleCheckedTreeExpand(value: CheckboxValueType, type: string) {
   if (type == 'menu') {
     const treeList = menuOptions.value;
     for (let i = 0; i < treeList.length; i++) {
@@ -302,32 +302,32 @@ const handleCheckedTreeExpand = (value: CheckboxValueType, type: string) => {
       }
     }
   }
-};
+}
 
 // 树权限（全选/全不选）
-const handleCheckedTreeNodeAll = (value: CheckboxValueType, type: string) => {
+function handleCheckedTreeNodeAll(value: CheckboxValueType, type: string) {
   if (type == 'menu') {
     menuTreeRef.value?.setCheckedNodes(value ? (menuOptions.value as any) : []);
   }
-};
+}
 
 // 树权限（父子联动）
-const handleCheckedTreeConnect = (value: CheckboxValueType, type: string) => {
+function handleCheckedTreeConnect(value: CheckboxValueType, type: string) {
   if (type == 'menu') {
     form.value.menuCheckStrictly = value as boolean;
   }
-};
+}
 
 /** 新增按钮操作 */
-const handleAdd = async () => {
+async function handleAdd() {
   reset();
   await getPackageMenuTreeselect(0);
   dialog.visible = true;
   dialog.title = '添加租户套餐';
-};
+}
 
 /** 修改按钮操作 */
-const handleUpdate = async (row?: TenantPkgVO) => {
+async function handleUpdate(row?: TenantPkgVO) {
   reset();
   const _packageId = row?.packageId || ids.value[0];
   const response = await getTenantPackage(_packageId);
@@ -340,10 +340,10 @@ const handleUpdate = async (row?: TenantPkgVO) => {
       menuTreeRef.value?.setChecked(v, true, false);
     });
   });
-};
+}
 
 /** 提交按钮 */
-const submitForm = () => {
+function submitForm() {
   tenantPackageFormRef.value?.validate(async (valid: boolean) => {
     if (valid) {
       buttonLoading.value = true;
@@ -358,10 +358,10 @@ const submitForm = () => {
       await getList();
     }
   });
-};
+}
 
 /** 删除按钮操作 */
-const handleDelete = async (row?: TenantPkgVO) => {
+async function handleDelete(row?: TenantPkgVO) {
   const _packageIds = row?.packageId || ids.value;
   await proxy?.$modal.confirm('是否确认删除租户套餐编号为"' + _packageIds + '"的数据项？').finally(() => {
     loading.value = false;
@@ -370,10 +370,10 @@ const handleDelete = async (row?: TenantPkgVO) => {
   loading.value = true;
   await getList();
   proxy?.$modal.msgSuccess('删除成功');
-};
+}
 
 /** 导出按钮操作 */
-const handleExport = () => {
+function handleExport() {
   proxy?.download(
     'system/tenant/package/export',
     {
@@ -381,7 +381,7 @@ const handleExport = () => {
     },
     `tenantPackage_${new Date().getTime()}.xlsx`,
   );
-};
+}
 
 onMounted(() => {
   getList();

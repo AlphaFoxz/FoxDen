@@ -67,37 +67,37 @@ const rules = reactive<Record<string, any>>({
 });
 //确认
 //打开弹窗
-const open = async () => {
+function open() {
   reset();
   visible.value = true;
   loading.value = false;
   buttonDisabled.value = false;
-};
+}
 //关闭弹窗
-const close = async () => {
+function close() {
   reset();
   visible.value = false;
-};
-const submit = async (formEl: FormInstance | undefined) => {
+}
+async function submit(formEl: FormInstance | undefined) {
   if (!formEl) return;
   await formEl.validate((valid, fields) => {
     if (valid) {
       emits('submitCallback', form.value);
     }
   });
-};
+}
 //取消
-const cancel = async () => {
+function cancel() {
   visible.value = false;
   buttonDisabled.value = false;
   emits('cancelCallback');
-};
+}
 //重置
-const reset = async () => {
+function reset() {
   form.value.taskIdList = [];
   form.value.message = '';
   form.value.messageType = ['1'];
-};
+}
 /**
  * 对外暴露子组件方法
  */

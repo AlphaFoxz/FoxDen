@@ -32,9 +32,9 @@ const sizeOptions = ref([
   { label: '稍小', value: 'small' },
 ]);
 
-const handleSetSize = (size: 'large' | 'default' | 'small') => {
+function handleSetSize(size: 'large' | 'default' | 'small') {
   appStore.setSize(size);
-};
+}
 </script>
 
 <style lang="scss" scoped>

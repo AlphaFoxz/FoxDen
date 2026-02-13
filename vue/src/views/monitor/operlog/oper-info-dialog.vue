@@ -99,9 +99,9 @@ function formatToJsonObject(data: string) {
  */
 const { proxy } = getCurrentInstance() as ComponentInternalInstance;
 const { sys_oper_type } = toRefs<any>(proxy?.useDict('sys_oper_type'));
-const typeFormat = (row: OperLogForm) => {
+function typeFormat(row: OperLogForm) {
   return proxy?.selectDictLabel(sys_oper_type.value, row.businessType);
-};
+}
 </script>
 
 <style lang="scss" scoped>

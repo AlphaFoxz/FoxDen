@@ -51,7 +51,7 @@ const state = reactive<SearchState>({
 });
 
 // 搜索弹窗打开
-const openSearch = () => {
+function openSearch() {
   state.menuQuery = '';
   state.isShowSearch = true;
   state.menuList = generateRoutes(routes.value as any);
@@ -60,18 +60,18 @@ const openSearch = () => {
       layoutMenuAutocompleteRef.value.focus();
     });
   });
-};
+}
 // 搜索弹窗关闭
-const closeSearch = () => {
+function closeSearch() {
   state.isShowSearch = false;
-};
+}
 // 菜单搜索数据过滤
-const menuSearch = (queryString: string, cb: (options: any[]) => void) => {
+function menuSearch(queryString: string, cb: (options: any[]) => void) {
   const options = state.menuList.filter((item) => {
     return item.title.indexOf(queryString) > -1;
   });
   cb(options);
-};
+}
 
 // Filter out the routes that can be displayed in the sidebar
 // And generate the internationalized title
@@ -111,7 +111,7 @@ const generateRoutes = (routes: RouteRecordRaw[], basePath = '', prefixTitle: st
   return res;
 };
 // 当前菜单选中时
-const onHandleSelect = (val: any) => {
+function onHandleSelect(val: any) {
   const paths = val.path;
   if (isHttp(paths)) {
     // http(s):// 路径新窗口打开
@@ -122,7 +122,7 @@ const onHandleSelect = (val: any) => {
   }
   state.menuQuery = '';
   closeSearch();
-};
+}
 
 // 暴露变量
 defineExpose({

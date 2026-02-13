@@ -126,9 +126,9 @@ const tenantEnabled = ref(true);
 // 搜索菜单
 const searchMenuRef = ref<InstanceType<typeof SearchMenu>>();
 
-const openSearchMenu = () => {
+function openSearchMenu() {
   searchMenuRef.value?.openSearch();
-};
+}
 
 // 动态切换
 const dynamicTenantEvent = async (tenantId: string) => {
@@ -162,9 +162,9 @@ defineExpose({
   initTenantList,
 });
 
-const toggleSideBar = () => {
+function toggleSideBar() {
   appStore.toggleSideBar(false);
-};
+}
 
 const logout = async () => {
   await ElMessageBox.confirm('确定注销并退出系统吗？', '提示', {
@@ -184,20 +184,20 @@ const logout = async () => {
 };
 
 const emits = defineEmits(['setLayout']);
-const setLayout = () => {
+function setLayout() {
   emits('setLayout');
-};
+}
 // 定义Command方法对象 通过key直接调用方法
 const commandMap: { [key: string]: any } = {
   setLayout,
   logout,
 };
-const handleCommand = (command: string) => {
+function handleCommand(command: string) {
   // 判断是否存在该方法
   if (commandMap[command]) {
     commandMap[command]();
   }
-};
+}
 //用深度监听 消息
 watch(
   () => noticeStore.state.value.notices,

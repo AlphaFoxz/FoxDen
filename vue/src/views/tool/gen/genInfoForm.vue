@@ -194,7 +194,12 @@
               </el-tooltip>
             </template>
             <el-select v-model="infoForm.subTableName" placeholder="请选择" @change="subSelectChange">
-              <el-option v-for="(t, index) in table" :key="index" :label="t.tableName + '：' + t.tableComment" :value="t.tableName"></el-option>
+              <el-option
+                v-for="(t, index) in table"
+                :key="index"
+                :label="t.tableName + '：' + t.tableComment"
+                :value="t.tableName"
+              ></el-option>
             </el-select>
           </el-form-item>
         </el-col>
@@ -237,7 +242,7 @@ const menuOptions = ref<Array<MenuOptionsType>>([]);
 
 const props = defineProps({
   info: propTypes.any.isRequired,
-  tables: propTypes.any.isRequired
+  tables: propTypes.any.isRequired,
 });
 
 const infoForm = computed(() => props.info);
@@ -250,18 +255,18 @@ const rules = ref({
   packageName: [{ required: true, message: '请输入生成包路径', trigger: 'blur' }],
   moduleName: [{ required: true, message: '请输入生成模块名', trigger: 'blur' }],
   businessName: [{ required: true, message: '请输入生成业务名', trigger: 'blur' }],
-  functionName: [{ required: true, message: '请输入生成功能名', trigger: 'blur' }]
+  functionName: [{ required: true, message: '请输入生成功能名', trigger: 'blur' }],
 });
-const subSelectChange = () => {
+function subSelectChange() {
   infoForm.value.subTableFkName = '';
-};
-const tplSelectChange = (value: string) => {
+}
+function tplSelectChange(value: string) {
   if (value !== 'sub') {
     infoForm.value.subTableName = '';
     infoForm.value.subTableFkName = '';
   }
-};
-const setSubTableColumns = (value: string) => {
+}
+function setSubTableColumns(value: string) {
   table.value.forEach((item: any) => {
     const name = item.tableName;
     if (value === name) {
@@ -269,7 +274,7 @@ const setSubTableColumns = (value: string) => {
       return;
     }
   });
-};
+}
 
 /** 查询菜单下拉树结构 */
 const getMenuTreeselect = async () => {
@@ -285,7 +290,7 @@ watch(
   () => props.info.subTableName,
   (val) => {
     setSubTableColumns(val);
-  }
+  },
 );
 
 onMounted(() => {

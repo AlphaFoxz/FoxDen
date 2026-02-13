@@ -140,7 +140,7 @@ const basicInfo = ref<InstanceType<typeof BasicInfoForm>>();
 const genInfo = ref<InstanceType<typeof GenInfoForm>>();
 
 /** 提交按钮 */
-const submitForm = () => {
+function submitForm() {
   const basicForm = basicInfo.value?.$refs.basicInfoForm;
   const genForm = genInfo.value?.$refs.genInfoForm;
 
@@ -164,15 +164,15 @@ const submitForm = () => {
       proxy?.$modal.msgError('表单校验未通过，请重新检查提交内容');
     }
   });
-};
-const getFormPromise = (form: any) => {
+}
+function getFormPromise(form: any) {
   return new Promise((resolve) => {
     form.validate((res: any) => {
       resolve(res);
     });
   });
-};
-const close = () => {
+}
+function close() {
   const obj: RouteLocationNormalized = {
     path: '/tool/gen',
     fullPath: '',
@@ -185,7 +185,7 @@ const close = () => {
     query: { t: Date.now().toString(), pageNum: route.query.pageNum },
   };
   proxy?.$tab.closeOpenPage(obj);
-};
+}
 
 (async () => {
   const tableId = route.params && (route.params.tableId as string);

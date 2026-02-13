@@ -27,7 +27,7 @@ import { updateUserProfile } from '@/api/system/user';
 import { propTypes } from '@/utils/propTypes';
 
 const props = defineProps({
-  user: propTypes.any.isRequired
+  user: propTypes.any.isRequired,
 });
 const userForm = computed(() => props.user);
 const { proxy } = getCurrentInstance() as ComponentInternalInstance;
@@ -39,31 +39,31 @@ const rule: ElFormRules = {
     {
       type: 'email',
       message: '请输入正确的邮箱地址',
-      trigger: ['blur', 'change']
-    }
+      trigger: ['blur', 'change'],
+    },
   ],
   phonenumber: [
     {
       required: true,
       message: '手机号码不能为空',
-      trigger: 'blur'
+      trigger: 'blur',
     },
-    { pattern: /^1[3456789][0-9]\d{8}$/, message: '请输入正确的手机号码', trigger: 'blur' }
-  ]
+    { pattern: /^1[3456789][0-9]\d{8}$/, message: '请输入正确的手机号码', trigger: 'blur' },
+  ],
 };
 const rules = ref<ElFormRules>(rule);
 
 /** 提交按钮 */
-const submit = () => {
+function submit() {
   userRef.value?.validate(async (valid: boolean) => {
     if (valid) {
       await updateUserProfile(props.user);
       proxy?.$modal.msgSuccess('修改成功');
     }
   });
-};
+}
 /** 关闭按钮 */
-const close = () => {
+function close() {
   proxy?.$tab.closePage();
-};
+}
 </script>

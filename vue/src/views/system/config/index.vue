@@ -227,57 +227,57 @@ const data = reactive<PageData<ConfigForm, ConfigQuery>>({
 const { queryParams, form, rules } = toRefs(data);
 
 /** 查询参数列表 */
-const getList = async () => {
+async function getList() {
   loading.value = true;
   const res = await listConfig(proxy?.addDateRange(queryParams.value, dateRange.value));
   configList.value = res.rows;
   total.value = res.total;
   loading.value = false;
-};
+}
 /** 取消按钮 */
-const cancel = () => {
+function cancel() {
   reset();
   dialog.visible = false;
-};
+}
 /** 表单重置 */
-const reset = () => {
+function reset() {
   form.value = { ...initFormData };
   configFormRef.value?.resetFields();
-};
+}
 /** 搜索按钮操作 */
-const handleQuery = () => {
+function handleQuery() {
   queryParams.value.pageNum = 1;
   getList();
-};
+}
 /** 重置按钮操作 */
-const resetQuery = () => {
+function resetQuery() {
   dateRange.value = ['', ''];
   queryFormRef.value?.resetFields();
   handleQuery();
-};
+}
 /** 多选框选中数据 */
-const handleSelectionChange = (selection: ConfigVO[]) => {
+function handleSelectionChange(selection: ConfigVO[]) {
   ids.value = selection.map((item) => item.configId);
   single.value = selection.length != 1;
   multiple.value = !selection.length;
-};
+}
 /** 新增按钮操作 */
-const handleAdd = () => {
+function handleAdd() {
   reset();
   dialog.visible = true;
   dialog.title = '添加参数';
-};
+}
 /** 修改按钮操作 */
-const handleUpdate = async (row?: ConfigVO) => {
+async function handleUpdate(row?: ConfigVO) {
   reset();
   const configId = row?.configId || ids.value[0];
   const res = await getConfig(configId);
   Object.assign(form.value, res.data);
   dialog.visible = true;
   dialog.title = '修改参数';
-};
+}
 /** 提交按钮 */
-const submitForm = () => {
+function submitForm() {
   configFormRef.value?.validate(async (valid: boolean) => {
     if (valid) {
       form.value.configId ? await updateConfig(form.value) : await addConfig(form.value);
@@ -286,17 +286,17 @@ const submitForm = () => {
       await getList();
     }
   });
-};
+}
 /** 删除按钮操作 */
-const handleDelete = async (row?: ConfigVO) => {
+async function handleDelete(row?: ConfigVO) {
   const configIds = row?.configId || ids.value;
   await proxy?.$modal.confirm('是否确认删除参数编号为"' + configIds + '"的数据项？');
   await delConfig(configIds);
   await getList();
   proxy?.$modal.msgSuccess('删除成功');
-};
+}
 /** 导出按钮操作 */
-const handleExport = () => {
+function handleExport() {
   proxy?.download(
     'system/config/export',
     {
@@ -304,12 +304,12 @@ const handleExport = () => {
     },
     `config_${new Date().getTime()}.xlsx`,
   );
-};
+}
 /** 刷新缓存按钮操作 */
-const handleRefreshCache = async () => {
+async function handleRefreshCache() {
   await refreshCache();
   proxy?.$modal.msgSuccess('刷新缓存成功');
-};
+}
 
 onMounted(() => {
   getList();

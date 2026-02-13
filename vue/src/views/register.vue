@@ -110,13 +110,13 @@ const registerForm = ref<RegisterForm>({
 // 租户开关
 const tenantEnabled = ref(true);
 
-const equalToPassword = (rule: any, value: string, callback: any) => {
+function equalToPassword(rule: any, value: string, callback: any) {
   if (registerForm.value.password !== value) {
     callback(new Error(t('register.rule.confirmPassword.equalToPassword')));
   } else {
     callback();
   }
-};
+}
 
 const registerRules: ElFormRules = {
   tenantId: [{ required: true, trigger: 'blur', message: t('register.rule.tenantId.required') }],
@@ -146,7 +146,7 @@ const registerRef = ref<ElFormInstance>();
 // 租户列表
 const tenantList = ref<TenantVO[]>([]);
 
-const handleRegister = () => {
+function handleRegister() {
   registerRef.value?.validate(async (valid: boolean) => {
     if (valid) {
       loading.value = true;
@@ -171,7 +171,7 @@ const handleRegister = () => {
       }
     }
   });
-};
+}
 
 const getCode = async () => {
   const res = await getCodeImg();

@@ -339,18 +339,18 @@ const queryParams = ref<FlowInstanceQuery>({
 });
 
 /** 节点单击事件 */
-const handleNodeClick = (data: CategoryTreeVO) => {
+function handleNodeClick(data: CategoryTreeVO) {
   queryParams.value.category = data.id;
   if (data.id === '0') {
     queryParams.value.category = '';
   }
   handleQuery();
-};
+}
 /** 通过条件过滤节点  */
-const filterNode = (value: string, data: any) => {
+function filterNode(value: string, data: any) {
   if (!value) return true;
   return data.categoryName.indexOf(value) !== -1;
-};
+}
 /** 根据名称筛选部门树 */
 watchEffect(
   () => {
@@ -362,21 +362,21 @@ watchEffect(
 );
 
 /** 查询流程分类下拉树结构 */
-const getTreeselect = async () => {
+async function getTreeSelect() {
   const res = await categoryTree();
   categoryOptions.value = res.data;
-};
+}
 
 /** 搜索按钮操作 */
-const handleQuery = () => {
+function handleQuery() {
   if ('running' === tab.value) {
     getProcessInstanceRunningList();
   } else {
     getProcessInstanceFinishList();
   }
-};
+}
 /** 重置按钮操作 */
-const resetQuery = () => {
+function resetQuery() {
   queryFormRef.value?.resetFields();
   queryParams.value.category = '';
   queryParams.value.pageNum = 1;
@@ -384,32 +384,32 @@ const resetQuery = () => {
   queryParams.value.createByIds = [];
   userSelectCount.value = 0;
   handleQuery();
-};
+}
 // 多选框选中数据
-const handleSelectionChange = (selection: FlowInstanceVO[]) => {
+function handleSelectionChange(selection: FlowInstanceVO[]) {
   ids.value = selection.map((item: any) => item.id);
   instanceIds.value = selection.map((item: FlowInstanceVO) => item.id);
   single.value = selection.length !== 1;
   multiple.value = !selection.length;
-};
+}
 //分页
-const getProcessInstanceRunningList = () => {
+function getProcessInstanceRunningList() {
   loading.value = true;
   pageByRunning(queryParams.value).then((resp) => {
     processInstanceList.value = resp.rows;
     total.value = resp.total;
     loading.value = false;
   });
-};
+}
 //分页
-const getProcessInstanceFinishList = () => {
+function getProcessInstanceFinishList() {
   loading.value = true;
   pageByFinish(queryParams.value).then((resp) => {
     processInstanceList.value = resp.rows;
     total.value = resp.total;
     loading.value = false;
   });
-};
+}
 
 /** 删除按钮操作 */
 const handleDelete = async (row: FlowInstanceVO) => {
@@ -452,7 +452,7 @@ const cancelPopover = async (index: any) => {
   (proxy?.$refs[`popoverRef${index}`] as any).hide(); //关闭弹窗
 };
 /** 查看按钮操作 */
-const handleView = (row) => {
+function handleView(row) {
   const routerJumpVo = reactive<RouterJumpVo>({
     businessId: row.businessId,
     taskId: row.id,
@@ -461,7 +461,7 @@ const handleView = (row) => {
     formPath: row.formPath,
   });
   workflowCommon.routerJump(routerJumpVo, proxy);
-};
+}
 
 //查询流程变量
 const handleInstanceVariable = async (row: FlowInstanceVO) => {
@@ -490,11 +490,11 @@ function formatToJsonObject(data: string) {
 }
 
 //打开申请人选择
-const openUserSelect = () => {
+function openUserSelect() {
   userSelectRef.value.open();
-};
+}
 //确认选择申请人
-const userSelectCallBack = (data: UserVO[]) => {
+function userSelectCallBack(data: UserVO[]) {
   userSelectCount.value = 0;
   selectUserIds.value = [];
   queryParams.value.createByIds = [];
@@ -504,7 +504,7 @@ const userSelectCallBack = (data: UserVO[]) => {
     selectUserIds.value = data.map((item) => item.userId);
     queryParams.value.createByIds = selectUserIds.value;
   }
-};
+}
 const rules = reactive<Record<string, any>>({
   key: [
     {
@@ -537,6 +537,6 @@ const handleVariable = async (formEl: FormInstance | undefined) => {
 
 onMounted(() => {
   getProcessInstanceRunningList();
-  getTreeselect();
+  getTreeSelect();
 });
 </script>

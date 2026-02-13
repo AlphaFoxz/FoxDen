@@ -21,7 +21,7 @@ const stateJson = JSON.parse(atob(state));
 const tenantId = (stateJson.tenantId as string) ? (stateJson.tenantId as string) : '000000';
 const domain = stateJson.domain as string;
 
-const processResponse = async (res: any) => {
+async function processResponse(res: any) {
   if (res.code !== 200) {
     throw new Error(res.msg);
   }
@@ -32,7 +32,7 @@ const processResponse = async (res: any) => {
   setTimeout(() => {
     location.href = import.meta.env.VITE_APP_CONTEXT_PATH + 'index';
   }, 2000);
-};
+}
 
 const handleError = (error: any) => {
   ElMessage.error(error.message);

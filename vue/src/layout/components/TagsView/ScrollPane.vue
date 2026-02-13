@@ -20,15 +20,15 @@ onBeforeUnmount(() => {
   scrollWrapper.value?.removeEventListener('scroll', emitScroll);
 });
 
-const handleScroll = (e: WheelEvent) => {
+function handleScroll(e: WheelEvent) {
   const eventDelta = (e as any).wheelDelta || -e.deltaY * 40;
   const $scrollWrapper = scrollWrapper.value;
   $scrollWrapper.scrollLeft = $scrollWrapper.scrollLeft + eventDelta / 4;
-};
+}
 const emits = defineEmits(['scroll']);
-const emitScroll = () => {
+function emitScroll() {
   emits('scroll');
-};
+}
 
 const tagsViewStore = useTagsViewStore();
 const visitedViews = computed(() => tagsViewStore.visitedViews);

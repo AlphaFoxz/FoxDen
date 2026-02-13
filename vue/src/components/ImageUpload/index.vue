@@ -124,7 +124,7 @@ watch(
 );
 
 /** 上传前loading加载 */
-const handleBeforeUpload = (file: any) => {
+function handleBeforeUpload(file: any) {
   let isImg = false;
   if (props.fileType.length) {
     let fileExtension = '';
@@ -167,12 +167,12 @@ const handleBeforeUpload = (file: any) => {
 };
 
 // 文件个数超出
-const handleExceed = () => {
+function handleExceed() {
   proxy?.$modal.msgError(`上传文件数量不能超过 ${props.limit} 个!`);
-};
+}
 
 // 上传成功回调
-const handleUploadSuccess = (res: any, file: UploadFile) => {
+function handleUploadSuccess(res: any, file: UploadFile) {
   if (res.code === 200) {
     uploadList.value.push({ name: res.data.fileName, url: res.data.url, ossId: res.data.ossId });
     uploadedSuccessfully();
@@ -183,10 +183,10 @@ const handleUploadSuccess = (res: any, file: UploadFile) => {
     imageUploadRef.value?.handleRemove(file);
     uploadedSuccessfully();
   }
-};
+}
 
 // 删除图片
-const handleDelete = (file: UploadFile): boolean => {
+function handleDelete(file: UploadFile): boolean {
   const findex = fileList.value.map((f) => f.name).indexOf(file.name);
   if (findex > -1 && uploadList.value.length === number.value) {
     const ossId = fileList.value[findex].ossId;
@@ -196,10 +196,10 @@ const handleDelete = (file: UploadFile): boolean => {
     return false;
   }
   return true;
-};
+}
 
 // 上传结束处理
-const uploadedSuccessfully = () => {
+function uploadedSuccessfully() {
   if (number.value > 0 && uploadList.value.length === number.value) {
     fileList.value = fileList.value.filter((f) => f.url !== undefined).concat(uploadList.value);
     uploadList.value = [];
@@ -207,22 +207,22 @@ const uploadedSuccessfully = () => {
     emit('update:modelValue', listToString(fileList.value));
     proxy?.$modal.closeLoading();
   }
-};
+}
 
 // 上传失败
-const handleUploadError = () => {
+function handleUploadError() {
   proxy?.$modal.msgError('上传图片失败');
   proxy?.$modal.closeLoading();
-};
+}
 
 // 预览
-const handlePictureCardPreview = (file: any) => {
+function handlePictureCardPreview(file: any) {
   dialogImageUrl.value = file.url;
   dialogVisible.value = true;
-};
+}
 
 // 对象转成指定字符串分隔
-const listToString = (list: any[], separator?: string) => {
+function listToString(list: any[], separator?: string) {
   let strs = '';
   separator = separator || ',';
   for (const i in list) {

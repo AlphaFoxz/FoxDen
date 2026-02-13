@@ -36,17 +36,17 @@ const props = defineProps({
 });
 const emits = defineEmits(['submitForm', 'approvalVerifyOpen', 'handleApprovalRecord']);
 //暂存，提交
-const submitForm = async (type, mode) => {
+async function submitForm(type, mode) {
   emits('submitForm', type, mode);
-};
+}
 //审批
-const approvalVerifyOpen = async () => {
+async function approvalVerifyOpen() {
   emits('approvalVerifyOpen');
-};
+}
 //审批记录
-const handleApprovalRecord = () => {
+function handleApprovalRecord() {
   emits('handleApprovalRecord');
-};
+}
 
 //校验提交按钮是否显示
 const submitButtonShow = computed(() => {
@@ -64,8 +64,8 @@ const approvalButtonShow = computed(() => {
 });
 
 //返回
-const goBack = () => {
+function goBack() {
   proxy.$tab.closePage(proxy.$route);
   proxy.$router.go(-1);
-};
+}
 </script>

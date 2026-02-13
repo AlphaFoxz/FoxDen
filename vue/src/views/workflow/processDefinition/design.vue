@@ -13,7 +13,7 @@ import { getToken } from '@/utils/auth';
 // disabled为是否可编辑, 例如：查看的时候不可编辑，不可保存
 const iframeUrl = ref('');
 const baseUrl = import.meta.env.VITE_APP_BASE_API;
-const iframeLoaded = () => {
+function iframeLoaded() {
   // iframe监听组件内设计器保存事件
   window.onmessage = (event) => {
     switch (event.data.method) {
@@ -22,11 +22,11 @@ const iframeLoaded = () => {
         break;
     }
   };
-};
-const open = async (definitionId, disabled) => {
+}
+async function open(definitionId, disabled) {
   const url = baseUrl + `/warm-flow-ui/index.html?id=${definitionId}&onlyDesignShow=true`;
   iframeUrl.value = url + '&Authorization=Bearer ' + getToken() + '&clientid=' + import.meta.env.VITE_APP_CLIENT_ID;
-};
+}
 /** 关闭按钮 */
 function close() {
   const obj = { path: '/workflow/processDefinition', query: { activeName: proxy.$route.query.activeName } };

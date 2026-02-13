@@ -102,23 +102,23 @@ const queryParams = ref<OnlineQuery>({
 });
 
 /** 查询登录日志列表 */
-const getList = async () => {
+async function getList() {
   loading.value = true;
   const res = await initData(queryParams.value);
   onlineList.value = res.rows;
   total.value = res.total;
   loading.value = false;
-};
+}
 /** 搜索按钮操作 */
-const handleQuery = () => {
+function handleQuery() {
   queryParams.value.pageNum = 1;
   getList();
-};
+}
 /** 重置按钮操作 */
-const resetQuery = () => {
+function resetQuery() {
   queryFormRef.value?.resetFields();
   handleQuery();
-};
+}
 /** 强退按钮操作 */
 const handleForceLogout = async (row: OnlineVO) => {
   const [err] = await to(proxy?.$modal.confirm('是否确认强退名称为"' + row.userName + '"的用户?') as any);

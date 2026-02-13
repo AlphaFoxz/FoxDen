@@ -68,7 +68,7 @@ const filterIcons = () => {
  * 选择图标
  * @param iconName 选择的图标名称
  */
-const selectedIcon = (iconName: string) => {
+function selectedIcon(iconName: string) {
   emit('update:modelValue', iconName);
   visible.value = false;
 };

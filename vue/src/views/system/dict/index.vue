@@ -211,58 +211,58 @@ const data = reactive<PageData<DictTypeForm, DictTypeQuery>>({
 const { queryParams, form, rules } = toRefs(data);
 
 /** 查询字典类型列表 */
-const getList = () => {
+function getList() {
   loading.value = true;
   listType(proxy?.addDateRange(queryParams.value, dateRange.value)).then((res) => {
     typeList.value = res.rows;
     total.value = res.total;
     loading.value = false;
   });
-};
+}
 /** 取消按钮 */
-const cancel = () => {
+function cancel() {
   reset();
   dialog.visible = false;
-};
+}
 /** 表单重置 */
-const reset = () => {
+function reset() {
   form.value = { ...initFormData };
   dictFormRef.value?.resetFields();
-};
+}
 /** 搜索按钮操作 */
-const handleQuery = () => {
+function handleQuery() {
   queryParams.value.pageNum = 1;
   getList();
-};
+}
 /** 重置按钮操作 */
-const resetQuery = () => {
+function resetQuery() {
   dateRange.value = ['', ''];
   queryFormRef.value?.resetFields();
   handleQuery();
-};
+}
 /** 新增按钮操作 */
-const handleAdd = () => {
+function handleAdd() {
   reset();
   dialog.visible = true;
   dialog.title = '添加字典类型';
-};
+}
 /** 多选框选中数据 */
-const handleSelectionChange = (selection: DictTypeVO[]) => {
+function handleSelectionChange(selection: DictTypeVO[]) {
   ids.value = selection.map((item) => item.dictId);
   single.value = selection.length != 1;
   multiple.value = !selection.length;
-};
+}
 /** 修改按钮操作 */
-const handleUpdate = async (row?: DictTypeVO) => {
+async function handleUpdate(row?: DictTypeVO) {
   reset();
   const dictId = row?.dictId || ids.value[0];
   const res = await getType(dictId);
   Object.assign(form.value, res.data);
   dialog.visible = true;
   dialog.title = '修改字典类型';
-};
+}
 /** 提交按钮 */
-const submitForm = () => {
+function submitForm() {
   dictFormRef.value?.validate(async (valid: boolean) => {
     if (valid) {
       form.value.dictId ? await updateType(form.value) : await addType(form.value);
@@ -271,17 +271,17 @@ const submitForm = () => {
       getList();
     }
   });
-};
+}
 /** 删除按钮操作 */
-const handleDelete = async (row?: DictTypeVO) => {
+async function handleDelete(row?: DictTypeVO) {
   const dictIds = row?.dictId || ids.value;
   await proxy?.$modal.confirm('是否确认删除字典编号为"' + dictIds + '"的数据项？');
   await delType(dictIds);
   getList();
   proxy?.$modal.msgSuccess('删除成功');
-};
+}
 /** 导出按钮操作 */
-const handleExport = () => {
+function handleExport() {
   proxy?.download(
     'system/dict/type/export',
     {
@@ -289,13 +289,13 @@ const handleExport = () => {
     },
     `dict_${new Date().getTime()}.xlsx`,
   );
-};
+}
 /** 刷新缓存按钮操作 */
-const handleRefreshCache = async () => {
+async function handleRefreshCache() {
   await refreshCache();
   proxy?.$modal.msgSuccess('刷新成功');
   useDictStore().cleanDict();
-};
+}
 
 onMounted(() => {
   getList();

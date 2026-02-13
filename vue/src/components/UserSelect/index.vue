@@ -180,13 +180,13 @@ watchEffect(
   },
 );
 
-const confirm = () => {
+function confirm() {
   emit('update:modelValue', selectUserList.value);
   emit('confirmCallBack', selectUserList.value);
   userDialog.closeDialog();
-};
+}
 
-const computedIds = (data) => {
+function computedIds(data) {
   if (data === '' || data === null || data === undefined) {
     return [];
   }
@@ -200,62 +200,62 @@ const computedIds = (data) => {
     console.warn('<UserSelect> The data type of data should be array or string or number, but I received other');
     return [];
   }
-};
+}
 
 /** 通过条件过滤节点  */
-const filterNode = (value: string, data: any) => {
+function filterNode(value: string, data: any) {
   if (!value) return true;
   return data.label.indexOf(value) !== -1;
-};
+}
 
 /** 查询部门下拉树结构 */
-const getTreeSelect = async () => {
+async function getTreeSelect() {
   const res = await api.deptTreeSelect();
   deptOptions.value = res.data;
-};
+}
 
 /** 查询用户列表 */
-const getList = async () => {
+async function getList() {
   loading.value = true;
   queryParams.value.userIds = prop.userIds;
   const res = await api.listUser(proxy?.addDateRange(queryParams.value, dateRange.value));
   loading.value = false;
   userList.value = res.rows;
   total.value = res.total;
-};
+}
 
-const pageList = async () => {
+async function pageList() {
   await getList();
-  const users = userList.value.filter((item) => {
+  const users = userList.value?.filter((item) => {
     return selectUserList.value.some((user) => user.userId === item.userId);
   });
-  await tableRef.value.setCheckboxRow(users, true);
-};
+  await tableRef.value?.setCheckboxRow(users, true);
+}
 
 /** 节点单击事件 */
-const handleNodeClick = (data: DeptVO) => {
+function handleNodeClick(data: DeptVO) {
   queryParams.value.deptId = data.id;
   handleQuery();
-};
+}
 
 /** 搜索按钮操作 */
-const handleQuery = () => {
+function handleQuery() {
   queryParams.value.pageNum = 1;
   getList();
-};
+}
 /** 重置按钮操作 */
-const resetQuery = (refresh = true) => {
+function resetQuery(refresh = true) {
   dateRange.value = ['', ''];
   queryFormRef.value?.resetFields();
   queryParams.value.pageNum = 1;
   queryParams.value.deptId = undefined;
   deptTreeRef.value?.setCurrentKey(undefined);
   refresh && handleQuery();
-};
+}
 
-const handleCheckboxChange = (checked) => {
+function handleCheckboxChange(checked) {
   if (!prop.multiple && checked.checked) {
-    tableRef.value.setCheckboxRow(selectUserList.value, false);
+    tableRef.value?.setCheckboxRow(selectUserList.value, false);
     selectUserList.value = [];
   }
   const row = checked.row;
@@ -266,46 +266,46 @@ const handleCheckboxChange = (checked) => {
       return item.userId !== row.userId;
     });
   }
-};
-const handleCheckboxAll = (checked) => {
+}
+function handleCheckboxAll(checked) {
   const rows = userList.value;
   if (checked.checked) {
-    rows.forEach((row) => {
+    rows?.forEach((row) => {
       if (!selectUserList.value.some((item) => item.userId === row.userId)) {
         selectUserList.value.push(row);
       }
     });
   } else {
     selectUserList.value = selectUserList.value.filter((item) => {
-      return !rows.some((row) => row.userId === item.userId);
+      return !rows?.some((row) => row.userId === item.userId);
     });
   }
-};
+}
 
-const handleCloseTag = (user: UserVO) => {
+function handleCloseTag(user: UserVO) {
   const userId = user.userId;
   // 使用split删除用户
   const index = selectUserList.value.findIndex((item) => item.userId === userId);
   const rows = selectUserList.value[index];
   tableRef.value?.setCheckboxRow(rows, false);
   selectUserList.value.splice(index, 1);
-};
+}
 
-const initSelectUser = async () => {
+async function initSelectUser() {
   if (defaultSelectUserIds.value.length > 0) {
     const { data } = await api.optionSelect(defaultSelectUserIds.value);
     selectUserList.value = data;
-    const users = userList.value.filter((item) => {
+    const users = userList.value?.filter((item) => {
       return defaultSelectUserIds.value.includes(String(item.userId));
     });
     await nextTick(() => {
-      tableRef.value.setCheckboxRow(users, true);
+      tableRef.value?.setCheckboxRow(users, true);
     });
   }
-};
-const close = () => {
+}
+function close() {
   userDialog.closeDialog();
-};
+}
 
 watch(
   () => userDialog.visible.value,
@@ -315,8 +315,8 @@ watch(
       await getList(); // 初始化列表数据
       await initSelectUser();
     } else {
-      tableRef.value.clearCheckboxReserve();
-      tableRef.value.clearCheckboxRow();
+      tableRef.value?.clearCheckboxReserve();
+      tableRef.value?.clearCheckboxRow();
       resetQuery(false);
       selectUserList.value = [];
     }

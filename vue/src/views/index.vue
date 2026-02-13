@@ -46,9 +46,9 @@
 </template>
 
 <script setup name="Index" lang="ts">
-const goTarget = (url: string) => {
+function goTarget(url: string) {
   window.open(url, '__blank');
-};
+}
 </script>
 
 <style lang="scss" scoped>

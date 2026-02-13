@@ -429,7 +429,7 @@ const expandMenuHandle = async (row: any, expanded: boolean) => {
 };
 
 /** 刷新展开的菜单数据 */
-const refreshLoadTree = (parentId: string | number) => {
+function refreshLoadTree(parentId: string | number) {
   if (menuExpandMap.value[parentId]) {
     const { row, treeNode, resolve } = menuExpandMap.value[parentId];
     if (row) {
@@ -440,17 +440,17 @@ const refreshLoadTree = (parentId: string | number) => {
       }
     }
   }
-};
+}
 
 /** 重新加载所有已展开的菜单的数据 */
-const refreshAllExpandMenuData = () => {
+function refreshAllExpandMenuData() {
   for (const menuId in menuExpandMap.value) {
     refreshLoadTree(menuId);
   }
-};
+}
 
 /** 查询菜单列表 */
-const getList = async () => {
+async function getList() {
   loading.value = true;
   const res = await listMenu(queryParams.value);
 
@@ -476,56 +476,56 @@ const getList = async () => {
   // 根据新数据重新加载子菜单数据
   refreshAllExpandMenuData();
   loading.value = false;
-};
+}
 /** 查询菜单下拉树结构 */
-const getTreeselect = async () => {
+async function getTreeSelect() {
   menuOptions.value = [];
   const response = await listMenu();
   const menu: MenuOptionsType = { menuId: 0, menuName: '主类目', children: [] };
   menu.children = proxy?.handleTree<MenuOptionsType>(response.data, 'menuId');
   menuOptions.value.push(menu);
-};
+}
 /** 取消按钮 */
-const cancel = () => {
+function cancel() {
   reset();
   dialog.visible = false;
-};
+}
 /** 表单重置 */
-const reset = () => {
+function reset() {
   form.value = { ...initFormData };
   menuFormRef.value?.resetFields();
-};
+}
 
 /** 搜索按钮操作 */
-const handleQuery = () => {
+function handleQuery() {
   getList();
-};
+}
 /** 重置按钮操作 */
-const resetQuery = () => {
+function resetQuery() {
   queryFormRef.value?.resetFields();
   handleQuery();
-};
+}
 /** 新增按钮操作 */
-const handleAdd = (row?: MenuVO) => {
+function handleAdd(row?: MenuVO) {
   reset();
-  getTreeselect();
+  getTreeSelect();
   row && row.menuId ? (form.value.parentId = row.menuId) : (form.value.parentId = 0);
   dialog.visible = true;
   dialog.title = '添加菜单';
-};
+}
 /** 修改按钮操作 */
-const handleUpdate = async (row: MenuVO) => {
+async function handleUpdate(row: MenuVO) {
   reset();
-  await getTreeselect();
+  await getTreeSelect();
   if (row.menuId) {
     const { data } = await getMenu(row.menuId);
     form.value = data;
   }
   dialog.visible = true;
   dialog.title = '修改菜单';
-};
+}
 /** 提交按钮 */
-const submitForm = () => {
+function submitForm() {
   menuFormRef.value?.validate(async (valid: boolean) => {
     if (valid) {
       form.value.menuId ? await updateMenu(form.value) : await addMenu(form.value);
@@ -534,14 +534,14 @@ const submitForm = () => {
       await getList();
     }
   });
-};
+}
 /** 删除按钮操作 */
-const handleDelete = async (row: MenuVO) => {
+async function handleDelete(row: MenuVO) {
   await proxy?.$modal.confirm('是否确认删除名称为"' + row.menuName + '"的数据项?');
   await delMenu(row.menuId);
   await getList();
   proxy?.$modal.msgSuccess('删除成功');
-};
+}
 
 const deleteLoading = ref<boolean>(false);
 const menuTreeRef = ref<ElTreeInstance>();
@@ -552,17 +552,17 @@ const deleteDialog = reactive<DialogOption>({
 });
 
 /** 级联删除按钮操作 */
-const handleCascadeDelete = () => {
+function handleCascadeDelete() {
   menuTreeRef.value?.setCheckedKeys([]);
-  getTreeselect();
+  getTreeSelect();
   deleteDialog.visible = true;
-};
+}
 
 /** 取消按钮 */
-const cancelCascade = () => {
+function cancelCascade() {
   menuTreeRef.value?.setCheckedKeys([]);
   deleteDialog.visible = false;
-};
+}
 
 /** 删除提交按钮 */
 const submitDeleteForm = async () => {

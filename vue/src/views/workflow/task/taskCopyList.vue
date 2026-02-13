@@ -112,34 +112,34 @@ const queryParams = ref<TaskQuery>({
   flowCode: undefined,
 });
 /** 搜索按钮操作 */
-const handleQuery = () => {
+function handleQuery() {
   getTaskCopyList();
-};
+}
 /** 重置按钮操作 */
-const resetQuery = () => {
+function resetQuery() {
   queryFormRef.value?.resetFields();
   queryParams.value.pageNum = 1;
   queryParams.value.pageSize = 10;
   handleQuery();
-};
+}
 // 多选框选中数据
-const handleSelectionChange = (selection: any) => {
+function handleSelectionChange(selection: any) {
   ids.value = selection.map((item: any) => item.id);
   single.value = selection.length !== 1;
   multiple.value = !selection.length;
-};
+}
 //分页
-const getTaskCopyList = () => {
+function getTaskCopyList() {
   loading.value = true;
   pageByTaskCopy(queryParams.value).then((resp) => {
     taskList.value = resp.rows;
     total.value = resp.total;
     loading.value = false;
   });
-};
+}
 
 /** 查看按钮操作 */
-const handleView = (row) => {
+function handleView(row) {
   const routerJumpVo = reactive<RouterJumpVo>({
     businessId: row.businessId,
     taskId: row.id,
@@ -148,7 +148,7 @@ const handleView = (row) => {
     formPath: row.formPath,
   });
   workflowCommon.routerJump(routerJumpVo, proxy);
-};
+}
 
 onMounted(() => {
   getTaskCopyList();

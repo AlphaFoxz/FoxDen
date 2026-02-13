@@ -140,11 +140,11 @@ const open = (taskId: string) => {
 };
 
 //打开转办
-const openTransferTask = () => {
+function openTransferTask() {
   transferTaskRef.value.open();
-};
+}
 //转办
-const handleTransferTask = async (data) => {
+async function handleTransferTask(data) {
   if (data && data.length > 0) {
     const taskOperationBo = reactive<TaskOperationBo>({
       userId: data[0].userId,
@@ -164,13 +164,13 @@ const handleTransferTask = async (data) => {
   } else {
     proxy?.$modal.msgWarning('请选择用户！');
   }
-};
+}
 //加签
-const openMultiInstanceUser = async () => {
+async function openMultiInstanceUser() {
   multiInstanceUserRef.value.open();
-};
+}
 //加签
-const addMultiInstanceUser = async (data) => {
+async function addMultiInstanceUser(data) {
   if (data && data.length > 0) {
     const taskOperationBo = reactive<TaskOperationBo>({
       userIds: data.map((e) => e.userId),
@@ -190,9 +190,9 @@ const addMultiInstanceUser = async (data) => {
   } else {
     proxy?.$modal.msgWarning('请选择用户！');
   }
-};
+}
 //减签
-const deleteMultiInstanceUser = async (row) => {
+async function deleteMultiInstanceUser(row) {
   await proxy?.$modal.confirm('是否确认提交？');
   loading.value = true;
   buttonDisabled.value = true;
@@ -208,9 +208,9 @@ const deleteMultiInstanceUser = async (row) => {
   visible.value = false;
   emits('submitCallback');
   proxy?.$modal.msgSuccess('操作成功');
-};
+}
 //获取办理人
-const handleTaskUser = async () => {
+async function handleTaskUser() {
   const data = await currentTaskAllUser(task.value.id);
   deleteUserList.value = data.data;
   if (deleteUserList.value && deleteUserList.value.length > 0) {
@@ -219,10 +219,10 @@ const handleTaskUser = async () => {
     });
   }
   deleteSignatureVisible.value = true;
-};
+}
 
 //终止任务
-const handleTerminationTask = async () => {
+async function handleTerminationTask() {
   const params = {
     taskId: task.value.id,
     comment: '',
@@ -237,7 +237,7 @@ const handleTerminationTask = async () => {
   visible.value = false;
   emits('submitCallback');
   proxy?.$modal.msgSuccess('操作成功');
-};
+}
 /**
  * 对外暴露子组件方法
  */

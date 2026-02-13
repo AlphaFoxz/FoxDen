@@ -150,7 +150,7 @@ watch(
   { immediate: true },
 );
 
-const handleLogin = () => {
+function handleLogin() {
   loginRef.value?.validate(async (valid: boolean, fields: any) => {
     if (valid) {
       loading.value = true;
@@ -184,12 +184,12 @@ const handleLogin = () => {
       console.log('error submit!', fields);
     }
   });
-};
+}
 
 /**
  * 获取验证码
  */
-const getCode = async () => {
+async function getCode() {
   const res = await getCodeImg();
   const { data } = res;
   captchaEnabled.value = data.captchaEnabled === undefined ? true : data.captchaEnabled;
@@ -199,9 +199,9 @@ const getCode = async () => {
     codeUrl.value = 'data:image/gif;base64,' + data.img;
     loginForm.value.uuid = data.uuid;
   }
-};
+}
 
-const getLoginData = () => {
+function getLoginData() {
   const tenantId = localStorage.getItem('tenantId');
   const username = localStorage.getItem('username');
   const password = localStorage.getItem('password');
@@ -212,7 +212,7 @@ const getLoginData = () => {
     password: password === null ? String(loginForm.value.password) : String(password),
     rememberMe: rememberMe === null ? false : Boolean(rememberMe),
   } as LoginData;
-};
+}
 
 /**
  * 获取租户列表
@@ -232,7 +232,7 @@ const initTenantList = async () => {
  * 第三方登录
  * @param type
  */
-const doSocialLogin = (type: string) => {
+function doSocialLogin(type: string) {
   authRouterUrl(type, loginForm.value.tenantId).then((res: any) => {
     if (res.code === HttpStatus.SUCCESS) {
       // 获取授权地址跳转
@@ -241,7 +241,7 @@ const doSocialLogin = (type: string) => {
       ElMessage.error(res.msg);
     }
   });
-};
+}
 
 onMounted(() => {
   getCode();

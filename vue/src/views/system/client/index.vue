@@ -269,64 +269,64 @@ const data = reactive<PageData<ClientForm, ClientQuery>>({
 const { queryParams, form, rules } = toRefs(data);
 
 /** 查询客户端管理列表 */
-const getList = async () => {
+async function getList() {
   loading.value = true;
   const res = await listClient(queryParams.value);
   clientList.value = res.rows;
   total.value = res.total;
   loading.value = false;
-};
+}
 
 /** 取消按钮 */
-const cancel = () => {
+function cancel() {
   reset();
   dialog.visible = false;
-};
+}
 
 /** 表单重置 */
-const reset = () => {
+function reset() {
   form.value = { ...initFormData };
   clientFormRef.value?.resetFields();
-};
+}
 
 /** 搜索按钮操作 */
-const handleQuery = () => {
+function handleQuery() {
   queryParams.value.pageNum = 1;
   getList();
-};
+}
 
 /** 重置按钮操作 */
-const resetQuery = () => {
+function resetQuery() {
   queryFormRef.value?.resetFields();
   handleQuery();
-};
+}
 
 /** 多选框选中数据 */
-const handleSelectionChange = (selection: ClientVO[]) => {
+function handleSelectionChange(selection: ClientVO[]) {
   ids.value = selection.map((item) => item.id);
   single.value = selection.length != 1;
   multiple.value = !selection.length;
-};
+}
 
 /** 新增按钮操作 */
-const handleAdd = () => {
+function handleAdd() {
   reset();
   dialog.visible = true;
   dialog.title = '添加客户端管理';
-};
+}
 
 /** 修改按钮操作 */
-const handleUpdate = async (row?: ClientVO) => {
+async function handleUpdate(row?: ClientVO) {
   reset();
   const _id = row?.id || ids.value[0];
   const res = await getClient(_id);
   Object.assign(form.value, res.data);
   dialog.visible = true;
   dialog.title = '修改客户端管理';
-};
+}
 
 /** 提交按钮 */
-const submitForm = () => {
+function submitForm() {
   clientFormRef.value?.validate(async (valid: boolean) => {
     if (valid) {
       buttonLoading.value = true;
@@ -340,10 +340,10 @@ const submitForm = () => {
       await getList();
     }
   });
-};
+}
 
 /** 删除按钮操作 */
-const handleDelete = async (row?: ClientVO) => {
+async function handleDelete(row?: ClientVO) {
   const _ids = row?.id || ids.value;
   await proxy?.$modal
     .confirm('是否确认删除客户端管理编号为"' + _ids + '"的数据项？')
@@ -351,10 +351,10 @@ const handleDelete = async (row?: ClientVO) => {
   await delClient(_ids);
   proxy?.$modal.msgSuccess('删除成功');
   await getList();
-};
+}
 
 /** 导出按钮操作 */
-const handleExport = () => {
+function handleExport() {
   proxy?.download(
     'system/client/export',
     {
@@ -362,10 +362,10 @@ const handleExport = () => {
     },
     `client_${new Date().getTime()}.xlsx`,
   );
-};
+}
 
 /** 状态修改  */
-const handleStatusChange = async (row: ClientVO) => {
+async function handleStatusChange(row: ClientVO) {
   const text = row.status === '0' ? '启用' : '停用';
   try {
     await proxy?.$modal.confirm('确认要"' + text + '"吗?');
@@ -374,7 +374,7 @@ const handleStatusChange = async (row: ClientVO) => {
   } catch (err) {
     row.status = row.status === '0' ? '1' : '0';
   }
-};
+}
 
 onMounted(() => {
   getList();

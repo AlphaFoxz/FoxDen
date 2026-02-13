@@ -368,40 +368,40 @@ const dialog = reactive<DialogOption>({
 /**
  * 查询角色列表
  */
-const getList = () => {
+function getList() {
   loading.value = true;
   listRole(proxy?.addDateRange(queryParams.value, dateRange.value)).then((res) => {
     roleList.value = res.rows;
     total.value = res.total;
     loading.value = false;
   });
-};
+}
 
 /**
  * 搜索按钮操作
  */
-const handleQuery = () => {
+function handleQuery() {
   queryParams.value.pageNum = 1;
   getList();
-};
+}
 
 /** 重置 */
-const resetQuery = () => {
+function resetQuery() {
   dateRange.value = ['', ''];
   queryFormRef.value?.resetFields();
   handleQuery();
-};
+}
 /**删除按钮操作 */
-const handleDelete = async (row?: RoleVO) => {
+async function handleDelete(row?: RoleVO) {
   const roleids = row?.roleId || ids.value;
   await proxy?.$modal.confirm('是否确认删除角色编号为' + roleids + '数据项目');
   await delRole(roleids);
   getList();
   proxy?.$modal.msgSuccess('删除成功');
-};
+}
 
 /** 导出按钮操作 */
-const handleExport = () => {
+function handleExport() {
   proxy?.download(
     'system/role/export',
     {
@@ -409,16 +409,16 @@ const handleExport = () => {
     },
     `role_${new Date().getTime()}.xlsx`,
   );
-};
+}
 /** 多选框选中数据 */
-const handleSelectionChange = (selection: RoleVO[]) => {
+function handleSelectionChange(selection: RoleVO[]) {
   ids.value = selection.map((item: RoleVO) => item.roleId);
   single.value = selection.length != 1;
   multiple.value = !selection.length;
-};
+}
 
 /** 角色状态修改 */
-const handleStatusChange = async (row: RoleVO) => {
+async function handleStatusChange(row: RoleVO) {
   const text = row.status === '0' ? '启用' : '停用';
   try {
     await proxy?.$modal.confirm('确认要"' + text + '""' + row.roleName + '"角色吗?');
@@ -427,20 +427,20 @@ const handleStatusChange = async (row: RoleVO) => {
   } catch {
     row.status = row.status === '0' ? '1' : '0';
   }
-};
+}
 
 /** 分配用户 */
-const handleAuthUser = (row: RoleVO) => {
+function handleAuthUser(row: RoleVO) {
   router.push('/system/role-auth/user/' + row.roleId);
-};
+}
 
 /** 查询菜单树结构 */
-const getMenuTreeselect = async () => {
+async function getMenuTreeselect() {
   const res = await menuTreeselect();
   menuOptions.value = res.data;
-};
+}
 /** 所有部门节点数据 */
-const getDeptAllCheckedKeys = (): any => {
+function getDeptAllCheckedKeys(): any {
   // 目前被选中的部门节点
   const checkedKeys = deptRef.value?.getCheckedKeys();
   // 半选中的部门节点
@@ -449,9 +449,9 @@ const getDeptAllCheckedKeys = (): any => {
     checkedKeys?.unshift(...halfCheckedKeys);
   }
   return checkedKeys;
-};
+}
 /** 重置新增的表单以及其他数据  */
-const reset = () => {
+function reset() {
   menuRef.value?.setCheckedKeys([]);
   menuExpand.value = false;
   menuNodeAll.value = false;
@@ -459,17 +459,17 @@ const reset = () => {
   deptNodeAll.value = false;
   form.value = { ...initForm };
   roleFormRef.value?.resetFields();
-};
+}
 
 /** 添加角色 */
-const handleAdd = () => {
+function handleAdd() {
   reset();
   getMenuTreeselect();
   dialog.visible = true;
   dialog.title = '添加角色';
-};
+}
 /** 修改角色 */
-const handleUpdate = async (row?: RoleVO) => {
+async function handleUpdate(row?: RoleVO) {
   reset();
   const roleId = row?.roleId || ids.value[0];
   const { data } = await getRole(roleId);
@@ -483,22 +483,22 @@ const handleUpdate = async (row?: RoleVO) => {
       menuRef.value?.setChecked(v, true, false);
     });
   });
-};
+}
 /** 根据角色ID查询菜单树结构 */
-const getRoleMenuTreeselect = (roleId: string | number) => {
+function getRoleMenuTreeselect(roleId: string | number) {
   return roleMenuTreeselect(roleId).then((res): RoleMenuTree => {
     menuOptions.value = res.data.menus;
     return res.data;
   });
-};
+}
 /** 根据角色ID查询部门树结构 */
-const getRoleDeptTreeSelect = async (roleId: string | number) => {
+async function getRoleDeptTreeSelect(roleId: string | number) {
   const res = await deptTreeSelect(roleId);
   deptOptions.value = res.data.depts;
   return res.data;
-};
+}
 /** 树权限（展开/折叠）*/
-const handleCheckedTreeExpand = (value: boolean, type: string) => {
+function handleCheckedTreeExpand(value: boolean, type: string) {
   if (type == 'menu') {
     const treeList = menuOptions.value;
     for (let i = 0; i < treeList.length; i++) {
@@ -514,25 +514,25 @@ const handleCheckedTreeExpand = (value: boolean, type: string) => {
       }
     }
   }
-};
+}
 /** 树权限（全选/全不选） */
-const handleCheckedTreeNodeAll = (value: any, type: string) => {
+function handleCheckedTreeNodeAll(value: any, type: string) {
   if (type == 'menu') {
     menuRef.value?.setCheckedNodes(value ? (menuOptions.value as any) : []);
   } else if (type == 'dept') {
     deptRef.value?.setCheckedNodes(value ? (deptOptions.value as any) : []);
   }
-};
+}
 /** 树权限（父子联动） */
-const handleCheckedTreeConnect = (value: any, type: string) => {
+function handleCheckedTreeConnect(value: any, type: string) {
   if (type == 'menu') {
     form.value.menuCheckStrictly = value;
   } else if (type == 'dept') {
     form.value.deptCheckStrictly = value;
   }
-};
+}
 /** 所有菜单节点数据 */
-const getMenuAllCheckedKeys = (): any => {
+function getMenuAllCheckedKeys(): any {
   // 目前被选中的菜单节点
   const checkedKeys = menuRef.value?.getCheckedKeys();
   // 半选中的菜单节点
@@ -541,9 +541,9 @@ const getMenuAllCheckedKeys = (): any => {
     checkedKeys?.unshift(...halfCheckedKeys);
   }
   return checkedKeys;
-};
+}
 /** 提交按钮 */
-const submitForm = () => {
+function submitForm() {
   roleFormRef.value?.validate(async (valid: boolean) => {
     if (valid) {
       form.value.menuIds = getMenuAllCheckedKeys();
@@ -553,20 +553,20 @@ const submitForm = () => {
       getList();
     }
   });
-};
+}
 /** 取消按钮 */
-const cancel = () => {
+function cancel() {
   reset();
   dialog.visible = false;
-};
+}
 /** 选择角色权限范围触发 */
-const dataScopeSelectChange = (value: string) => {
+function dataScopeSelectChange(value: string) {
   if (value !== '2') {
     deptRef.value?.setCheckedKeys([]);
   }
-};
+}
 /** 分配数据权限操作 */
-const handleDataScope = async (row: RoleVO) => {
+async function handleDataScope(row: RoleVO) {
   const response = await getRole(row.roleId);
   Object.assign(form.value, response.data);
   const res = await getRoleDeptTreeSelect(row.roleId);
@@ -575,9 +575,9 @@ const handleDataScope = async (row: RoleVO) => {
   await nextTick(() => {
     deptRef.value?.setCheckedKeys(res.checkedKeys);
   });
-};
+}
 /** 提交按钮（数据权限） */
-const submitDataScope = async () => {
+async function submitDataScope() {
   if (form.value.roleId) {
     form.value.deptIds = getDeptAllCheckedKeys();
     await dataScope(form.value);
@@ -585,13 +585,13 @@ const submitDataScope = async () => {
     openDataScope.value = false;
     getList();
   }
-};
+}
 /** 取消按钮（数据权限）*/
-const cancelDataScope = () => {
+function cancelDataScope() {
   dataScopeRef.value?.resetFields();
   form.value = { ...initForm };
   openDataScope.value = false;
-};
+}
 
 onMounted(() => {
   getList();

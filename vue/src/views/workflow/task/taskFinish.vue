@@ -160,11 +160,11 @@ const selectUserIds = ref<Array<number | string>>([]);
 //申请人选择数量
 const userSelectCount = ref(0);
 /** 搜索按钮操作 */
-const handleQuery = () => {
+function handleQuery() {
   getFinishList();
-};
+}
 /** 重置按钮操作 */
-const resetQuery = () => {
+function resetQuery() {
   queryFormRef.value?.resetFields();
   queryParams.value.pageNum = 1;
   queryParams.value.pageSize = 10;
@@ -172,23 +172,23 @@ const resetQuery = () => {
   userSelectCount.value = 0;
   selectUserIds.value = [];
   handleQuery();
-};
+}
 // 多选框选中数据
-const handleSelectionChange = (selection: any) => {
+function handleSelectionChange(selection: any) {
   ids.value = selection.map((item: any) => item.id);
   single.value = selection.length !== 1;
   multiple.value = !selection.length;
-};
-const getFinishList = () => {
+}
+function getFinishList() {
   loading.value = true;
   pageByTaskFinish(queryParams.value).then((resp) => {
     taskList.value = resp.rows;
     total.value = resp.total;
     loading.value = false;
   });
-};
+}
 /** 查看按钮操作 */
-const handleView = (row: FlowTaskVO) => {
+function handleView(row: FlowTaskVO) {
   const routerJumpVo = reactive<RouterJumpVo>({
     businessId: row.businessId,
     taskId: row.id,
@@ -197,13 +197,13 @@ const handleView = (row: FlowTaskVO) => {
     formPath: row.formPath,
   });
   workflowCommon.routerJump(routerJumpVo, proxy);
-};
+}
 //打开申请人选择
-const openUserSelect = () => {
+function openUserSelect() {
   userSelectRef.value.open();
-};
+}
 //确认选择申请人
-const userSelectCallBack = (data: UserVO[]) => {
+function userSelectCallBack(data: UserVO[]) {
   userSelectCount.value = 0;
   selectUserIds.value = [];
   queryParams.value.createByIds = [];
@@ -213,7 +213,7 @@ const userSelectCallBack = (data: UserVO[]) => {
     selectUserIds.value = data.map((item) => item.userId);
     queryParams.value.createByIds = selectUserIds.value;
   }
-};
+}
 onMounted(() => {
   getFinishList();
 });

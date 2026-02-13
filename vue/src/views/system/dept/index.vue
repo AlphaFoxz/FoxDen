@@ -251,7 +251,7 @@ const data = reactive<PageData<DeptForm, DeptQuery>>(initData);
 const { queryParams, form, rules } = toRefs<PageData<DeptForm, DeptQuery>>(data);
 
 /** 查询菜单列表 */
-const getList = async () => {
+async function getList() {
   loading.value = true;
   const res = await listDept(queryParams.value);
   const data = proxy?.handleTree<DeptVO>(res.data, 'deptId');
@@ -259,7 +259,7 @@ const getList = async () => {
     deptList.value = data;
   }
   loading.value = false;
-};
+}
 
 /** 查询当前部门的所有用户 */
 async function getDeptAllUser(deptId: any) {
@@ -270,38 +270,38 @@ async function getDeptAllUser(deptId: any) {
 }
 
 /** 取消按钮 */
-const cancel = () => {
+function cancel() {
   reset();
   dialog.visible = false;
-};
+}
 /** 表单重置 */
-const reset = () => {
+function reset() {
   form.value = { ...initFormData };
   deptFormRef.value?.resetFields();
-};
+}
 
 /** 搜索按钮操作 */
-const handleQuery = () => {
+function handleQuery() {
   getList();
-};
+}
 /** 重置按钮操作 */
-const resetQuery = () => {
+function resetQuery() {
   queryFormRef.value?.resetFields();
   handleQuery();
-};
+}
 
 /** 展开/折叠操作 */
-const handleToggleExpandAll = () => {
+function handleToggleExpandAll() {
   isExpandAll.value = !isExpandAll.value;
   toggleExpandAll(deptList.value, isExpandAll.value);
-};
+}
 /** 展开/折叠所有 */
-const toggleExpandAll = (data: DeptVO[], status: boolean) => {
+function toggleExpandAll(data: DeptVO[], status: boolean) {
   data.forEach((item) => {
     deptTableRef.value?.toggleRowExpansion(item, status);
     if (item.children && item.children.length > 0) toggleExpandAll(item.children, status);
   });
-};
+}
 
 /** 新增按钮操作 */
 const handleAdd = async (row?: DeptVO) => {
@@ -342,7 +342,7 @@ const handleUpdate = async (row: DeptVO) => {
   dialog.title = '修改部门';
 };
 /** 提交按钮 */
-const submitForm = () => {
+function submitForm() {
   deptFormRef.value?.validate(async (valid: boolean) => {
     if (valid) {
       form.value.deptId ? await updateDept(form.value) : await addDept(form.value);
@@ -351,7 +351,7 @@ const submitForm = () => {
       await getList();
     }
   });
-};
+}
 /** 删除按钮操作 */
 const handleDelete = async (row: DeptVO) => {
   await proxy?.$modal.confirm('是否确认删除名称为"' + row.deptName + '"的数据项?');

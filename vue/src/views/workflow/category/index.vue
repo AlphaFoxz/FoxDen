@@ -166,7 +166,7 @@ const data = reactive<PageData<CategoryForm, CategoryQuery>>({
 const { queryParams, form, rules } = toRefs(data);
 
 /** 查询流程分类列表 */
-const getList = async () => {
+async function getList() {
   loading.value = true;
   const res = await listCategory(queryParams.value);
   const data = proxy?.handleTree<CategoryVO>(res.data, 'categoryId', 'parentId');
@@ -174,10 +174,10 @@ const getList = async () => {
     categoryList.value = data;
     loading.value = false;
   }
-};
+}
 
 /** 查询流程分类下拉树结构 */
-const getTreeselect = async () => {
+async function getTreeSelect() {
   const res = await listCategory();
   categoryOptions.value = [];
   // 处理树形数据
@@ -185,35 +185,35 @@ const getTreeselect = async () => {
   if (data) {
     categoryOptions.value = data; // 将处理后的树形数据赋值
   }
-};
+}
 
 // 取消按钮
-const cancel = () => {
+function cancel() {
   reset();
   dialog.visible = false;
-};
+}
 
 // 表单重置
-const reset = () => {
+function reset() {
   form.value = { ...initFormData };
   categoryFormRef.value?.resetFields();
-};
+}
 
 /** 搜索按钮操作 */
-const handleQuery = () => {
+function handleQuery() {
   getList();
-};
+}
 
 /** 重置按钮操作 */
-const resetQuery = () => {
+function resetQuery() {
   queryFormRef.value?.resetFields();
   handleQuery();
-};
+}
 
 /** 新增按钮操作 */
-const handleAdd = (row?: CategoryVO) => {
+function handleAdd(row?: CategoryVO) {
   reset();
-  getTreeselect();
+  getTreeSelect();
   if (row?.categoryId) {
     form.value.parentId = row.categoryId;
   } else {
@@ -221,26 +221,26 @@ const handleAdd = (row?: CategoryVO) => {
   }
   dialog.visible = true;
   dialog.title = '添加流程分类';
-};
+}
 
 /** 展开/折叠操作 */
-const handleToggleExpandAll = () => {
+function handleToggleExpandAll() {
   isExpandAll.value = !isExpandAll.value;
   toggleExpandAll(categoryList.value, isExpandAll.value);
-};
+}
 
 /** 展开/折叠操作 */
-const toggleExpandAll = (data: CategoryVO[], status: boolean) => {
+function toggleExpandAll(data: CategoryVO[], status: boolean) {
   data.forEach((item) => {
     categoryTableRef.value?.toggleRowExpansion(item, status);
     if (item.children && item.children.length > 0) toggleExpandAll(item.children, status);
   });
-};
+}
 
 /** 修改按钮操作 */
-const handleUpdate = async (row: CategoryVO) => {
+async function handleUpdate(row: CategoryVO) {
   reset();
-  await getTreeselect();
+  await getTreeSelect();
   if (row != null) {
     form.value.parentId = row.parentId;
   }
@@ -248,10 +248,10 @@ const handleUpdate = async (row: CategoryVO) => {
   Object.assign(form.value, res.data);
   dialog.visible = true;
   dialog.title = '修改流程分类';
-};
+}
 
 /** 提交按钮 */
-const submitForm = () => {
+function submitForm() {
   categoryFormRef.value?.validate(async (valid: boolean) => {
     if (valid) {
       buttonLoading.value = true;
@@ -265,16 +265,16 @@ const submitForm = () => {
       getList();
     }
   });
-};
+}
 
 /** 删除按钮操作 */
-const handleDelete = async (row: CategoryVO) => {
+async function handleDelete(row: CategoryVO) {
   await proxy?.$modal.confirm('是否确认删除"' + row.categoryName + '"的分类？');
   loading.value = true;
   await delCategory(row.categoryId).finally(() => (loading.value = false));
   await getList();
   proxy?.$modal.msgSuccess('删除成功');
-};
+}
 
 onMounted(() => {
   getList();

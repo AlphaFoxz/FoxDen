@@ -23,9 +23,9 @@ defineProps({
 });
 
 const emit = defineEmits(['toggleClick']);
-const toggleClick = () => {
+function toggleClick() {
   emit('toggleClick');
-};
+}
 </script>
 
 <style scoped>

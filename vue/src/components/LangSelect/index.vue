@@ -24,11 +24,11 @@ const message: any = {
   zh_CN: '切换语言成功！',
   en_US: 'Switch Language Successful!',
 };
-const handleLanguageChange = (lang: any) => {
+function handleLanguageChange(lang: any) {
   locale.value = lang;
   appStore.changeLanguage(lang);
   ElMessage.success(message[lang] || '切换语言成功！');
-};
+}
 </script>
 
 <style lang="scss" scoped>

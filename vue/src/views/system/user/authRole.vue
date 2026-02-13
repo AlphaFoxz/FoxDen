@@ -85,26 +85,26 @@ const form = ref<Partial<UserForm>>({
 const tableRef = ref<ElTableInstance>();
 
 /** 单击选中行数据 */
-const clickRow = (row: RoleVO) => {
+function clickRow(row: RoleVO) {
   if (checkSelectable(row)) {
     row.flag = !row.flag;
     tableRef.value?.toggleRowSelection(row, row.flag);
   }
-};
+}
 /** 多选框选中数据 */
-const handleSelectionChange = (selection: RoleVO[]) => {
+function handleSelectionChange(selection: RoleVO[]) {
   roleIds.value = selection.map((item) => item.roleId);
-};
+}
 /** 保存选中的数据编号 */
-const getRowKey = (row: RoleVO): string => {
+function getRowKey(row: RoleVO): string {
   return String(row.roleId);
-};
+}
 /** 检查角色状态 */
-const checkSelectable = (row: RoleVO): boolean => {
+function checkSelectable(row: RoleVO): boolean {
   return row.status === '0';
-};
+}
 /** 关闭按钮 */
-const close = () => {
+function close() {
   const obj: RouteLocationNormalized = {
     fullPath: '',
     hash: '',
@@ -117,17 +117,17 @@ const close = () => {
     path: '/system/user',
   };
   proxy?.$tab.closeOpenPage(obj);
-};
+}
 /** 提交按钮 */
-const submitForm = async () => {
+async function submitForm() {
   const userId = form.value.userId;
   const rIds = roleIds.value.join(',');
   await updateAuthRole({ userId: userId as string, roleIds: rIds });
   proxy?.$modal.msgSuccess('授权成功');
   close();
-};
+}
 
-const getList = async () => {
+async function getList() {
   const userId = route.params && route.params.userId;
   if (userId) {
     loading.value = true;
@@ -144,7 +144,7 @@ const getList = async () => {
     });
     loading.value = false;
   }
-};
+}
 onMounted(() => {
   getList();
 });

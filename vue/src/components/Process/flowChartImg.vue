@@ -46,16 +46,16 @@ const handleMouseWheel = (event: WheelEvent) => {
   }
 };
 
-const handleMouseDown = (event: MouseEvent) => {
+function handleMouseDown(event: MouseEvent) {
   if (scale.value > 1) {
     event.preventDefault(); // 阻止默认行为，防止拖拽
     isDragging = true;
     startX = event.clientX;
     startY = event.clientY;
   }
-};
+}
 
-const handleMouseMove = (event: MouseEvent) => {
+function handleMouseMove(event: MouseEvent) {
   if (!isDragging || !imageWrapperRef.value) return;
 
   const deltaX = event.clientX - startX;
@@ -81,15 +81,15 @@ const handleMouseMove = (event: MouseEvent) => {
   }
 
   applyTransform();
-};
+}
 
-const handleMouseUp = () => {
+function handleMouseUp() {
   isDragging = false;
-};
+}
 
-const handleMouseLeave = () => {
+function handleMouseLeave() {
   isDragging = false;
-};
+}
 
 const resetTransform = () => {
   scale.value = 1;

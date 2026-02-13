@@ -329,16 +329,16 @@ const getTenantPackage = async () => {
 };
 
 /** 查询租户列表 */
-const getList = async () => {
+async function getList() {
   loading.value = true;
   const res = await listTenant(queryParams.value);
   tenantList.value = res.rows;
   total.value = res.total;
   loading.value = false;
-};
+}
 
 // 租户套餐状态修改
-const handleStatusChange = async (row: TenantVO) => {
+async function handleStatusChange(row: TenantVO) {
   const text = row.status === '0' ? '启用' : '停用';
   try {
     await proxy?.$modal.confirm('确认要"' + text + '""' + row.companyName + '"租户吗？');
@@ -347,49 +347,49 @@ const handleStatusChange = async (row: TenantVO) => {
   } catch {
     row.status = row.status === '0' ? '1' : '0';
   }
-};
+}
 
 // 取消按钮
-const cancel = () => {
+function cancel() {
   reset();
   dialog.visible = false;
-};
+}
 
 // 表单重置
-const reset = () => {
+function reset() {
   form.value = { ...initFormData };
   tenantFormRef.value?.resetFields();
-};
+}
 
 /** 搜索按钮操作 */
-const handleQuery = () => {
+function handleQuery() {
   queryParams.value.pageNum = 1;
   getList();
-};
+}
 
 /** 重置按钮操作 */
-const resetQuery = () => {
+function resetQuery() {
   queryFormRef.value?.resetFields();
   handleQuery();
-};
+}
 
 // 多选框选中数据
-const handleSelectionChange = (selection: TenantVO[]) => {
+function handleSelectionChange(selection: TenantVO[]) {
   ids.value = selection.map((item) => item.id);
   single.value = selection.length != 1;
   multiple.value = !selection.length;
-};
+}
 
 /** 新增按钮操作 */
-const handleAdd = () => {
+function handleAdd() {
   reset();
   getTenantPackage();
   dialog.visible = true;
   dialog.title = '添加租户';
-};
+}
 
 /** 修改按钮操作 */
-const handleUpdate = async (row?: TenantVO) => {
+async function handleUpdate(row?: TenantVO) {
   reset();
   await getTenantPackage();
   const _id = row?.id || ids.value[0];
@@ -397,10 +397,10 @@ const handleUpdate = async (row?: TenantVO) => {
   Object.assign(form.value, res.data);
   dialog.visible = true;
   dialog.title = '修改租户';
-};
+}
 
 /** 提交按钮 */
-const submitForm = () => {
+function submitForm() {
   tenantFormRef.value?.validate(async (valid: boolean) => {
     if (valid) {
       buttonLoading.value = true;
@@ -414,17 +414,17 @@ const submitForm = () => {
       await getList();
     }
   });
-};
+}
 
 /** 删除按钮操作 */
-const handleDelete = async (row?: TenantVO) => {
+async function handleDelete(row?: TenantVO) {
   const _ids = row?.id || ids.value;
   await proxy?.$modal.confirm('是否确认删除租户编号为"' + _ids + '"的数据项？');
   loading.value = true;
   await delTenant(_ids).finally(() => (loading.value = false));
   await getList();
   proxy?.$modal.msgSuccess('删除成功');
-};
+}
 
 /** 同步租户套餐按钮操作 */
 const handleSyncTenantPackage = async (row: TenantVO) => {
@@ -442,7 +442,7 @@ const handleSyncTenantPackage = async (row: TenantVO) => {
 };
 
 /** 导出按钮操作 */
-const handleExport = () => {
+function handleExport() {
   proxy?.download(
     'system/tenant/export',
     {
@@ -450,7 +450,7 @@ const handleExport = () => {
     },
     `tenant_${new Date().getTime()}.xlsx`,
   );
-};
+}
 
 /**同步租户字典*/
 const handleSyncTenantDict = async () => {

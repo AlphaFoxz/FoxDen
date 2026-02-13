@@ -117,7 +117,7 @@ watch(
 );
 
 // 图片上传成功返回图片地址
-const handleUploadSuccess = (res: any) => {
+function handleUploadSuccess(res: any) {
   // 如果上传成功
   if (res.code === 200) {
     // 获取富文本实例
@@ -133,7 +133,7 @@ const handleUploadSuccess = (res: any) => {
     proxy?.$modal.msgError('图片插入失败');
     proxy?.$modal.closeLoading();
   }
-};
+}
 
 // 图片上传前拦截
 const handleBeforeUpload = (file: any) => {
@@ -157,9 +157,9 @@ const handleBeforeUpload = (file: any) => {
 };
 
 // 图片失败拦截
-const handleUploadError = (err: any) => {
+function handleUploadError(err: any) {
   proxy?.$modal.msgError('上传文件失败');
-};
+}
 </script>
 
 <style>

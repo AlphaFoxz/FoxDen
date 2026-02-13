@@ -204,15 +204,15 @@ const queryParams = ref<TaskQuery>({
 const tab = ref('waiting');
 
 /** 搜索按钮操作 */
-const handleQuery = () => {
+function handleQuery() {
   if ('waiting' === tab.value) {
     getWaitingList();
   } else {
     getFinishList();
   }
-};
+}
 /** 重置按钮操作 */
-const resetQuery = () => {
+function resetQuery() {
   queryFormRef.value?.resetFields();
   queryParams.value.pageNum = 1;
   queryParams.value.pageSize = 10;
@@ -220,13 +220,13 @@ const resetQuery = () => {
   userSelectCount.value = 0;
   selectUserIds.value = [];
   handleQuery();
-};
+}
 // 多选框选中数据
-const handleSelectionChange = (selection: any) => {
+function handleSelectionChange(selection: any) {
   ids.value = selection.map((item: any) => item.id);
   single.value = selection.length !== 1;
   multiple.value = !selection.length;
-};
+}
 const changeTab = async (data: TabsPaneContext) => {
   taskList.value = [];
   queryParams.value.pageNum = 1;
@@ -237,42 +237,42 @@ const changeTab = async (data: TabsPaneContext) => {
   }
 };
 //分页
-const getWaitingList = () => {
+function getWaitingList() {
   loading.value = true;
   pageByAllTaskWait(queryParams.value).then((resp) => {
     taskList.value = resp.rows;
     total.value = resp.total;
     loading.value = false;
   });
-};
-const getFinishList = () => {
+}
+function getFinishList() {
   loading.value = true;
   pageByAllTaskFinish(queryParams.value).then((resp) => {
     taskList.value = resp.rows;
     total.value = resp.total;
     loading.value = false;
   });
-};
+}
 // 打开催办
-const handleUrgeTaskOpen = () => {
+function handleUrgeTaskOpen() {
   messageTypeRef.value.open();
-};
+}
 //打开修改选人
-const handleUserOpen = () => {
+function handleUserOpen() {
   userSelectRef.value.open();
-};
+}
 
 //打开修改选人
-const handleUserTask = async (data) => {
+async function handleUserTask(data) {
   await proxy?.$modal.confirm('是否确认提交？');
   data.taskIdList = ids.value;
   await urgeTask(data);
   messageTypeRef.value.close();
   proxy?.$modal.msgSuccess('操作成功');
   handleQuery();
-};
+}
 //修改办理人
-const submitCallback = async (data) => {
+async function submitCallback(data) {
   if (data && data.length > 0) {
     await proxy?.$modal.confirm('是否确认提交？');
     loading.value = true;
@@ -282,9 +282,9 @@ const submitCallback = async (data) => {
   } else {
     proxy?.$modal.msgWarning('请选择用户！');
   }
-};
+}
 /** 查看按钮操作 */
-const handleView = (row) => {
+function handleView(row) {
   const routerJumpVo = reactive<RouterJumpVo>({
     businessId: row.businessId,
     taskId: row.id,
@@ -293,16 +293,16 @@ const handleView = (row) => {
     formPath: row.formPath,
   });
   workflowCommon.routerJump(routerJumpVo, proxy);
-};
-const handleMeddle = (row) => {
+}
+function handleMeddle(row) {
   processMeddleRef.value.open(row.id);
-};
+}
 //打开申请人选择
-const openUserSelect = () => {
+function openUserSelect() {
   applyUserSelectRef.value.open();
-};
+}
 //确认选择申请人
-const userSelectCallBack = (data: UserVO[]) => {
+function userSelectCallBack(data: UserVO[]) {
   userSelectCount.value = 0;
   selectUserIds.value = [];
   queryParams.value.createByIds = [];
@@ -312,7 +312,7 @@ const userSelectCallBack = (data: UserVO[]) => {
     selectUserIds.value = data.map((item) => item.userId);
     queryParams.value.createByIds = selectUserIds.value;
   }
-};
+}
 onMounted(() => {
   getWaitingList();
 });

@@ -111,7 +111,7 @@ const setVisibleNumber = () => {
   visibleNumber.value = parseInt(String(width / 85));
 };
 
-const handleSelect = (key: string) => {
+function handleSelect(key: string) {
   currentIndex.value = key;
   const route = routers.value.find((item) => item.path === key);
   if (isHttp(key)) {
@@ -132,9 +132,9 @@ const handleSelect = (key: string) => {
     activeRoutes(key);
     appStore.toggleSideBarHide(false);
   }
-};
+}
 
-const activeRoutes = (key: string) => {
+function activeRoutes(key: string) {
   const routes: RouteRecordRaw[] = [];
   if (childrenMenus.value && childrenMenus.value.length > 0) {
     childrenMenus.value.map((item) => {
@@ -149,7 +149,7 @@ const activeRoutes = (key: string) => {
     appStore.toggleSideBarHide(true);
   }
   return routes;
-};
+}
 
 onMounted(() => {
   window.addEventListener('resize', setVisibleNumber);

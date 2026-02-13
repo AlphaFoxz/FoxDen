@@ -554,10 +554,10 @@ const data = reactive<PageData<UserForm, UserQuery>>(initData);
 const { queryParams, form, rules } = toRefs<PageData<UserForm, UserQuery>>(data);
 
 /** 通过条件过滤节点  */
-const filterNode = (value: string, data: any) => {
+function filterNode(value: string, data: any) {
   if (!value) return true;
   return data.label.indexOf(value) !== -1;
-};
+}
 /** 根据名称筛选部门树 */
 watchEffect(
   () => {
@@ -569,23 +569,23 @@ watchEffect(
 );
 
 /** 查询用户列表 */
-const getList = async () => {
+async function getList() {
   loading.value = true;
   const res = await api.listUser(proxy?.addDateRange(queryParams.value, dateRange.value));
   loading.value = false;
   userList.value = res.rows;
   total.value = res.total;
-};
+}
 
 /** 查询部门下拉树结构 */
-const getDeptTree = async () => {
+async function getDeptTree() {
   const res = await api.deptTreeSelect();
   deptOptions.value = res.data;
   enabledDeptOptions.value = filterDisabledDept(res.data);
-};
+}
 
 /** 过滤禁用的部门 */
-const filterDisabledDept = (deptList: DeptTreeVO[]) => {
+function filterDisabledDept(deptList: DeptTreeVO[]) {
   return deptList.filter((dept) => {
     if (dept.disabled) {
       return false;
@@ -595,31 +595,31 @@ const filterDisabledDept = (deptList: DeptTreeVO[]) => {
     }
     return true;
   });
-};
+}
 
 /** 节点单击事件 */
-const handleNodeClick = (data: DeptVO) => {
+function handleNodeClick(data: DeptVO) {
   queryParams.value.deptId = data.id;
   handleQuery();
-};
+}
 
 /** 搜索按钮操作 */
-const handleQuery = () => {
+function handleQuery() {
   queryParams.value.pageNum = 1;
   getList();
-};
+}
 /** 重置按钮操作 */
-const resetQuery = () => {
+function resetQuery() {
   dateRange.value = ['', ''];
   queryFormRef.value?.resetFields();
   queryParams.value.pageNum = 1;
   queryParams.value.deptId = undefined;
   deptTreeRef.value?.setCurrentKey(undefined);
   handleQuery();
-};
+}
 
 /** 删除按钮操作 */
-const handleDelete = async (row?: UserVO) => {
+async function handleDelete(row?: UserVO) {
   const userIds = row?.userId || ids.value;
   const [err] = await to(proxy?.$modal.confirm('是否确认删除用户编号为"' + userIds + '"的数据项？') as any);
   if (!err) {
@@ -627,10 +627,10 @@ const handleDelete = async (row?: UserVO) => {
     await getList();
     proxy?.$modal.msgSuccess('删除成功');
   }
-};
+}
 
 /** 用户状态修改  */
-const handleStatusChange = async (row: UserVO) => {
+async function handleStatusChange(row: UserVO) {
   const text = row.status === '0' ? '启用' : '停用';
   try {
     await proxy?.$modal.confirm('确认要"' + text + '""' + row.userName + '"用户吗?');
@@ -639,15 +639,15 @@ const handleStatusChange = async (row: UserVO) => {
   } catch (err) {
     row.status = row.status === '0' ? '1' : '0';
   }
-};
+}
 /** 跳转角色分配 */
-const handleAuthRole = (row: UserVO) => {
+function handleAuthRole(row: UserVO) {
   const userId = row.userId;
   router.push('/system/user-auth/role/' + userId);
-};
+}
 
 /** 重置密码按钮操作 */
-const handleResetPwd = async (row: UserVO) => {
+async function handleResetPwd(row: UserVO) {
   const [err, res] = await to(
     ElMessageBox.prompt('请输入"' + row.userName + '"的新密码', '提示', {
       confirmButtonText: '确定',
@@ -666,22 +666,22 @@ const handleResetPwd = async (row: UserVO) => {
     await api.resetUserPwd(row.userId, res.value);
     proxy?.$modal.msgSuccess('修改成功，新密码是：' + res.value);
   }
-};
+}
 
 /** 选择条数  */
-const handleSelectionChange = (selection: UserVO[]) => {
+function handleSelectionChange(selection: UserVO[]) {
   ids.value = selection.map((item) => item.userId);
   single.value = selection.length != 1;
   multiple.value = !selection.length;
-};
+}
 
 /** 导入按钮操作 */
-const handleImport = () => {
+function handleImport() {
   upload.title = '用户导入';
   upload.open = true;
-};
+}
 /** 导出按钮操作 */
-const handleExport = () => {
+function handleExport() {
   proxy?.download(
     'system/user/export',
     {
@@ -689,18 +689,18 @@ const handleExport = () => {
     },
     `user_${new Date().getTime()}.xlsx`,
   );
-};
+}
 /** 下载模板操作 */
-const importTemplate = () => {
+function importTemplate() {
   proxy?.download('system/user/importTemplate', {}, `user_template_${new Date().getTime()}.xlsx`);
-};
+}
 
 /**文件上传中处理 */
-const handleFileUploadProgress = () => {
+function handleFileUploadProgress() {
   upload.isUploading = true;
-};
+}
 /** 文件上传成功处理 */
-const handleFileSuccess = (response: any, file: UploadFile) => {
+function handleFileSuccess(response: any, file: UploadFile) {
   upload.open = false;
   upload.isUploading = false;
   uploadRef.value?.handleRemove(file);
@@ -712,7 +712,7 @@ const handleFileSuccess = (response: any, file: UploadFile) => {
     },
   );
   getList();
-};
+}
 
 /** 提交上传文件 */
 function submitFileForm() {
@@ -720,18 +720,18 @@ function submitFileForm() {
 }
 
 /** 重置操作表单 */
-const reset = () => {
+function reset() {
   form.value = { ...initFormData };
   userFormRef.value?.resetFields();
-};
+}
 /** 取消按钮 */
-const cancel = () => {
+function cancel() {
   dialog.visible = false;
   reset();
-};
+}
 
 /** 新增按钮操作 */
-const handleAdd = async () => {
+async function handleAdd() {
   reset();
   const { data } = await api.getUser();
   dialog.visible = true;
@@ -739,10 +739,10 @@ const handleAdd = async () => {
   postOptions.value = data.posts;
   roleOptions.value = data.roles;
   form.value.password = initPassword.value.toString();
-};
+}
 
 /** 修改按钮操作 */
-const handleUpdate = async (row?: UserForm) => {
+async function handleUpdate(row?: UserForm) {
   reset();
   const userId = row?.userId || ids.value[0];
   const { data } = await api.getUser(userId);
@@ -756,10 +756,10 @@ const handleUpdate = async (row?: UserForm) => {
   form.value.postIds = data.postIds;
   form.value.roleIds = data.roleIds;
   form.value.password = '';
-};
+}
 
 /** 提交按钮 */
-const submitForm = () => {
+function submitForm() {
   userFormRef.value?.validate(async (valid: boolean) => {
     if (valid) {
       if (form.value.userId) {
@@ -778,26 +778,26 @@ const submitForm = () => {
       await getList();
     }
   });
-};
+}
 
 /**
  * 关闭用户弹窗
  */
-const closeDialog = () => {
+function closeDialog() {
   dialog.visible = false;
   resetForm();
-};
+}
 
 /**
  * 重置表单
  */
-const resetForm = () => {
+function resetForm() {
   userFormRef.value?.resetFields();
   userFormRef.value?.clearValidate();
 
   form.value.id = undefined;
   form.value.status = '1';
-};
+}
 onMounted(() => {
   getDeptTree(); // 初始化部门数据
   getList(); // 初始化列表数据

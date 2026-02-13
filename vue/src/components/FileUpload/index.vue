@@ -117,7 +117,7 @@ watch(
 );
 
 // 上传前校检格式和大小
-const handleBeforeUpload = (file: any) => {
+function handleBeforeUpload(file: any) {
   // 校检文件类型
   if (props.fileType.length) {
     const fileName = file.name.split('.');
@@ -144,20 +144,20 @@ const handleBeforeUpload = (file: any) => {
   proxy?.$modal.loading('正在上传文件，请稍候...');
   number.value++;
   return true;
-};
+}
 
 // 文件个数超出
-const handleExceed = () => {
+function handleExceed() {
   proxy?.$modal.msgError(`上传文件数量不能超过 ${props.limit} 个!`);
-};
+}
 
 // 上传失败
-const handleUploadError = () => {
+function handleUploadError() {
   proxy?.$modal.msgError('上传文件失败');
-};
+}
 
 // 上传成功回调
-const handleUploadSuccess = (res: any, file: UploadFile) => {
+function handleUploadSuccess(res: any, file: UploadFile) {
   if (res.code === 200) {
     uploadList.value.push({
       name: res.data.fileName,
@@ -172,18 +172,18 @@ const handleUploadSuccess = (res: any, file: UploadFile) => {
     fileUploadRef.value?.handleRemove(file);
     uploadedSuccessfully();
   }
-};
+}
 
 // 删除文件
-const handleDelete = (index: number) => {
+function handleDelete(index: number) {
   const ossId = fileList.value[index].ossId;
   delOss(ossId);
   fileList.value.splice(index, 1);
   emit('update:modelValue', listToString(fileList.value));
-};
+}
 
 // 上传结束处理
-const uploadedSuccessfully = () => {
+function uploadedSuccessfully() {
   if (number.value > 0 && uploadList.value.length === number.value) {
     fileList.value = fileList.value.filter((f) => f.url !== undefined).concat(uploadList.value);
     uploadList.value = [];
@@ -191,20 +191,20 @@ const uploadedSuccessfully = () => {
     emit('update:modelValue', listToString(fileList.value));
     proxy?.$modal.closeLoading();
   }
-};
+}
 
 // 获取文件名称
-const getFileName = (name: string) => {
+function getFileName(name: string) {
   // 如果是url那么取最后的名字 如果不是直接返回
   if (name.lastIndexOf('/') > -1) {
     return name.slice(name.lastIndexOf('/') + 1);
   } else {
     return name;
   }
-};
+}
 
 // 对象转成指定字符串分隔
-const listToString = (list: any[], separator?: string) => {
+function listToString(list: any[], separator?: string) {
   let strs = '';
   separator = separator || ',';
   list.forEach((item) => {
@@ -213,7 +213,7 @@ const listToString = (list: any[], separator?: string) => {
     }
   });
   return strs != '' ? strs.substring(0, strs.length - 1) : '';
-};
+}
 </script>
 
 <style lang="scss" scoped>

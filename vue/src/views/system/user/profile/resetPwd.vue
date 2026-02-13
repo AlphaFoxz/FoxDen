@@ -28,13 +28,13 @@ const user = ref<ResetPwdForm>({
   confirmPassword: '',
 });
 
-const equalToPassword = (rule: any, value: string, callback: any) => {
+function equalToPassword(rule: any, value: string, callback: any) {
   if (user.value.newPassword !== value) {
     callback(new Error('两次输入的密码不一致'));
   } else {
     callback();
   }
-};
+}
 const rules = ref({
   oldPassword: [{ required: true, message: '旧密码不能为空', trigger: 'blur' }],
   newPassword: [
@@ -58,16 +58,16 @@ const rules = ref({
 });
 
 /** 提交按钮 */
-const submit = () => {
+function submit() {
   pwdRef.value?.validate(async (valid: boolean) => {
     if (valid) {
       await updateUserPwd(user.value.oldPassword, user.value.newPassword);
       proxy?.$modal.msgSuccess('修改成功');
     }
   });
-};
+}
 /** 关闭按钮 */
-const close = () => {
+function close() {
   proxy?.$tab.closePage();
-};
+}
 </script>

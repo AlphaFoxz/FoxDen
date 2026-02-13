@@ -76,13 +76,13 @@ onMounted(() => {
   initSSE(import.meta.env.VITE_APP_BASE_API + '/resource/sse');
 });
 
-const handleClickOutside = () => {
+function handleClickOutside() {
   useAppStore().closeSideBar({ withoutAnimation: false });
-};
+}
 
-const setLayout = () => {
+function setLayout() {
   settingRef.value?.openSetting();
-};
+}
 </script>
 
 <style lang="scss" scoped>

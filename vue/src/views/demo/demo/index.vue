@@ -185,64 +185,64 @@ const data = reactive<PageData<DemoForm, DemoQuery>>({
 const { queryParams, form, rules } = toRefs(data);
 
 /** 查询测试单列表 */
-const getList = async () => {
+async function getList() {
   loading.value = true;
   const res = await listDemo(queryParams.value);
   demoList.value = res.rows;
   total.value = res.total;
   loading.value = false;
-};
+}
 
 /** 取消按钮 */
-const cancel = () => {
+function cancel() {
   reset();
   dialog.visible = false;
-};
+}
 
 /** 表单重置 */
-const reset = () => {
+function reset() {
   form.value = { ...initFormData };
   demoFormRef.value?.resetFields();
-};
+}
 
 /** 搜索按钮操作 */
-const handleQuery = () => {
+function handleQuery() {
   queryParams.value.pageNum = 1;
   getList();
-};
+}
 
 /** 重置按钮操作 */
-const resetQuery = () => {
+function resetQuery() {
   queryFormRef.value?.resetFields();
   handleQuery();
-};
+}
 
 /** 多选框选中数据 */
-const handleSelectionChange = (selection: DemoVO[]) => {
+function handleSelectionChange(selection: DemoVO[]) {
   ids.value = selection.map((item) => item.id);
   single.value = selection.length != 1;
   multiple.value = !selection.length;
 };
 
 /** 新增按钮操作 */
-const handleAdd = () => {
+function handleAdd() {
   reset();
   dialog.visible = true;
   dialog.title = '添加测试单';
-};
+}
 
 /** 修改按钮操作 */
-const handleUpdate = async (row?: DemoVO) => {
+async function handleUpdate(row?: DemoVO) {
   reset();
   const _id = row?.id || ids.value[0];
   const res = await getDemo(_id);
   Object.assign(form.value, res.data);
   dialog.visible = true;
   dialog.title = '修改测试单';
-};
+}
 
 /** 提交按钮 */
-const submitForm = () => {
+function submitForm() {
   demoFormRef.value?.validate(async (valid: boolean) => {
     if (valid) {
       buttonLoading.value = true;
@@ -256,10 +256,10 @@ const submitForm = () => {
       await getList();
     }
   });
-};
+}
 
 /** 删除按钮操作 */
-const handleDelete = async (row?: DemoVO) => {
+async function handleDelete(row?: DemoVO) {
   const _ids = row?.id || ids.value;
   await proxy?.$modal
     .confirm('是否确认删除测试单编号为"' + _ids + '"的数据项？')
@@ -267,10 +267,10 @@ const handleDelete = async (row?: DemoVO) => {
   await delDemo(_ids);
   proxy?.$modal.msgSuccess('删除成功');
   await getList();
-};
+}
 
 /** 导出按钮操作 */
-const handleExport = () => {
+function handleExport() {
   proxy?.download(
     'demo/demo/export',
     {
@@ -278,7 +278,7 @@ const handleExport = () => {
     },
     `demo_${new Date().getTime()}.xlsx`,
   );
-};
+}
 
 onMounted(() => {
   getList();

@@ -146,25 +146,27 @@ watch(isDark, () => {
     settingsStore.sideTheme = sideTheme.value;
   }
 });
-const toggleDark = () => useToggle(isDark);
+function toggleDark() {
+  useToggle(isDark);
+}
 
-const topNavChange = (val: any) => {
+function topNavChange(val: any) {
   if (!val) {
     appStore.toggleSideBarHide(false);
     permissionStore.setSidebarRouters(permissionStore.defaultRoutes as any);
   }
-};
+}
 
-const dynamicTitleChange = () => {
+function dynamicTitleChange() {
   // 动态设置网页标题
   useDynamicTitle();
-};
+}
 
-const themeChange = (val: string) => {
+function themeChange(val: string) {
   settingsStore.theme = val;
   handleThemeStyle(val);
-};
-const handleTheme = (val: string) => {
+}
+function handleTheme(val: string) {
   sideTheme.value = val;
   if (isDark.value && val === SideThemeEnum.LIGHT) {
     // 暗黑模式颜色不变
@@ -172,8 +174,8 @@ const handleTheme = (val: string) => {
     return;
   }
   settingsStore.sideTheme = val;
-};
-const saveSetting = () => {
+}
+function saveSetting() {
   proxy?.$modal.loading('正在保存到本地，请稍候...');
   const settings = useStorage<LayoutSetting>('layout-setting', defaultSettings);
   settings.value.topNav = storeSettings.value.topNav;
@@ -187,15 +189,15 @@ const saveSetting = () => {
   setTimeout(() => {
     proxy?.$modal.closeLoading();
   }, 1000);
-};
-const resetSetting = () => {
+}
+function resetSetting() {
   proxy?.$modal.loading('正在清除设置缓存并刷新，请稍候...');
   useStorage<any>('layout-setting', null).value = null;
   setTimeout('window.location.reload()', 1000);
-};
-const openSetting = () => {
+}
+function openSetting() {
   showSettings.value = true;
-};
+}
 
 defineExpose({
   openSetting,

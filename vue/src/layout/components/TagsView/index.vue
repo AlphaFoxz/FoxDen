@@ -68,34 +68,34 @@ watch(visible, (value) => {
   }
 });
 
-const isActive = (r: RouteLocationNormalized): boolean => {
+function isActive(r: RouteLocationNormalized): boolean {
   return r.path === route.path;
-};
-const activeStyle = (tag: RouteLocationNormalized) => {
+}
+function activeStyle(tag: RouteLocationNormalized) {
   if (!isActive(tag)) return {};
   return {
     'background-color': 'var(--tags-view-active-bg)',
     'border-color': 'var(--tags-view-active-border-color)',
   };
-};
-const isAffix = (tag: RouteLocationNormalized) => {
+}
+function isAffix(tag: RouteLocationNormalized) {
   return tag?.meta && tag?.meta?.affix;
-};
-const isFirstView = () => {
+}
+function isFirstView() {
   try {
     return selectedTag.value.fullPath === '/index' || selectedTag.value.fullPath === visitedViews.value[1].fullPath;
   } catch (err) {
     return false;
   }
-};
-const isLastView = () => {
+}
+function isLastView() {
   try {
     return selectedTag.value.fullPath === visitedViews.value[visitedViews.value.length - 1].fullPath;
   } catch (err) {
     return false;
   }
-};
-const filterAffixTags = (routes: RouteRecordRaw[], basePath = '') => {
+}
+function filterAffixTags(routes: RouteRecordRaw[], basePath = '') {
   let tags: RouteLocationNormalized[] = [];
 
   routes.forEach((route) => {
@@ -121,8 +121,8 @@ const filterAffixTags = (routes: RouteRecordRaw[], basePath = '') => {
     }
   });
   return tags;
-};
-const initTags = () => {
+}
+function initTags() {
   const res = filterAffixTags(routes.value);
   affixTags.value = res;
   for (const tag of res) {
@@ -131,8 +131,8 @@ const initTags = () => {
       useTagsViewStore().addVisitedView(tag);
     }
   }
-};
-const addTags = () => {
+}
+function addTags() {
   const { name } = route;
   if (route.query.title) {
     route.meta.title = route.query.title as string;
@@ -140,8 +140,8 @@ const addTags = () => {
   if (name) {
     useTagsViewStore().addView(route as any);
   }
-};
-const moveToCurrentTag = () => {
+}
+function moveToCurrentTag() {
   nextTick(() => {
     for (const r of visitedViews.value) {
       if (r.path === route.path) {
@@ -153,49 +153,49 @@ const moveToCurrentTag = () => {
       }
     }
   });
-};
-const refreshSelectedTag = (view: RouteLocationNormalized) => {
+}
+function refreshSelectedTag(view: RouteLocationNormalized) {
   proxy?.$tab.refreshPage(view);
   if (route.meta.link) {
     useTagsViewStore().delIframeView(route);
   }
-};
-const closeSelectedTag = (view: RouteLocationNormalized) => {
+}
+function closeSelectedTag(view: RouteLocationNormalized) {
   proxy?.$tab.closePage(view).then(({ visitedViews }: any) => {
     if (isActive(view)) {
       toLastView(visitedViews, view);
     }
   });
-};
-const closeRightTags = () => {
+}
+function closeRightTags() {
   proxy?.$tab.closeRightPage(selectedTag.value).then((visitedViews: RouteLocationNormalized[]) => {
     if (!visitedViews.find((i: RouteLocationNormalized) => i.fullPath === route.fullPath)) {
       toLastView(visitedViews);
     }
   });
-};
-const closeLeftTags = () => {
+}
+function closeLeftTags() {
   proxy?.$tab.closeLeftPage(selectedTag.value).then((visitedViews: RouteLocationNormalized[]) => {
     if (!visitedViews.find((i: RouteLocationNormalized) => i.fullPath === route.fullPath)) {
       toLastView(visitedViews);
     }
   });
-};
-const closeOthersTags = () => {
+}
+function closeOthersTags() {
   router.push(selectedTag.value).catch(() => {});
   proxy?.$tab.closeOtherPage(selectedTag.value).then(() => {
     moveToCurrentTag();
   });
-};
-const closeAllTags = (view: RouteLocationNormalized) => {
+}
+function closeAllTags(view: RouteLocationNormalized) {
   proxy?.$tab.closeAllPage().then(({ visitedViews }) => {
     if (affixTags.value.some((tag) => tag.path === route.path)) {
       return;
     }
     toLastView(visitedViews, view);
   });
-};
-const toLastView = (visitedViews: RouteLocationNormalized[], view?: RouteLocationNormalized) => {
+}
+function toLastView(visitedViews: RouteLocationNormalized[], view?: RouteLocationNormalized) {
   const latestView = visitedViews.slice(-1)[0];
   if (latestView) {
     router.push(latestView.fullPath as string);
@@ -209,8 +209,8 @@ const toLastView = (visitedViews: RouteLocationNormalized[], view?: RouteLocatio
       router.push('/');
     }
   }
-};
-const openMenu = (tag: RouteLocationNormalized, e: MouseEvent) => {
+}
+function openMenu(tag: RouteLocationNormalized, e: MouseEvent) {
   const menuMinWidth = 105;
   const offsetLeft = proxy?.$el.getBoundingClientRect().left; // container margin left
   const offsetWidth = proxy?.$el.offsetWidth; // container width
@@ -226,13 +226,13 @@ const openMenu = (tag: RouteLocationNormalized, e: MouseEvent) => {
   top.value = e.clientY;
   visible.value = true;
   selectedTag.value = tag;
-};
-const closeMenu = () => {
+}
+function closeMenu() {
   visible.value = false;
-};
-const handleScroll = () => {
+}
+function handleScroll() {
   closeMenu();
-};
+}
 
 onMounted(() => {
   initTags();

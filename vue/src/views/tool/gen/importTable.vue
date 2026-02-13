@@ -75,7 +75,7 @@ const dataNameList = ref<Array<string>>([]);
 const emit = defineEmits(['ok']);
 
 /** 查询参数列表 */
-const show = (dataName: string) => {
+function show(dataName: string) {
   getDataNames().then((res) => {
     if (res.code == 200) {
       dataNameList.value = res.data;
@@ -88,34 +88,34 @@ const show = (dataName: string) => {
       visible.value = true;
     }
   });
-};
+}
 /** 单击选择行 */
-const clickRow = (row: DbTableVO) => {
+function clickRow(row: DbTableVO) {
   // ele bug
   tableRef.value?.toggleRowSelection(row, false);
-};
+}
 /** 多选框选中数据 */
-const handleSelectionChange = (selection: DbTableVO[]) => {
+function handleSelectionChange(selection: DbTableVO[]) {
   tables.value = selection.map((item) => item.tableName);
-};
+}
 /** 查询表数据 */
-const getList = async () => {
+async function getList() {
   const res = await listDbTable(queryParams);
   dbTableList.value = res.rows;
   total.value = res.total;
-};
+}
 /** 搜索按钮操作 */
-const handleQuery = () => {
+function handleQuery() {
   queryParams.pageNum = 1;
   getList();
-};
+}
 /** 重置按钮操作 */
-const resetQuery = () => {
+function resetQuery() {
   queryFormRef.value?.resetFields();
   handleQuery();
-};
+}
 /** 导入按钮操作 */
-const handleImportTable = async () => {
+async function handleImportTable() {
   const tableNames = tables.value.join(',');
   if (tableNames == '') {
     proxy?.$modal.msgError('请选择要导入的表');
@@ -127,7 +127,7 @@ const handleImportTable = async () => {
     visible.value = false;
     emit('ok');
   }
-};
+}
 
 defineExpose({
   show,

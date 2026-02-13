@@ -137,7 +137,7 @@ import { delLeave, listLeave } from '@/api/workflow/leave';
 import { cancelProcessApply } from '@/api/workflow/instance';
 import type { LeaveForm, LeaveQuery, LeaveVO } from '@/api/workflow/leave/types';
 
-const { proxy } = getCurrentInstance() as ComponentInternalInstance;
+const { proxy } = getCurrentInstance();
 const { wf_business_status } = toRefs<any>(proxy?.useDict('wf_business_status'));
 const leaveList = ref<LeaveVO[]>([]);
 const loading = ref(true);
@@ -181,35 +181,35 @@ const data = reactive<PageData<LeaveForm, LeaveQuery>>({
 const { queryParams } = toRefs(data);
 
 /** 查询请假列表 */
-const getList = async () => {
+async function getList() {
   loading.value = true;
   const res = await listLeave(queryParams.value);
   leaveList.value = res.rows;
   total.value = res.total;
   loading.value = false;
-};
+}
 
 /** 搜索按钮操作 */
-const handleQuery = () => {
+function handleQuery() {
   queryParams.value.pageNum = 1;
   getList();
-};
+}
 
 /** 重置按钮操作 */
-const resetQuery = () => {
+function resetQuery() {
   queryFormRef.value?.resetFields();
   handleQuery();
-};
+}
 
 /** 多选框选中数据 */
-const handleSelectionChange = (selection: LeaveVO[]) => {
+function handleSelectionChange(selection: LeaveVO[]) {
   ids.value = selection.map((item) => item.id);
   single.value = selection.length != 1;
   multiple.value = !selection.length;
-};
+}
 
 /** 新增按钮操作 */
-const handleAdd = () => {
+function handleAdd() {
   proxy.$tab.closePage(proxy.$route);
   proxy.$router.push({
     path: `/workflow/leaveEdit/index`,
@@ -217,10 +217,10 @@ const handleAdd = () => {
       type: 'add',
     },
   });
-};
+}
 
 /** 修改按钮操作 */
-const handleUpdate = (row?: LeaveVO) => {
+function handleUpdate(row?: LeaveVO) {
   proxy.$tab.closePage(proxy.$route);
   proxy.$router.push({
     path: `/workflow/leaveEdit/index`,
@@ -229,10 +229,10 @@ const handleUpdate = (row?: LeaveVO) => {
       type: 'update',
     },
   });
-};
+}
 
 /** 查看按钮操作 */
-const handleView = (row?: LeaveVO) => {
+function handleView(row?: LeaveVO) {
   proxy.$tab.closePage(proxy.$route);
   proxy.$router.push({
     path: `/workflow/leaveEdit/index`,
@@ -241,19 +241,19 @@ const handleView = (row?: LeaveVO) => {
       type: 'view',
     },
   });
-};
+}
 
 /** 删除按钮操作 */
-const handleDelete = async (row?: LeaveVO) => {
+async function handleDelete(row?: LeaveVO) {
   const _ids = row?.id || ids.value;
   await proxy?.$modal.confirm('是否确认删除请假编号为"' + _ids + '"的数据项？').finally(() => (loading.value = false));
   await delLeave(_ids);
   proxy?.$modal.msgSuccess('删除成功');
   await getList();
-};
+}
 
 /** 导出按钮操作 */
-const handleExport = () => {
+function handleExport() {
   proxy?.download(
     'workflow/leave/export',
     {
@@ -261,7 +261,7 @@ const handleExport = () => {
     },
     `leave_${new Date().getTime()}.xlsx`,
   );
-};
+}
 
 /** 撤销按钮操作 */
 const handleCancelProcessApply = async (id: string) => {
