@@ -412,7 +412,7 @@ function getProcessInstanceFinishList() {
 }
 
 /** 删除按钮操作 */
-const handleDelete = async (row: FlowInstanceVO) => {
+async function handleDelete(row: FlowInstanceVO) {
   const instanceIdList = row.id || instanceIds.value;
   await proxy?.$modal.confirm('是否确认删除？');
   loading.value = true;
@@ -424,8 +424,8 @@ const handleDelete = async (row: FlowInstanceVO) => {
     getProcessInstanceFinishList();
   }
   proxy?.$modal.msgSuccess('删除成功');
-};
-const changeTab = async (data: string) => {
+}
+async function changeTab(data: string) {
   processInstanceList.value = [];
   queryParams.value.pageNum = 1;
   if ('running' === data.paneName) {
@@ -433,9 +433,9 @@ const changeTab = async (data: string) => {
   } else {
     getProcessInstanceFinishList();
   }
-};
+}
 /** 作废按钮操作 */
-const handleInvalid = async (row: FlowInstanceVO) => {
+async function handleInvalid(row: FlowInstanceVO) {
   await proxy?.$modal.confirm('是否确认作废？');
   loading.value = true;
   if ('running' === tab.value) {
@@ -447,10 +447,10 @@ const handleInvalid = async (row: FlowInstanceVO) => {
     getProcessInstanceRunningList();
     proxy?.$modal.msgSuccess('操作成功');
   }
-};
-const cancelPopover = async (index: any) => {
+}
+async function cancelPopover(index: any) {
   (proxy?.$refs[`popoverRef${index}`] as any).hide(); //关闭弹窗
-};
+}
 /** 查看按钮操作 */
 function handleView(row) {
   const routerJumpVo = reactive<RouterJumpVo>({
@@ -464,7 +464,7 @@ function handleView(row) {
 }
 
 //查询流程变量
-const handleInstanceVariable = async (row: FlowInstanceVO) => {
+async function handleInstanceVariable(row: FlowInstanceVO) {
   instanceId.value = row.id;
   variableLoading.value = true;
   variableVisible.value = true;
@@ -475,7 +475,7 @@ const handleInstanceVariable = async (row: FlowInstanceVO) => {
   form.value.instanceId = undefined;
   form.value.key = undefined;
   form.value.value = undefined;
-};
+}
 
 /**
  * json转为对象
@@ -522,7 +522,7 @@ const rules = reactive<Record<string, any>>({
   ],
 });
 
-const handleVariable = async (formEl: FormInstance | undefined) => {
+async function handleVariable(formEl: FormInstance | undefined) {
   await formEl.validate(async (valid, fields) => {
     if (valid) {
       form.value.instanceId = instanceId.value;
@@ -533,7 +533,7 @@ const handleVariable = async (formEl: FormInstance | undefined) => {
       variables.value = data.data.variable;
     }
   });
-};
+}
 
 onMounted(() => {
   getProcessInstanceRunningList();

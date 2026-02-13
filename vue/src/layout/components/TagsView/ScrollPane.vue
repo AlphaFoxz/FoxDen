@@ -33,7 +33,7 @@ function emitScroll() {
 const tagsViewStore = useTagsViewStore();
 const visitedViews = computed(() => tagsViewStore.visitedViews);
 
-const moveToTarget = (currentTag: RouteLocationNormalized) => {
+function moveToTarget(currentTag: RouteLocationNormalized) {
   const $container = scrollContainerRef.value?.$el;
   const $containerWidth = $container.offsetWidth;
   const $scrollWrapper = scrollWrapper.value;
@@ -79,7 +79,7 @@ const moveToTarget = (currentTag: RouteLocationNormalized) => {
       $scrollWrapper.scrollLeft = beforePrevTagOffsetLeft;
     }
   }
-};
+}
 
 defineExpose({
   moveToTarget,

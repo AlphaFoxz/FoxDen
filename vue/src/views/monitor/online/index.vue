@@ -120,14 +120,14 @@ function resetQuery() {
   handleQuery();
 }
 /** 强退按钮操作 */
-const handleForceLogout = async (row: OnlineVO) => {
+async function handleForceLogout(row: OnlineVO) {
   const [err] = await to(proxy?.$modal.confirm('是否确认强退名称为"' + row.userName + '"的用户?') as any);
   if (!err) {
     await forceLogout(row.tokenId);
     await getList();
     proxy?.$modal.msgSuccess('删除成功');
   }
-};
+}
 
 onMounted(() => {
   getList();

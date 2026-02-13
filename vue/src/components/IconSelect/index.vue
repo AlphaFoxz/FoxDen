@@ -57,13 +57,13 @@ const filterValue = ref('');
 /**
  * 筛选图标
  */
-const filterIcons = () => {
+function filterIcons() {
   if (filterValue.value) {
     iconNames.value = icons.filter((iconName) => iconName.includes(filterValue.value));
   } else {
     iconNames.value = icons;
   }
-};
+}
 /**
  * 选择图标
  * @param iconName 选择的图标名称
@@ -71,7 +71,7 @@ const filterIcons = () => {
 function selectedIcon(iconName: string) {
   emit('update:modelValue', iconName);
   visible.value = false;
-};
+}
 </script>
 
 <style lang="scss" scoped>

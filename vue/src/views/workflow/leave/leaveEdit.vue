@@ -239,7 +239,7 @@ function submitForm(status: string, mode: boolean) {
 }
 
 //提交申请
-const handleStartWorkFlow = async (data: LeaveForm) => {
+async function handleStartWorkFlow(data: LeaveForm) {
   try {
     submitFormData.value.flowCode = flowCode.value;
     submitFormData.value.businessId = data.id;
@@ -265,20 +265,20 @@ const handleStartWorkFlow = async (data: LeaveForm) => {
   } finally {
     buttonLoading.value = false;
   }
-};
+}
 //审批记录
 function handleApprovalRecord() {
   approvalRecordRef.value.init(form.value.id);
 }
 //提交回调
-const submitCallback = async () => {
+async function submitCallback() {
   await proxy.$tab.closePage(proxy.$route);
   proxy.$router.go(-1);
-};
+}
 //审批
-const approvalVerifyOpen = async () => {
+async function approvalVerifyOpen() {
   submitVerifyRef.value.openDialog(routeParams.value.taskId);
-};
+}
 
 onMounted(() => {
   nextTick(async () => {

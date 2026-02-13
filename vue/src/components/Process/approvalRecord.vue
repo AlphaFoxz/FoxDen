@@ -115,7 +115,7 @@ const tabActiveName = ref('image');
 const insId = ref(null);
 
 //初始化查询审批记录
-const init = async (businessId: string | number) => {
+async function init(businessId: string | number) {
   visible.value = true;
   loading.value = true;
   tabActiveName.value = 'image';
@@ -138,11 +138,11 @@ const init = async (businessId: string | number) => {
       loading.value = false;
     }
   });
-};
-const getIds = async (ids: string | number) => {
+}
+async function getIds(ids: string | number) {
   const res = await listByIds(ids);
   return res;
-};
+}
 
 /** 下载按钮操作 */
 function handleDownload(ossId: string) {

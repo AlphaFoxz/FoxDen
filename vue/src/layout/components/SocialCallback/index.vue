@@ -34,14 +34,14 @@ async function processResponse(res: any) {
   }, 2000);
 }
 
-const handleError = (error: any) => {
+function handleError(error: any) {
   ElMessage.error(error.message);
   setTimeout(() => {
     location.href = import.meta.env.VITE_APP_CONTEXT_PATH + 'index';
   }, 2000);
-};
+}
 
-const callbackByCode = async (data: LoginData) => {
+async function callbackByCode(data: LoginData) {
   try {
     const res = await callback(data);
     await processResponse(res);
@@ -49,9 +49,9 @@ const callbackByCode = async (data: LoginData) => {
   } catch (error) {
     handleError(error);
   }
-};
+}
 
-const loginByCode = async (data: LoginData) => {
+async function loginByCode(data: LoginData) {
   try {
     const res = await login(data);
     await processResponse(res);
@@ -59,9 +59,9 @@ const loginByCode = async (data: LoginData) => {
   } catch (error) {
     handleError(error);
   }
-};
+}
 
-const init = async () => {
+async function init() {
   // 如果域名不相等 则重定向处理
   const host = window.location.host;
   if (domain !== host) {
@@ -85,7 +85,7 @@ const init = async () => {
   } else {
     await callbackByCode(data);
   }
-};
+}
 
 onMounted(() => {
   nextTick(() => {

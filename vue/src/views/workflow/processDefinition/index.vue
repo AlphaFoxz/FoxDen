@@ -592,7 +592,7 @@ async function handleUpdate(row?: FlowDefinitionVo) {
   modelDialog.title = '修改流程';
 }
 
-const handleSubmit = async () => {
+async function handleSubmit() {
   defFormRef.value.validate(async (valid: boolean) => {
     if (valid) {
       loading.value = true;
@@ -610,9 +610,9 @@ const handleSubmit = async () => {
       handleQuery();
     }
   });
-};
+}
 //复制
-const handleCopyDef = async (row: FlowDefinitionVo) => {
+async function handleCopyDef(row: FlowDefinitionVo) {
   ElMessageBox.confirm(`是否确认复制【${row.flowCode}】版本为【${row.version}】的流程定义！`, '提示', {
     confirmButtonText: '确认',
     cancelButtonText: '取消',
@@ -629,7 +629,7 @@ const handleCopyDef = async (row: FlowDefinitionVo) => {
       })
       .finally(() => (loading.value = false));
   });
-};
+}
 
 /** 导出按钮操作 */
 function handleExportDef() {

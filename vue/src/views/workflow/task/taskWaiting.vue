@@ -179,7 +179,7 @@ function getWaitingList() {
   });
 }
 //办理
-const handleOpen = async (row: FlowTaskVO) => {
+async function handleOpen(row: FlowTaskVO) {
   const routerJumpVo = reactive<RouterJumpVo>({
     businessId: row.businessId,
     taskId: row.id,
@@ -188,7 +188,7 @@ const handleOpen = async (row: FlowTaskVO) => {
     formPath: row.formPath,
   });
   workflowCommon.routerJump(routerJumpVo, proxy);
-};
+}
 //打开申请人选择
 function openUserSelect() {
   userSelectRef.value.open();

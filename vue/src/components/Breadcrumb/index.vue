@@ -41,10 +41,10 @@ function getBreadcrumb() {
   }
   levelList.value = matched.filter((item) => item.meta && item.meta.title && item.meta.breadcrumb !== false);
 }
-const findPathNum = (str, char = '/') => {
+function findPathNum(str, char = '/') {
   if (typeof str !== 'string' || str.length === 0) return 0;
   return str.split(char).length - 1;
-};
+}
 function getMatched(pathList, routeList, matched) {
   const data = routeList.find((item) => item.path == pathList[0] || (item.name += '').toLowerCase() == pathList[0]);
   if (data) {

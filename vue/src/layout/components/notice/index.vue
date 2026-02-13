@@ -39,11 +39,11 @@ const newsList = ref([]) as any;
  * 初始化数据
  * @returns
  */
-const getTableData = async () => {
+async function getTableData() {
   state.loading = true;
   newsList.value = noticeStore.state.notices;
   state.loading = false;
-};
+}
 
 //点击消息，写入已读
 function onNewsClick(item: any) {

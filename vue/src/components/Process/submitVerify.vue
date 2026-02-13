@@ -310,7 +310,7 @@ const backForm = ref<Record<string, any>>({
 });
 
 //打开弹窗
-const openDialog = async (id?: string) => {
+async function openDialog(id?: string) {
   selectCopyUserIds.value = undefined;
   selectCopyUserList.value = [];
   form.value.fileId = undefined;
@@ -340,13 +340,13 @@ const openDialog = async (id?: string) => {
   } finally {
     loading.value = false;
   }
-};
+}
 
 onMounted(() => {});
 const emits = defineEmits(['submitCallback', 'cancelCallback']);
 
 /** 办理流程 */
-const handleCompleteTask = async () => {
+async function handleCompleteTask() {
   form.value.taskId = taskId.value;
   form.value.variables = props.taskVariables;
   let verify = false;
@@ -391,10 +391,10 @@ const handleCompleteTask = async () => {
     loading.value = false;
     buttonDisabled.value = false;
   }
-};
+}
 
 /** 驳回弹窗打开 */
-const handleBackProcessOpen = async () => {
+async function handleBackProcessOpen() {
   backForm.value = {};
   backForm.value.messageType = ['1'];
   backVisible.value = true;
@@ -405,9 +405,9 @@ const handleBackProcessOpen = async () => {
   backLoading.value = false;
   backButtonDisabled.value = false;
   backForm.value.nodeCode = taskNodeList.value[0].nodeCode;
-};
+}
 /** 驳回流程 */
-const handleBackProcess = async () => {
+async function handleBackProcess() {
   backForm.value.taskId = taskId.value;
   await proxy?.$modal.confirm('是否确认驳回到申请人？');
   loading.value = true;
@@ -422,15 +422,15 @@ const handleBackProcess = async () => {
   backButtonDisabled.value = false;
   emits('submitCallback');
   proxy?.$modal.msgSuccess('操作成功');
-};
+}
 //取消
-const cancel = async () => {
+async function cancel() {
   dialog.visible = false;
   buttonDisabled.value = false;
   nickName.value = {};
   form.value.assigneeMap = {};
   emits('cancelCallback');
-};
+}
 //打开抄送人员
 function openUserSelectCopy() {
   userSelectCopyRef.value.open();
@@ -548,7 +548,7 @@ async function handleDelegateTask(data) {
   }
 }
 //终止任务
-const handleTerminationTask = async () => {
+async function handleTerminationTask() {
   const params = {
     taskId: taskId.value,
     comment: form.value.message,
@@ -563,7 +563,7 @@ const handleTerminationTask = async () => {
   dialog.visible = false;
   emits('submitCallback');
   proxy?.$modal.msgSuccess('操作成功');
-};
+}
 async function handleTaskUser() {
   const data = await currentTaskAllUser(taskId.value);
   deleteUserList.value = data.data;
@@ -575,16 +575,16 @@ async function handleTaskUser() {
   deleteSignatureVisible.value = true;
 }
 // 选择人员
-const choosePeople = async (data) => {
+async function choosePeople(data) {
   if (!data.permissionFlag) {
     proxy?.$modal.msgError('没有可选择的人员，请联系管理员！');
   }
   popUserIds.value = data.permissionFlag;
   nodeCode.value = data.nodeCode;
   porUserRef.value.open();
-};
+}
 //确认选择
-const handlePopUser = async (userList) => {
+async function handlePopUser(userList) {
   const userIds = userList.map((item) => {
     return item.userId;
   });
@@ -593,7 +593,7 @@ const handlePopUser = async (userList) => {
   });
   form.value.assigneeMap[nodeCode.value] = userIds.join(',');
   nickName.value[nodeCode.value] = nickNames.join(',');
-};
+}
 
 /**
  * 对外暴露子组件方法

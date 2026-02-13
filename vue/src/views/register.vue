@@ -173,7 +173,7 @@ function handleRegister() {
   });
 }
 
-const getCode = async () => {
+async function getCode() {
   const res = await getCodeImg();
   const { data } = res;
   captchaEnabled.value = data.captchaEnabled === undefined ? true : data.captchaEnabled;
@@ -181,9 +181,9 @@ const getCode = async () => {
     codeUrl.value = 'data:image/gif;base64,' + data.img;
     registerForm.value.uuid = data.uuid;
   }
-};
+}
 
-const initTenantList = async () => {
+async function initTenantList() {
   const { data } = await getTenantList(false);
   tenantEnabled.value = data.tenantEnabled === undefined ? true : data.tenantEnabled;
   if (tenantEnabled.value) {
@@ -192,7 +192,7 @@ const initTenantList = async () => {
       registerForm.value.tenantId = tenantList.value[0].tenantId;
     }
   }
-};
+}
 
 onMounted(() => {
   getCode();

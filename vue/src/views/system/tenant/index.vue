@@ -323,10 +323,10 @@ const data = reactive<PageData<TenantForm, TenantQuery>>({
 const { queryParams, form, rules } = toRefs(data);
 
 /** 查询所有租户套餐 */
-const getTenantPackage = async () => {
+async function getTenantPackage() {
   const res = await selectTenantPackage();
   packageList.value = res.data;
-};
+}
 
 /** 查询租户列表 */
 async function getList() {
@@ -427,7 +427,7 @@ async function handleDelete(row?: TenantVO) {
 }
 
 /** 同步租户套餐按钮操作 */
-const handleSyncTenantPackage = async (row: TenantVO) => {
+async function handleSyncTenantPackage(row: TenantVO) {
   try {
     await proxy?.$modal.confirm('是否确认同步租户套餐租户编号为"' + row.tenantId + '"的数据项？');
     loading.value = true;
@@ -439,7 +439,7 @@ const handleSyncTenantPackage = async (row: TenantVO) => {
   } finally {
     loading.value = false;
   }
-};
+}
 
 /** 导出按钮操作 */
 function handleExport() {
@@ -453,18 +453,18 @@ function handleExport() {
 }
 
 /**同步租户字典*/
-const handleSyncTenantDict = async () => {
+async function handleSyncTenantDict() {
   await proxy?.$modal.confirm('确认要同步所有租户字典吗？');
   const res = await syncTenantDict();
   proxy?.$modal.msgSuccess(res.msg);
-};
+}
 
 /**同步租户参数配置*/
-const handleSyncTenantConfig = async () => {
+async function handleSyncTenantConfig() {
   await proxy?.$modal.confirm('确认要同步所有租户参数配置吗？');
   const res = await syncTenantConfig();
   proxy?.$modal.msgSuccess(res.msg);
-};
+}
 
 onMounted(() => {
   getList();

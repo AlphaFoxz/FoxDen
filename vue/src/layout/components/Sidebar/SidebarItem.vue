@@ -58,7 +58,7 @@ const props = defineProps({
 
 const onlyOneChild = ref<any>({});
 
-const hasOneShowingChild = (parent: RouteRecordRaw, children?: RouteRecordRaw[]) => {
+function hasOneShowingChild(parent: RouteRecordRaw, children?: RouteRecordRaw[]) {
   if (!children) {
     children = [];
   }
@@ -82,9 +82,9 @@ const hasOneShowingChild = (parent: RouteRecordRaw, children?: RouteRecordRaw[])
   }
 
   return false;
-};
+}
 
-const resolvePath = (routePath: string, routeQuery?: string): any => {
+function resolvePath(routePath: string, routeQuery?: string): any {
   if (isExternal(routePath)) {
     return routePath;
   }
@@ -96,12 +96,12 @@ const resolvePath = (routePath: string, routeQuery?: string): any => {
     return { path: getNormalPath(props.basePath + '/' + routePath), query: query };
   }
   return getNormalPath(props.basePath + '/' + routePath);
-};
+}
 
-const hasTitle = (title: string | undefined): string => {
+function hasTitle(title: string | undefined): string {
   if (!title || title.length <= 5) {
     return '';
   }
   return title;
-};
+}
 </script>

@@ -130,14 +130,14 @@ const task = ref<FlowTaskVO>({
   buttonList: [],
 });
 
-const open = (taskId: string) => {
+function open(taskId: string) {
   visible.value = true;
   getTask(taskId).then((response) => {
     loading.value = false;
     buttonDisabled.value = false;
     task.value = response.data;
   });
-};
+}
 
 //打开转办
 function openTransferTask() {

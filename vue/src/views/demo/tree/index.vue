@@ -237,7 +237,7 @@ function toggleExpandAll(data: TreeVO[], status: boolean) {
 }
 
 /** 修改按钮操作 */
-const handleUpdate = async (row: TreeVO) => {
+async function handleUpdate(row: TreeVO) {
   reset();
   await getTreeSelect();
   if (row) {
@@ -247,7 +247,7 @@ const handleUpdate = async (row: TreeVO) => {
   Object.assign(form.value, res.data);
   dialog.visible = true;
   dialog.title = '修改测试树';
-};
+}
 
 /** 提交按钮 */
 function submitForm() {
@@ -267,13 +267,13 @@ function submitForm() {
 }
 
 /** 删除按钮操作 */
-const handleDelete = async (row: TreeVO) => {
+async function handleDelete(row: TreeVO) {
   await proxy?.$modal.confirm('是否确认删除测试树编号为"' + row.id + '"的数据项？');
   loading.value = true;
   await delTree(row.id).finally(() => (loading.value = false));
   await getList();
   proxy?.$modal.msgSuccess('删除成功');
-};
+}
 
 onMounted(() => {
   getList();

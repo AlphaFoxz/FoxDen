@@ -75,7 +75,7 @@ function menuSearch(queryString: string, cb: (options: any[]) => void) {
 
 // Filter out the routes that can be displayed in the sidebar
 // And generate the internationalized title
-const generateRoutes = (routes: RouteRecordRaw[], basePath = '', prefixTitle: string[] = []) => {
+function generateRoutes(routes: RouteRecordRaw[], basePath = '', prefixTitle: string[] = []) {
   let res: Router = [];
   routes.forEach((r) => {
     // skip hidden router
@@ -109,7 +109,7 @@ const generateRoutes = (routes: RouteRecordRaw[], basePath = '', prefixTitle: st
     }
   });
   return res;
-};
+}
 // 当前菜单选中时
 function onHandleSelect(val: any) {
   const paths = val.path;

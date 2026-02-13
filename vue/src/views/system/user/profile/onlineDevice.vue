@@ -39,7 +39,7 @@ const props = defineProps({
 const devices = computed(() => props.devices);
 
 /** 删除按钮操作 */
-const handldDelOnline = (row: any) => {
+function handldDelOnline(row: any) {
   ElMessageBox.confirm('删除设备后，在该设备登录需要重新进行验证')
     .then(() => {
       return delOnline(row.tokenId);
@@ -53,5 +53,5 @@ const handldDelOnline = (row: any) => {
       }
     })
     .catch(() => {});
-};
+}
 </script>

@@ -131,7 +131,7 @@ function openSearchMenu() {
 }
 
 // 动态切换
-const dynamicTenantEvent = async (tenantId: string) => {
+async function dynamicTenantEvent(tenantId: string) {
   if (companyName.value != null && companyName.value !== '') {
     await dynamicTenant(tenantId);
     dynamic.value = true;
@@ -139,24 +139,24 @@ const dynamicTenantEvent = async (tenantId: string) => {
     await proxy?.$tab.closeAllPage();
     await proxy?.$tab.refreshPage();
   }
-};
+}
 
-const dynamicClearEvent = async () => {
+async function dynamicClearEvent() {
   await dynamicClear();
   dynamic.value = false;
   await proxy?.$router.push('/');
   await proxy?.$tab.closeAllPage();
   await proxy?.$tab.refreshPage();
-};
+}
 
 /** 租户列表 */
-const initTenantList = async () => {
+async function initTenantList() {
   const { data } = await getTenantList(true);
   tenantEnabled.value = data.tenantEnabled === undefined ? true : data.tenantEnabled;
   if (tenantEnabled.value) {
     tenantList.value = data.voList;
   }
-};
+}
 
 defineExpose({
   initTenantList,
@@ -166,7 +166,7 @@ function toggleSideBar() {
   appStore.toggleSideBar(false);
 }
 
-const logout = async () => {
+async function logout() {
   await ElMessageBox.confirm('确定注销并退出系统吗？', '提示', {
     confirmButtonText: '确定',
     cancelButtonText: '取消',
@@ -181,7 +181,7 @@ const logout = async () => {
     });
     proxy?.$tab.closeAllPage();
   });
-};
+}
 
 const emits = defineEmits(['setLayout']);
 function setLayout() {

@@ -410,7 +410,7 @@ const menuTableRef = ref<ElTableInstance>();
 const { queryParams, form, rules } = toRefs<PageData<MenuForm, MenuQuery>>(data);
 
 /** 获取子菜单列表 */
-const getChildrenList = async (row: any, treeNode: unknown, resolve: (data: any[]) => void) => {
+async function getChildrenList(row: any, treeNode: unknown, resolve: (data: any[]) => void) {
   menuExpandMap.value[row.menuId] = { row, treeNode, resolve };
   const children = menuChildrenListMap.value[row.menuId] || [];
   // 菜单的子菜单清空后关闭展开
@@ -419,14 +419,14 @@ const getChildrenList = async (row: any, treeNode: unknown, resolve: (data: any[
     menuTableRef.value?.updateKeyChildren(row.menuId, children);
   }
   resolve(children);
-};
+}
 
 /** 收起菜单时从menuExpandMap中删除对应菜单id数据 */
-const expandMenuHandle = async (row: any, expanded: boolean) => {
+async function expandMenuHandle(row: any, expanded: boolean) {
   if (!expanded) {
     menuExpandMap.value[row.menuId] = undefined;
   }
-};
+}
 
 /** 刷新展开的菜单数据 */
 function refreshLoadTree(parentId: string | number) {
@@ -565,7 +565,7 @@ function cancelCascade() {
 }
 
 /** 删除提交按钮 */
-const submitDeleteForm = async () => {
+async function submitDeleteForm() {
   const menuIds = menuTreeRef.value?.getCheckedKeys();
   if (menuIds.length < 0) {
     proxy?.$modal.msgWarning('请选择要删除的菜单');
@@ -577,7 +577,7 @@ const submitDeleteForm = async () => {
   await getList();
   proxy?.$modal.msgSuccess('删除成功');
   deleteDialog.visible = false;
-};
+}
 
 onMounted(() => {
   getList();

@@ -227,7 +227,7 @@ function handleSelectionChange(selection: any) {
   single.value = selection.length !== 1;
   multiple.value = !selection.length;
 }
-const changeTab = async (data: TabsPaneContext) => {
+async function changeTab(data: TabsPaneContext) {
   taskList.value = [];
   queryParams.value.pageNum = 1;
   if ('waiting' === data.paneName) {
@@ -235,7 +235,7 @@ const changeTab = async (data: TabsPaneContext) => {
   } else {
     getFinishList();
   }
-};
+}
 //分页
 function getWaitingList() {
   loading.value = true;

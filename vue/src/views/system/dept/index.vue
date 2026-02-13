@@ -304,7 +304,7 @@ function toggleExpandAll(data: DeptVO[], status: boolean) {
 }
 
 /** 新增按钮操作 */
-const handleAdd = async (row?: DeptVO) => {
+async function handleAdd(row?: DeptVO) {
   reset();
   const res = await listDept();
   const data = proxy?.handleTree<DeptOptionsType>(res.data, 'deptId');
@@ -316,10 +316,10 @@ const handleAdd = async (row?: DeptVO) => {
     dialog.visible = true;
     dialog.title = '添加部门';
   }
-};
+}
 
 /** 修改按钮操作 */
-const handleUpdate = async (row: DeptVO) => {
+async function handleUpdate(row: DeptVO) {
   reset();
   //查询当前部门所有用户
   getDeptAllUser(row.deptId);
@@ -340,7 +340,7 @@ const handleUpdate = async (row: DeptVO) => {
   }
   dialog.visible = true;
   dialog.title = '修改部门';
-};
+}
 /** 提交按钮 */
 function submitForm() {
   deptFormRef.value?.validate(async (valid: boolean) => {
@@ -353,12 +353,12 @@ function submitForm() {
   });
 }
 /** 删除按钮操作 */
-const handleDelete = async (row: DeptVO) => {
+async function handleDelete(row: DeptVO) {
   await proxy?.$modal.confirm('是否确认删除名称为"' + row.deptName + '"的数据项?');
   await delDept(row.deptId);
   await getList();
   proxy?.$modal.msgSuccess('删除成功');
-};
+}
 
 onMounted(() => {
   getList();

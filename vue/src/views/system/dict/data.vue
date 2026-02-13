@@ -247,12 +247,12 @@ const data = reactive<PageData<DictDataForm, DictDataQuery>>({
 const { queryParams, form, rules } = toRefs(data);
 
 /** 查询字典类型详细 */
-const getTypes = async (dictId: string | number) => {
+async function getTypes(dictId: string | number) {
   const { data } = await getType(dictId);
   queryParams.value.dictType = data.dictType;
   defaultDictType.value = data.dictType;
   getList();
-};
+}
 
 /** 查询字典类型列表 */
 async function getTypeList() {

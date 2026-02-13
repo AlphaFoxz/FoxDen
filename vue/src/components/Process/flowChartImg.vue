@@ -36,7 +36,7 @@ let startY = 0;
 let currentTranslateX = 0;
 let currentTranslateY = 0;
 
-const handleMouseWheel = (event: WheelEvent) => {
+function handleMouseWheel(event: WheelEvent) {
   event.preventDefault();
   let newScale = scale.value - event.deltaY / 1000;
   newScale = Math.max(minScale, Math.min(newScale, maxScale));
@@ -44,7 +44,7 @@ const handleMouseWheel = (event: WheelEvent) => {
     scale.value = newScale;
     resetDragPosition(); // 重置拖拽位置，使图片居中
   }
-};
+}
 
 function handleMouseDown(event: MouseEvent) {
   if (scale.value > 1) {
@@ -91,26 +91,26 @@ function handleMouseLeave() {
   isDragging = false;
 }
 
-const resetTransform = () => {
+function resetTransform() {
   scale.value = 1;
   currentTranslateX = 0;
   currentTranslateY = 0;
   applyTransform();
-};
+}
 
-const resetDragPosition = () => {
+function resetDragPosition() {
   currentTranslateX = 0;
   currentTranslateY = 0;
   applyTransform();
-};
+}
 
-const applyTransform = () => {
+function applyTransform() {
   if (imageWrapperRef.value) {
     imageWrapperRef.value.style.transform = `translate(${currentTranslateX}px, ${currentTranslateY}px) scale(${scale.value})`;
   }
-};
+}
 
-const getBounds = () => {
+function getBounds() {
   if (!imageWrapperRef.value) return { minTranslateX: 0, maxTranslateX: 0, minTranslateY: 0, maxTranslateY: 0 };
 
   const imgRect = imageWrapperRef.value.getBoundingClientRect();
@@ -122,7 +122,7 @@ const getBounds = () => {
   const maxTranslateY = -(containerRect.height - imgRect.height * scale.value) / 2;
 
   return { minTranslateX, maxTranslateX, minTranslateY, maxTranslateY };
-};
+}
 
 const transformStyle = computed(() => ({
   transition: isDragging ? 'none' : 'transform 0.2s ease',

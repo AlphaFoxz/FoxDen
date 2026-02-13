@@ -230,10 +230,10 @@ const dialog = reactive<DialogOption>({
 });
 
 /** 查询多数据源名称 */
-const getDataNameList = async () => {
+async function getDataNameList() {
   const res = await getDataNames();
   dataNameList.value = res.data;
-};
+}
 
 /** 查询表集合 */
 async function getList() {
@@ -249,7 +249,7 @@ function handleQuery() {
   getList();
 }
 /** 生成代码操作 */
-const handleGenTable = async (row?: TableVO) => {
+async function handleGenTable(row?: TableVO) {
   const tbIds = row?.tableId || ids.value;
   if (tbIds == '') {
     proxy?.$modal.msgError('请选择要生成的数据');
@@ -261,7 +261,7 @@ const handleGenTable = async (row?: TableVO) => {
   } else {
     proxy?.$download.zip('/tool/gen/batchGenCode?tableIdStr=' + tbIds, 'foxden.zip');
   }
-};
+}
 /** 同步数据库操作 */
 async function handleSynchDb(row: TableVO) {
   const tableId = row.tableId;

@@ -264,7 +264,7 @@ function handleExport() {
 }
 
 /** 撤销按钮操作 */
-const handleCancelProcessApply = async (id: string) => {
+async function handleCancelProcessApply(id: string) {
   await proxy?.$modal.confirm('是否确认撤销当前单据？');
   loading.value = true;
   const data = {
@@ -274,7 +274,7 @@ const handleCancelProcessApply = async (id: string) => {
   await cancelProcessApply(data).finally(() => (loading.value = false));
   await getList();
   proxy?.$modal.msgSuccess('撤销成功');
-};
+}
 onMounted(() => {
   getList();
 });

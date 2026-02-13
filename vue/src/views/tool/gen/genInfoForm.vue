@@ -277,14 +277,14 @@ function setSubTableColumns(value: string) {
 }
 
 /** 查询菜单下拉树结构 */
-const getMenuTreeselect = async () => {
+async function getMenuTreeselect() {
   const res = await listMenu();
   const data = proxy?.handleTree<MenuOptionsType>(res.data, 'menuId');
 
   if (data) {
     menuOptions.value = data;
   }
-};
+}
 
 watch(
   () => props.info.subTableName,

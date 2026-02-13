@@ -240,12 +240,12 @@ async function handleClean() {
   proxy?.$modal.msgSuccess('清空成功');
 }
 /** 解锁按钮操作 */
-const handleUnlock = async () => {
+async function handleUnlock() {
   const username = selectName.value;
   await proxy?.$modal.confirm('是否确认解锁用户"' + username + '"数据项?');
   await unlockLoginInfo(username);
   proxy?.$modal.msgSuccess('用户' + username + '解锁成功');
-};
+}
 /** 导出按钮操作 */
 function handleExport() {
   proxy?.download(

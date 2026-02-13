@@ -106,10 +106,10 @@ const activeMenu = computed(() => {
   return activePath;
 });
 
-const setVisibleNumber = () => {
+function setVisibleNumber() {
   const width = document.body.getBoundingClientRect().width / 3;
   visibleNumber.value = parseInt(String(width / 85));
-};
+}
 
 function handleSelect(key: string) {
   currentIndex.value = key;

@@ -99,22 +99,22 @@ const state = ref<State>({
 
 const userForm = ref({});
 
-const getUser = async () => {
+async function getUser() {
   const res = await getUserProfile();
   state.value.user = res.data.user;
   userForm.value = { ...res.data.user };
   state.value.roleGroup = res.data.roleGroup;
   state.value.postGroup = res.data.postGroup;
-};
+}
 
-const getAuths = async () => {
+async function getAuths() {
   const res = await getAuthList();
   state.value.auths = res.data;
-};
-const getOnlines = async () => {
+}
+async function getOnlines() {
   const res = await getOnline();
   state.value.devices = res.rows;
-};
+}
 
 onMounted(() => {
   getUser();

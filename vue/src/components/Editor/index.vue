@@ -136,7 +136,7 @@ function handleUploadSuccess(res: any) {
 }
 
 // 图片上传前拦截
-const handleBeforeUpload = (file: any) => {
+function handleBeforeUpload(file: any) {
   const type = ['image/jpeg', 'image/jpg', 'image/png', 'image/svg'];
   const isJPG = type.includes(file.type);
   //检验文件格式
@@ -154,7 +154,7 @@ const handleBeforeUpload = (file: any) => {
   }
   proxy?.$modal.loading('正在上传文件，请稍候...');
   return true;
-};
+}
 
 // 图片失败拦截
 function handleUploadError(err: any) {

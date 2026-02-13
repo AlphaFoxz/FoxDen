@@ -217,7 +217,7 @@ function getLoginData() {
 /**
  * 获取租户列表
  */
-const initTenantList = async () => {
+async function initTenantList() {
   const { data } = await getTenantList(false);
   tenantEnabled.value = data.tenantEnabled === undefined ? true : data.tenantEnabled;
   if (tenantEnabled.value) {
@@ -226,7 +226,7 @@ const initTenantList = async () => {
       loginForm.value.tenantId = tenantList.value[0].tenantId;
     }
   }
-};
+}
 
 /**
  * 第三方登录
