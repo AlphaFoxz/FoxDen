@@ -225,13 +225,25 @@ class SysUserController(
     }
 
     /**
-     * 根据角色ID查询用户列表
+     * 根据用户编号获取授权角色
+     *
+     * @param userId 用户ID
      */
-    @SaCheckPermission("system:user:list")
-    @GetMapping("/authRole/{roleId}")
-    fun listAuthRole(@PathVariable roleId: Long): R<List<SysUserVo>> {
-        val users = userService.selectUserByIds(listOf(roleId), null)
-        return R.ok(users)
+    @SaCheckPermission("system:user:query")
+    @GetMapping("/authRole/{userId}")
+    fun authRole(@PathVariable userId: Long): R<SysUserInfoVo> {
+        userService.checkUserDataScope(userId)
+        val user = userService.selectUserById(userId)
+        val roles = roleService.selectRolesAuthByUserId(userId)
+        val userInfoVo = SysUserInfoVo().apply {
+            this.user = user
+            this.roles = if (LoginHelper.isSuperAdmin(userId)) {
+                roles
+            } else {
+                StreamUtils.filter(roles) { r -> !r.isSuperAdmin() }
+            }
+        }
+        return R.ok(userInfoVo)
     }
 
     /**

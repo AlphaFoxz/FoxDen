@@ -98,22 +98,25 @@ class SysRoleServiceImpl(
     }
 
     override fun selectRolesAuthByUserId(userId: Long): List<SysRoleVo> {
-        // Query roles through the sys_user_role join table using raw SQL
-        val roleIds = jdbcTemplate.queryForList(
+        // 获取用户已有的角色ID列表
+        val userRoleIds = jdbcTemplate.queryForList(
             "SELECT role_id FROM sys_user_role WHERE user_id = ?",
             Long::class.java,
             userId
         )
 
-        if (roleIds.isEmpty()) {
-            return emptyList()
+        // 获取所有正常状态的角色
+        val allRoles = selectRoleList(SysRoleBo().apply {
+            status = SystemConstants.NORMAL
+        })
+
+        // 标记用户已拥有的角色
+        val userRoleIdsSet = userRoleIds.toSet()
+        allRoles.forEach { role ->
+            role.flag = userRoleIdsSet.contains(role.roleId)
         }
 
-        // Use findById for each role and filter by status
-        val roles = roleIds.mapNotNull { roleId -> sqlClient.findById(SysRole::class, roleId) }
-            .filter { it.status == SystemConstants.NORMAL }
-
-        return roles.map { entityToVo(it) }
+        return allRoles
     }
 
     override fun selectRolePermissionByUserId(userId: Long): Set<String> {
