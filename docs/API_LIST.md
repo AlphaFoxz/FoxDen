@@ -449,10 +449,10 @@
 | /system/role/{roleIds}                | DELETE | 删除角色         |
 | /system/role/{roleId}                 | GET    | 根据角色编号获取详细信息 |
 | /system/role/authUser/allocatedList   | GET    | 查询已分配用户角色列表  |
-| /system/role/authUser/unallocatedList | GET    | 查询未分配用户角色列表  |
 | /system/role/authUser/cancel          | PUT    | 取消授权用户       |
 | /system/role/authUser/cancelAll       | PUT    | 批量取消授权用户     |
 | /system/role/authUser/selectAll       | PUT    | 批量选择用户授权     |
+| /system/role/authUser/unallocatedList | GET    | 查询未分配用户角色列表  |
 | /system/role/changeStatus             | PUT    | 修改角色状态       |
 | /system/role/dataScope                | PUT    | 修改数据权限       |
 | /system/role/deptTree/{roleId}        | GET    | 获取角色部门树列表    |
@@ -487,8 +487,8 @@
 | /system/tenant/{ids}              | DELETE | 删除租户     |
 | /system/tenant/{id}               | GET    | 获取租户详细信息 |
 | /system/tenant/changeStatus       | PUT    | 修改租户状态   |
-| /system/tenant/dynamic/{tenantId} | GET    | 动态切换租户   |
 | /system/tenant/dynamic/clear      | GET    | 清除动态租户   |
+| /system/tenant/dynamic/{tenantId} | GET    | 动态切换租户   |
 | /system/tenant/export             | POST   | 导出租户列表   |
 | /system/tenant/list               | GET    | 查询租户列表   |
 | /system/tenant/syncTenantConfig   | GET    | 同步租户参数配置 |
@@ -536,8 +536,8 @@
 
 | 请求路径                            | 请求方式   | 功能                               |
 |---------------------------------|--------|----------------------------------|
-| /system/user                    | POST   | 新增用户                             |
 | /system/user                    | GET    | 获取用户信息表单（无ID时返回空表单）或根据用户编号获取详细信息 |
+| /system/user                    | POST   | 新增用户                             |
 | /system/user                    | PUT    | 修改用户                             |
 | /system/user/{userIds}          | DELETE | 删除用户                             |
 | /system/user/{userId}           | GET    | 根据用户编号获取详细信息                     |

@@ -22,11 +22,11 @@
 | FlowDefinitionController | 13 | 12 | 11 | 2 | 1 |
 | FlowInstanceController | 14 | 8 | 7 | 7 | 0 |
 | FlowSpelController | 5 | 5 | 5 | 0 | 0 |
-| FlowTaskController | 15 | 18 | 15 | 0 | 3 |
+| FlowTaskController | 16 | 18 | 15 | 6 | 7 |
 | IndexController | 1 | 1 | 1 | 0 | 0 |
 | SseController | 2 | 2 | 2 | 0 | 0 |
 | SysClientController | 7 | 7 | 7 | 0 | 0 |
-| SysConfigController | 8 | 8 | 8 | 0 | 0 |
+| SysConfigController | 9 | 8 | 7 | 1 | 0 |
 | SysDeptController | 7 | 7 | 6 | 1 | 1 |
 | SysDictDataController | 7 | 8 | 7 | 0 | 1 |
 | SysDictTypeController | 8 | 8 | 8 | 0 | 0 |
@@ -44,7 +44,7 @@
 | SysTenantPackageController | 8 | 8 | 8 | 0 | 0 |
 | SysUserOnlineController | 5 | 2 | 2 | 3 | 0 |
 | SysUserController | 16 | 16 | 16 | 0 | 0 |
-| **总计** | **192** | **183** | **172** | **19** | **8** |
+| **总计** | **194** | **183** | **171** | **26** | **12** |
 
 ---
 
@@ -201,9 +201,9 @@
 - [ ] | /workflow/task/transferTask | POST | 转办任务 | 🔴 新系统多余（拆分出来的接口）
 
 **差异说明**:
-1. 新系统将老系统的 `taskOperation` 拆分为多个独立接口（加签、减签、委派、转办等）
-2. 新系统缺少2个辅助查询接口：`currentTaskAllUser` 和 `getBackTaskNode`
-3. 新系统缺少 `urgeTask`（催办任务）功能
+1. **新系统缺少 `taskOperation` 统一接口**（前端会调用失败，必须实现）
+2. 新系统缺少 6 个接口：`currentTaskAllUser`, `getBackTaskNode`, `getTask`, `taskOperation`, `updateAssignee`, `urgeTask`
+3. 新系统多余 7 个拆分接口（前端不需要，应删除或保留作为内部实现）
 
 ---
 
@@ -254,12 +254,12 @@
 - [ ] | /system/config/{configIds} | DELETE | 删除参数配置 | ⚪ 等价
 - [ ] | /system/config/{configId} | GET | 根据参数编号获取详细信息 | ⚪ 等价
 - [ ] | /system/config/configKey/{configKey} | GET | 根据参数键名查询参数值 | ⚪ 等价
-- [ ] | /system/config/export | POST | 导出参数配置列表 | ⚪ 等价
+- [ ] | /system/config/export | POST | 导出参数配置列表 | 🟢 新系统缺少
 - [ ] | /system/config/list | GET | 获取参数配置列表 | ⚪ 等价
 - [ ] | /system/config/refreshCache | DELETE | 刷新参数缓存 | ⚪ 等价
 - [ ] | /system/config/updateByKey | PUT | 根据参数键名修改参数配置 | ⚪ 等价
 
-**差异说明**: 无差异。
+**差异说明**: 新系统缺少 `export` 接口。
 
 ---
 
@@ -575,6 +575,9 @@
   - [ ] `PUT /workflow/instance/updateVariable` - 修改流程变量
 
 #### 中优先级（工作流增强）
+- [ ] **SysConfigController**: 1个接口
+  - [ ] `POST /system/config/export` - 导出参数配置列表
+
 - [ ] **FlowTaskController**: 6个接口
   - [ ] `GET /workflow/task/currentTaskAllUser/{taskId}` - 获取当前任务的所有办理人
   - [ ] `GET /workflow/task/getBackTaskNode/{taskId}/{nowNodeCode}` - 获取可驳回的前置节点
@@ -597,14 +600,14 @@
 
 ### 🔴 需要确认的接口（新系统多余）
 
-- [ ] **FlowTaskController**: 3个拆分出来的独立接口 - 确认是否需要保留
+- [ ] **FlowTaskController**: 7个拆分出来的独立接口 - 前端不调用，建议删除或保留作为内部实现
   - `addSignature` - 加签
-  - `delegateTask` - 委派任务
-  - `reductionSignature` - 减签
-  - `transferTask` - 转办任务
   - `cancelProcess` - 取消流程
+  - `delegateTask` - 委派任务
   - `invalidProcess` - 作废流程
   - `isTaskEnd/{instanceId}` - 判断流程是否已结束
+  - `reductionSignature` - 减签
+  - `transferTask` - 转办任务
 - [ ] **SysClientController**: 1个根据客户端ID查询详情接口
 - [ ] **SysDeptController**: 1个获取部门下拉树列表接口（与 optionselect 的关系）
 - [ ] **SysDictDataController**: 1个根据字典类型和键值查询标签接口
