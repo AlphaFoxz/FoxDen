@@ -13,7 +13,6 @@ import com.github.alphafoxz.foxden.common.jimmer.core.page.TableDataInfo
 import com.github.alphafoxz.foxden.domain.workflow.bo.FlowSpelBo
 import com.github.alphafoxz.foxden.domain.workflow.service.FlowSpelService
 import com.github.alphafoxz.foxden.domain.workflow.vo.FlowSpelVo
-import jakarta.validation.Valid
 import org.springframework.validation.annotation.Validated
 import org.springframework.web.bind.annotation.*
 
@@ -25,7 +24,7 @@ import org.springframework.web.bind.annotation.*
 @Validated
 @RestController
 @RequestMapping("/workflow/spel")
-class FlowSpelController(
+class FlwSpelController(
     private val flowSpelService: FlowSpelService
 ) : BaseController() {
 

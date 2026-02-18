@@ -2,12 +2,12 @@ package com.github.alphafoxz.foxden.app.workflow.controller
 
 import cn.dev33.satoken.annotation.SaCheckPermission
 import com.github.alphafoxz.foxden.common.core.domain.R
+import com.github.alphafoxz.foxden.common.idempotent.annotation.RepeatSubmit
 import com.github.alphafoxz.foxden.common.jimmer.core.page.PageQuery
 import com.github.alphafoxz.foxden.common.jimmer.core.page.TableDataInfo
-import com.github.alphafoxz.foxden.common.web.core.BaseController
 import com.github.alphafoxz.foxden.common.log.annotation.Log
 import com.github.alphafoxz.foxden.common.log.enums.BusinessType
-import com.github.alphafoxz.foxden.common.idempotent.annotation.RepeatSubmit
+import com.github.alphafoxz.foxden.common.web.core.BaseController
 import com.github.alphafoxz.foxden.domain.workflow.bo.FlowCancelBo
 import com.github.alphafoxz.foxden.domain.workflow.bo.FlowInstanceBo
 import com.github.alphafoxz.foxden.domain.workflow.service.FlowInstanceService
@@ -24,7 +24,7 @@ import org.springframework.web.bind.annotation.*
 @Validated
 @RestController
 @RequestMapping("/workflow/instance")
-class FlowInstanceController(
+class FlwInstanceController(
     private val flowInstanceService: FlowInstanceService
 ) : BaseController() {
 

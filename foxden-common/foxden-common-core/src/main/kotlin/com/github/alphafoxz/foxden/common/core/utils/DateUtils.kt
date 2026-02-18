@@ -217,4 +217,23 @@ object DateUtils {
     fun getSecondTimestamp(): Long {
         return System.currentTimeMillis() / 1000
     }
+
+    /**
+     * 获取时间段描述
+     *
+     * @param date 日期时间
+     * @return 时间段描述
+     */
+    @JvmStatic
+    fun getTodayHour(date: Date): String {
+        val localDateTime = toLocalDateTime(date)
+        val hour = localDateTime.hour
+        return when {
+            hour <= 6 -> "凌晨"
+            hour < 12 -> "上午"
+            hour == 12 -> "中午"
+            hour <= 18 -> "下午"
+            else -> "晚上"
+        }
+    }
 }

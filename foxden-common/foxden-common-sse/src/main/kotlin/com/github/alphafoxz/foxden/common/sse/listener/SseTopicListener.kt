@@ -3,7 +3,6 @@ package com.github.alphafoxz.foxden.common.sse.listener
 import cn.hutool.core.collection.CollUtil
 import cn.hutool.json.JSONUtil
 import com.github.alphafoxz.foxden.common.sse.core.SseEmitterManager
-import com.github.alphafoxz.foxden.common.sse.dto.SseMessage
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.ApplicationArguments
@@ -29,14 +28,16 @@ class SseTopicListener : ApplicationRunner, Ordered {
      */
     override fun run(args: ApplicationArguments) {
         sseEmitterManager.subscribeMessage { message ->
-            log.info("SSE主题订阅收到消息session keys={} content={}", message.getUserIds(), JSONUtil.toJsonStr(message.getContent()))
+            log.info(
+                "SSE主题订阅收到消息session keys={} content={}", message.userIds, JSONUtil.toJsonStr(message.message)
+            )
             // 如果key不为空就按照key发消息 如果为空就群发
-            if (CollUtil.isNotEmpty(message.getUserIds())) {
-                message.getUserIds()?.forEach { key ->
-                    sseEmitterManager.sendMessage(key, JSONUtil.toJsonStr(message.getContent()))
+            if (CollUtil.isNotEmpty(message.userIds)) {
+                message.userIds?.forEach { key ->
+                    sseEmitterManager.sendMessage(key, JSONUtil.toJsonStr(message.message))
                 }
             } else {
-                sseEmitterManager.sendMessage(JSONUtil.toJsonStr(message.getContent()))
+                sseEmitterManager.sendMessage(JSONUtil.toJsonStr(message.message))
             }
         }
         log.info("初始化SSE主题订阅监听器成功")

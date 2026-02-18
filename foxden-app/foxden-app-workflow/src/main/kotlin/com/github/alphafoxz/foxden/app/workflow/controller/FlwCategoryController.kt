@@ -14,7 +14,6 @@ import com.github.alphafoxz.foxden.domain.workflow.bo.FlowCategoryBo
 import com.github.alphafoxz.foxden.domain.workflow.service.FlowCategoryService
 import com.github.alphafoxz.foxden.domain.workflow.vo.FlowCategoryVo
 import jakarta.servlet.http.HttpServletResponse
-import jakarta.validation.Valid
 import jakarta.validation.constraints.NotNull
 import org.springframework.validation.annotation.Validated
 import org.springframework.web.bind.annotation.*
@@ -25,7 +24,7 @@ import org.springframework.web.bind.annotation.*
 @Validated
 @RestController
 @RequestMapping("/workflow/category")
-class FlowCategoryController(
+class FlwCategoryController(
     private val flowCategoryService: FlowCategoryService
 ) : BaseController() {
 

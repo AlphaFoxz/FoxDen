@@ -3,8 +3,7 @@ package com.github.alphafoxz.foxden.common.sse.core
 import cn.hutool.core.map.MapUtil
 import cn.hutool.json.JSONUtil
 import com.github.alphafoxz.foxden.common.redis.utils.RedisUtils
-import com.github.alphafoxz.foxden.common.sse.dto.SseMessage
-import com.github.alphafoxz.foxden.common.sse.dto.SseMessageDefaultDto
+import com.github.alphafoxz.foxden.common.sse.dto.SseMessageDto
 import org.slf4j.LoggerFactory
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter
 import java.io.IOException
@@ -107,8 +106,8 @@ class SseEmitterManager {
      *
      * @param consumer 处理SSE消息的消费者函数
      */
-    fun subscribeMessage(consumer: (SseMessage) -> Unit) {
-        RedisUtils.subscribe(SSE_TOPIC, SseMessage::class.java, consumer)
+    fun subscribeMessage(consumer: (SseMessageDto) -> Unit) {
+        RedisUtils.subscribe(SSE_TOPIC, SseMessageDto::class.java, consumer)
     }
 
     /**
@@ -122,9 +121,11 @@ class SseEmitterManager {
         if (MapUtil.isNotEmpty(emitters)) {
             emitters?.forEach { (key, value) ->
                 try {
-                    value.send(SseEmitter.event()
-                        .name("message")
-                        .data(message))
+                    value.send(
+                        SseEmitter.event()
+                            .name("message")
+                            .data(message)
+                    )
                 } catch (e: Exception) {
                     val removed = emitters.remove(key)
                     removed?.complete()
@@ -151,11 +152,15 @@ class SseEmitterManager {
      *
      * @param sseMessageDto 要发布的SSE消息对象
      */
-    fun publishMessage(sseMessageDto: SseMessage) {
-        val broadcastMessage = SseMessage.copy(sseMessageDto)
+    fun publishMessage(sseMessageDto: SseMessageDto) {
+        val broadcastMessage = SseMessageDto()
+        broadcastMessage.message = sseMessageDto.message
+        broadcastMessage.userIds = sseMessageDto.userIds
         RedisUtils.publish(SSE_TOPIC, broadcastMessage) { consumer ->
-            log.info("SSE发送主题订阅消息topic:{} session keys:{} content:{}",
-                SSE_TOPIC, broadcastMessage.getUserIds(), JSONUtil.toJsonStr(broadcastMessage.getContent()))
+            log.info(
+                "SSE发送主题订阅消息topic:{} session keys:{} content:{}",
+                SSE_TOPIC, broadcastMessage.userIds, JSONUtil.toJsonStr(broadcastMessage.message)
+            )
         }
     }
 
@@ -165,9 +170,10 @@ class SseEmitterManager {
      * @param message 要发布的消息内容
      */
     fun publishAll(message: String) {
-        val broadcastMessage = SseMessageDefaultDto.message(message)
+        val broadcastMessage = SseMessageDto()
+        broadcastMessage.message = message
         RedisUtils.publish(SSE_TOPIC, broadcastMessage) { consumer ->
-            log.info("SSE发送主题订阅消息topic:{} content:{}", SSE_TOPIC, JSONUtil.toJsonStr(broadcastMessage.getContent()))
+            log.info("SSE发送主题订阅消息topic:{} content:{}", SSE_TOPIC, message)
         }
     }
 }

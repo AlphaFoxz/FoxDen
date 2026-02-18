@@ -2,19 +2,18 @@ package com.github.alphafoxz.foxden.app.workflow.controller
 
 import cn.dev33.satoken.annotation.SaCheckPermission
 import com.github.alphafoxz.foxden.common.core.domain.R
-import com.github.alphafoxz.foxden.common.jimmer.core.page.PageQuery
-import com.github.alphafoxz.foxden.common.jimmer.core.page.TableDataInfo
-import com.github.alphafoxz.foxden.common.web.core.BaseController
-import com.github.alphafoxz.foxden.common.log.annotation.Log
-import com.github.alphafoxz.foxden.common.log.enums.BusinessType
-import com.github.alphafoxz.foxden.common.idempotent.annotation.RepeatSubmit
 import com.github.alphafoxz.foxden.common.core.validate.AddGroup
 import com.github.alphafoxz.foxden.common.core.validate.EditGroup
-import com.github.alphafoxz.foxden.common.security.utils.LoginHelper
+import com.github.alphafoxz.foxden.common.idempotent.annotation.RepeatSubmit
+import com.github.alphafoxz.foxden.common.jimmer.core.page.PageQuery
+import com.github.alphafoxz.foxden.common.jimmer.core.page.TableDataInfo
+import com.github.alphafoxz.foxden.common.log.annotation.Log
+import com.github.alphafoxz.foxden.common.log.enums.BusinessType
+import com.github.alphafoxz.foxden.common.web.core.BaseController
 import com.github.alphafoxz.foxden.domain.workflow.bo.FlowDefinitionBo
 import com.github.alphafoxz.foxden.domain.workflow.service.FlowDefinitionService
 import com.github.alphafoxz.foxden.domain.workflow.vo.FlowDefinitionVo
-import jakarta.validation.Valid
+import org.springframework.transaction.annotation.Transactional
 import org.springframework.validation.annotation.Validated
 import org.springframework.web.bind.annotation.*
 
@@ -26,19 +25,15 @@ import org.springframework.web.bind.annotation.*
 @Validated
 @RestController
 @RequestMapping("/workflow/definition")
-class FlowDefinitionController(
+class FlwDefinitionController(
     private val flowDefinitionService: FlowDefinitionService
 ) : BaseController() {
 
     /**
      * 查询流程定义分页列表
      */
-    @SaCheckPermission("workflow:definition:list")
     @GetMapping("/list")
-    fun list(
-        flowDefinitionBo: FlowDefinitionBo,
-        pageQuery: PageQuery
-    ): TableDataInfo<FlowDefinitionVo> {
+    fun list(flowDefinitionBo: FlowDefinitionBo, pageQuery: PageQuery): TableDataInfo<FlowDefinitionVo> {
         return flowDefinitionService.queryList(
             flowDefinitionBo.flowCode,
             flowDefinitionBo.flowName,
@@ -49,12 +44,8 @@ class FlowDefinitionController(
     /**
      * 查询未发布的流程定义分页列表
      */
-    @SaCheckPermission("workflow:definition:list")
     @GetMapping("/unPublishList")
-    fun unPublishList(
-        flowDefinitionBo: FlowDefinitionBo,
-        pageQuery: PageQuery
-    ): TableDataInfo<FlowDefinitionVo> {
+    fun unPublishList(flowDefinitionBo: FlowDefinitionBo, pageQuery: PageQuery): TableDataInfo<FlowDefinitionVo> {
         return flowDefinitionService.unPublishList(
             flowDefinitionBo.flowCode,
             flowDefinitionBo.flowName,
@@ -97,27 +88,26 @@ class FlowDefinitionController(
     }
 
     /**
-     * 发布流程定义
+     * 取消发布流程定义
+     *
+     * @param id 流程定义id
      */
-    @SaCheckPermission("workflow:definition:publish")
-    @Log(title = "流程定义", businessType = BusinessType.UPDATE)
-    @RepeatSubmit()
+    @Log(title = "流程定义", businessType = BusinessType.INSERT)
     @PutMapping("/publish/{id}")
-    fun publish(@PathVariable id: Long): R<Void> {
-        val result = flowDefinitionService.publish(id)
-        return toAjax(result)
+    @RepeatSubmit
+    fun publish(@PathVariable id: Long): R<Boolean> {
+        return R.ok(flowDefinitionService.publish(id))
     }
 
     /**
      * 取消发布流程定义
      */
-    @SaCheckPermission("workflow:definition:unPublish")
-    @Log(title = "流程定义", businessType = BusinessType.UPDATE)
-    @RepeatSubmit()
+    @Log(title = "流程定义", businessType = BusinessType.INSERT)
     @PutMapping("/unPublish/{id}")
-    fun unPublish(@PathVariable id: Long): R<Void> {
-        val result = flowDefinitionService.unPublish(id)
-        return toAjax(result)
+    @RepeatSubmit
+    @Transactional(rollbackFor = [java.lang.Exception::class])
+    fun unPublish(@PathVariable id: Long): R<Boolean> {
+        return R.ok(flowDefinitionService.unPublish(id))
     }
 
     /**
@@ -134,10 +124,9 @@ class FlowDefinitionController(
     /**
      * 导出流程定义
      */
-    @SaCheckPermission("workflow:definition:export")
     @Log(title = "流程定义", businessType = BusinessType.EXPORT)
-    @GetMapping("/export/{id}")
-    fun export(@PathVariable id: Long): R<String> {
+    @PostMapping("/exportDef/{id}")
+    fun exportDef(@PathVariable id: Long): R<String> {
         val flowJson = flowDefinitionService.exportDef(id)
         return if (flowJson != null) R.ok(flowJson, "导出成功") else R.fail("导出失败")
     }
@@ -160,10 +149,10 @@ class FlowDefinitionController(
     /**
      * 复制流程定义
      */
-    @SaCheckPermission("workflow:definition:add")
     @Log(title = "流程定义", businessType = BusinessType.INSERT)
-    @RepeatSubmit()
     @PostMapping("/copy/{id}")
+    @RepeatSubmit
+    @Transactional(rollbackFor = [Exception::class])
     fun copy(@PathVariable id: Long): R<Void> {
         val result = flowDefinitionService.copy(id)
         return toAjax(result)

@@ -18,11 +18,11 @@
 | AuthController | 7 | 4 | 4 | 3 | 0 |
 | CacheController | 1 | 1 | 1 | 0 | 0 |
 | CaptchaController | 3 | 1 | 1 | 2 | 0 |
-| FlowCategoryController | 7 | 7 | 7 | 0 | 0 |
-| FlowDefinitionController | 13 | 12 | 11 | 2 | 1 |
-| FlowInstanceController | 14 | 8 | 7 | 7 | 0 |
-| FlowSpelController | 5 | 5 | 5 | 0 | 0 |
-| FlowTaskController | 16 | 18 | 15 | 6 | 7 |
+| FlwCategoryController | 7 | 7 | 7 | 0 | 0 |
+| FlwDefinitionController | 13 | 12 | 11 | 2 | 1 |
+| FlwInstanceController | 14 | 8 | 7 | 7 | 0 |
+| FlwSpelController | 5 | 5 | 5 | 0 | 0 |
+| FlwTaskController | 16 | 18 | 15 | 6 | 7 |
 | IndexController | 1 | 1 | 1 | 0 | 0 |
 | SseController | 2 | 2 | 2 | 0 | 0 |
 | SysClientController | 7 | 7 | 7 | 0 | 0 |
@@ -88,7 +88,7 @@
 
 ---
 
-### FlowCategoryController-工作流-流程分类
+### FlwCategoryController-工作流-流程分类
 
 **基础路径**: `/workflow/category`
 
@@ -104,7 +104,7 @@
 
 ---
 
-### FlowDefinitionController-工作流-流程定义
+### FlwDefinitionController-工作流-流程定义
 
 **基础路径**: `/workflow/definition`
 
@@ -112,17 +112,16 @@
 - [ ] | /workflow/definition | PUT | 修改流程定义 | ⚪ 等价
 - [ ] | /workflow/definition/{ids} | DELETE | 删除流程定义 | ⚪ 等价
 - [ ] | /workflow/definition/{id} | GET | 获取流程定义详细信息 | ⚪ 等价
-- [ ] | /workflow/active/{id} | PUT | 激活/挂起流程定义 | 🟢 新系统缺少
-- [ ] | /workflow/copy/{id} | POST | 复制流程定义 | ⚪ 等价
-- [ ] | /workflow/definition/copy/{id} | POST | 复制流程定义 | 🔴 新系统多余（路径不同）
-- [ ] | /workflow/importDef | POST | 导入流程定义 | 🟢 新系统缺少
-- [ ] | /workflow/list | GET | 查询流程定义分页列表 | ⚪ 等价
-- [ ] | /workflow/publish/{id} | PUT | 发布流程定义 | ⚪ 等价
-- [ ] | /workflow/unPublish/{id} | PUT | 取消发布流程定义 | ⚪ 等价
-- [ ] | /workflow/unPublishList | GET | 查询未发布的流程定义分页列表 | ⚪ 等价
-- [ ] | /workflow/xmlString/{id} | GET | 获取流程定义JSON字符串 | 🟢 新系统缺少
-- [ ] | /workflow/exportDef/{id} | POST | 导出流程定义 | 🟢 新系统缺少
-- [ ] | /workflow/definition/export/{id} | GET | 导出流程定义 | 🔴 新系统多余（路径和方式不同）
+- [ ] | /workflow/definition/active/{id} | PUT | 激活/挂起流程定义 | 🟢 新系统缺少
+- [ ] | /workflow/definition/copy/{id} | POST | 复制流程定义 | ⚪ 等价
+- [ ] | /workflow/definition/exportDef/{id} | POST | 导出流程定义 | ⚪ 函数签名不同
+- [ ] | /workflow/definition/importDef | POST | 导入流程定义 | 🟢 新系统缺少
+- [ ] | /workflow/definition/list | GET | 查询流程定义分页列表 | ⚪ 函数签名不同
+- [ ] | /workflow/definition/publish/{id} | PUT | 发布流程定义 | ⚪ 等价
+- [ ] | /workflow/definition/unPublish/{id} | PUT | 取消发布流程定义 | ⚪ 等价
+- [ ] | /workflow/definition/unPublishList | GET | 查询未发布的流程定义分页列表 | ⚪ 函数签名不同
+- [ ] | /workflow/definition/xmlString/{id} | GET | 获取流程定义JSON字符串 | 🟢 新系统缺少
+
 
 **差异说明**:
 1. 新系统缺少 `/workflow/active/{id}`、`/workflow/importDef`、`/workflow/xmlString/{id}`、`/workflow/exportDef/{id}`
@@ -130,7 +129,7 @@
 
 ---
 
-### FlowInstanceController-工作流-流程实例
+### FlwInstanceController-工作流-流程实例
 
 **基础路径**: `/workflow/instance`
 
@@ -157,7 +156,7 @@
 
 ---
 
-### FlowSpelController-工作流-流程Spel表达式
+### FlwSpelController-工作流-流程Spel表达式
 
 **基础路径**: `/workflow/spel`
 
@@ -171,7 +170,7 @@
 
 ---
 
-### FlowTaskController-工作流-任务管理
+### FlwTaskController-工作流-任务管理
 
 **基础路径**: `/workflow/task`
 
@@ -557,13 +556,13 @@
   - [ ] `POST /auth/social/callback` - 社交登录回调绑定
   - [ ] `DELETE /auth/unlock/{socialId}` - 取消社交授权
 
-- [ ] **FlowDefinitionController**: 4个接口
+- [ ] **FlwDefinitionController**: 4个接口
   - [ ] `PUT /workflow/active/{id}` - 激活/挂起流程定义
   - [ ] `POST /workflow/importDef` - 导入流程定义
   - [ ] `GET /workflow/xmlString/{id}` - 获取流程定义JSON字符串
   - [ ] `POST /workflow/exportDef/{id}` - 导出流程定义
 
-- [ ] **FlowInstanceController**: 9个接口
+- [ ] **FlwInstanceController**: 9个接口
   - [ ] `GET /workflow/instance/{businessId}` - 根据业务id查询流程实例详细信息
   - [ ] `PUT /workflow/instance/active/{id}` - 激活/挂起流程实例
   - [ ] `DELETE /workflow/instance/deleteByInstanceIds/{instanceIds}` - 根据实例ID删除流程实例（路径参数）
@@ -578,7 +577,7 @@
 - [ ] **SysConfigController**: 1个接口
   - [ ] `POST /system/config/export` - 导出参数配置列表
 
-- [ ] **FlowTaskController**: 6个接口
+- [ ] **FlwTaskController**: 6个接口
   - [ ] `GET /workflow/task/currentTaskAllUser/{taskId}` - 获取当前任务的所有办理人
   - [ ] `GET /workflow/task/getBackTaskNode/{taskId}/{nowNodeCode}` - 获取可驳回的前置节点
   - [ ] `GET /workflow/task/getTask/{taskId}` - 根据taskId查询代表任务
@@ -600,7 +599,7 @@
 
 ### 🔴 需要确认的接口（新系统多余）
 
-- [ ] **FlowTaskController**: 7个拆分出来的独立接口 - 前端不调用，建议删除或保留作为内部实现
+- [ ] **FlwTaskController**: 7个拆分出来的独立接口 - 前端不调用，建议删除或保留作为内部实现
   - `addSignature` - 加签
   - `cancelProcess` - 取消流程
   - `delegateTask` - 委派任务

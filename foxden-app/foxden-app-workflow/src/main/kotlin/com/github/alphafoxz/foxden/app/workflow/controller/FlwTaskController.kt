@@ -3,17 +3,15 @@ package com.github.alphafoxz.foxden.app.workflow.controller
 import cn.dev33.satoken.annotation.SaCheckPermission
 import com.github.alphafoxz.foxden.common.core.domain.R
 import com.github.alphafoxz.foxden.common.core.domain.dto.StartProcessReturnDTO
+import com.github.alphafoxz.foxden.common.idempotent.annotation.RepeatSubmit
 import com.github.alphafoxz.foxden.common.jimmer.core.page.PageQuery
 import com.github.alphafoxz.foxden.common.jimmer.core.page.TableDataInfo
-import com.github.alphafoxz.foxden.common.web.core.BaseController
 import com.github.alphafoxz.foxden.common.log.annotation.Log
 import com.github.alphafoxz.foxden.common.log.enums.BusinessType
-import com.github.alphafoxz.foxden.common.idempotent.annotation.RepeatSubmit
-import com.github.alphafoxz.foxden.common.core.validate.AddGroup
-import com.github.alphafoxz.foxden.common.security.utils.LoginHelper
+import com.github.alphafoxz.foxden.common.web.core.BaseController
 import com.github.alphafoxz.foxden.domain.workflow.bo.*
-import com.github.alphafoxz.foxden.domain.workflow.service.FlowTaskService
 import com.github.alphafoxz.foxden.domain.workflow.service.FlowNodeData
+import com.github.alphafoxz.foxden.domain.workflow.service.FlowTaskService
 import com.github.alphafoxz.foxden.domain.workflow.vo.FlowTaskVo
 import jakarta.validation.Valid
 import org.springframework.validation.annotation.Validated
@@ -27,7 +25,7 @@ import org.springframework.web.bind.annotation.*
 @Validated
 @RestController
 @RequestMapping("/workflow/task")
-class FlowTaskController(
+class FlwTaskController(
     private val flowTaskService: FlowTaskService
 ) : BaseController() {
 
@@ -61,8 +59,7 @@ class FlowTaskController(
     @SaCheckPermission("workflow:task:waitList")
     @GetMapping("/pageByTaskWait")
     fun pageByTaskWait(
-        flowTaskBo: FlowTaskBo,
-        pageQuery: PageQuery
+        flowTaskBo: FlowTaskBo, pageQuery: PageQuery
     ): TableDataInfo<FlowTaskVo> {
         return flowTaskService.pageByTaskWait(flowTaskBo, pageQuery)
     }
@@ -73,8 +70,7 @@ class FlowTaskController(
     @SaCheckPermission("workflow:task:allWaitList")
     @GetMapping("/pageByAllTaskWait")
     fun pageByAllTaskWait(
-        flowTaskBo: FlowTaskBo,
-        pageQuery: PageQuery
+        flowTaskBo: FlowTaskBo, pageQuery: PageQuery
     ): TableDataInfo<FlowTaskVo> {
         return flowTaskService.pageByAllTaskWait(flowTaskBo, pageQuery)
     }
@@ -85,8 +81,7 @@ class FlowTaskController(
     @SaCheckPermission("workflow:task:finishList")
     @GetMapping("/pageByTaskFinish")
     fun pageByTaskFinish(
-        flowTaskBo: FlowTaskBo,
-        pageQuery: PageQuery
+        flowTaskBo: FlowTaskBo, pageQuery: PageQuery
     ): TableDataInfo<com.github.alphafoxz.foxden.domain.workflow.vo.FlowHisTaskVo> {
         return flowTaskService.pageByTaskFinish(flowTaskBo, pageQuery)
     }
@@ -97,8 +92,7 @@ class FlowTaskController(
     @SaCheckPermission("workflow:task:allFinishList")
     @GetMapping("/pageByAllTaskFinish")
     fun pageByAllTaskFinish(
-        flowTaskBo: FlowTaskBo,
-        pageQuery: PageQuery
+        flowTaskBo: FlowTaskBo, pageQuery: PageQuery
     ): TableDataInfo<com.github.alphafoxz.foxden.domain.workflow.vo.FlowHisTaskVo> {
         return flowTaskService.pageByAllTaskFinish(flowTaskBo, pageQuery)
     }
@@ -109,8 +103,7 @@ class FlowTaskController(
     @SaCheckPermission("workflow:task:copyList")
     @GetMapping("/pageByTaskCopy")
     fun pageByTaskCopy(
-        flowTaskBo: FlowTaskBo,
-        pageQuery: PageQuery
+        flowTaskBo: FlowTaskBo, pageQuery: PageQuery
     ): TableDataInfo<FlowTaskVo> {
         return flowTaskService.pageByTaskCopy(flowTaskBo, pageQuery)
     }
