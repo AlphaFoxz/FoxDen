@@ -1,5 +1,7 @@
 package com.github.alphafoxz.foxden.domain.system.service
 
+import com.github.alphafoxz.foxden.common.jimmer.core.page.PageQuery
+import com.github.alphafoxz.foxden.common.jimmer.core.page.TableDataInfo
 import com.github.alphafoxz.foxden.domain.system.bo.SysClientBo
 import com.github.alphafoxz.foxden.domain.system.vo.SysClientVo
 
@@ -16,7 +18,7 @@ interface SysClientService {
      * @param bo 客户端管理信息
      * @return 客户端管理
      */
-    fun selectClientList(bo: SysClientBo): List<SysClientVo>
+    fun selectClientList(bo: SysClientBo, pageQuery: PageQuery): TableDataInfo<SysClientVo>
 
     /**
      * 查询客户端管理详情

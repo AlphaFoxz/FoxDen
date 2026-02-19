@@ -56,9 +56,10 @@ class RateLimiterAspect {
         val timeout = rateLimiter.timeout
         try {
             val combineKey = getCombineKey(rateLimiter, point)
-            val rateType = RateType.OVERALL
-            if (rateLimiter.limitType == LimitType.CLUSTER) {
-                // For cluster, use PER_CLIENT
+            val rateType = if (rateLimiter.limitType == LimitType.CLUSTER) {
+                RateType.PER_CLIENT
+            } else {
+                RateType.OVERALL
             }
             val number = RedisUtils.rateLimiter(combineKey, rateType, count, time, timeout)
             if (number == -1L) {

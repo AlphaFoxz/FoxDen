@@ -4,7 +4,6 @@ import com.github.alphafoxz.foxden.common.core.utils.SpringUtils
 import org.redisson.api.*
 import java.time.Duration
 import java.util.stream.Collectors
-import org.redisson.api.RateIntervalUnit
 
 /**
  * redis 工具类
@@ -21,14 +20,16 @@ object RedisUtils {
      * @param rateType     限流类型
      * @param rate         速率
      * @param rateInterval 速率间隔
+     * @param timeout      限流策略超时时间(策略存活时间 会清除已存在的策略数据)
      * @return -1 表示失败
      */
     @JvmStatic
     @JvmOverloads
     fun rateLimiter(key: String, rateType: RateType, rate: Int, rateInterval: Int, timeout: Int = 0): Long {
         val rateLimiter = CLIENT.getRateLimiter(key)
-        rateLimiter.trySetRate(rateType, rate.toLong(), rateInterval.toLong(), RateIntervalUnit.SECONDS)
-        return if (rateLimiter.tryAcquire(timeout.toLong())) {
+        // timeout 参数用于设置限流策略在 Redis 中的存活时间
+        rateLimiter.trySetRate(rateType, rate.toLong(), Duration.ofSeconds(rateInterval.toLong()), Duration.ofSeconds(timeout.toLong()))
+        return if (rateLimiter.tryAcquire()) {
             rateLimiter.availablePermits()
         } else {
             -1L

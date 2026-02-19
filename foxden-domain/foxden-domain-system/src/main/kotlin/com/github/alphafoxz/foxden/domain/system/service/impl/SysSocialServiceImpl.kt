@@ -98,6 +98,12 @@ class SysSocialServiceImpl(
         sqlClient.deleteById(SysSocial::class, socialId)
     }
 
+    override fun deleteWithValidById(socialId: Long): Boolean {
+        sqlClient.findById(SysSocial::class, socialId) ?: return false
+        val result = sqlClient.deleteById(SysSocial::class, socialId)
+        return result.totalAffectedRowCount > 0
+    }
+
     /**
      * 实体转 VO
      * Note: BO/VO use `type`/`openid` while entity uses `source`/`openId`/`authId`

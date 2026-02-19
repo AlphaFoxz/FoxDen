@@ -2,7 +2,9 @@ package com.github.alphafoxz.foxden.app.admin.controller
 
 import cn.dev33.satoken.annotation.SaIgnore
 import cn.dev33.satoken.exception.NotLoginException
+import cn.hutool.core.codec.Base64
 import cn.hutool.core.collection.CollUtil
+import cn.hutool.core.util.ObjectUtil
 import com.github.alphafoxz.foxden.app.admin.domain.vo.LoginTenantVo
 import com.github.alphafoxz.foxden.app.admin.domain.vo.LoginVo
 import com.github.alphafoxz.foxden.app.admin.domain.vo.TenantListVo
@@ -11,16 +13,16 @@ import com.github.alphafoxz.foxden.common.core.constant.SystemConstants
 import com.github.alphafoxz.foxden.common.core.domain.R
 import com.github.alphafoxz.foxden.common.core.domain.model.LoginBody
 import com.github.alphafoxz.foxden.common.core.domain.model.RegisterBody
-import com.github.alphafoxz.foxden.common.core.utils.DateUtils
-import com.github.alphafoxz.foxden.common.core.utils.MapstructUtils
-import com.github.alphafoxz.foxden.common.core.utils.MessageUtils
-import com.github.alphafoxz.foxden.common.core.utils.StreamUtils
-import com.github.alphafoxz.foxden.common.core.utils.StringUtils
-import com.github.alphafoxz.foxden.common.core.utils.ValidatorUtils
+import com.github.alphafoxz.foxden.common.core.domain.model.SocialLoginBody
+import com.github.alphafoxz.foxden.common.core.utils.*
 import com.github.alphafoxz.foxden.common.encrypt.annotation.ApiEncrypt
 import com.github.alphafoxz.foxden.common.jimmer.helper.TenantHelper
 import com.github.alphafoxz.foxden.common.json.utils.JsonUtils
+import com.github.alphafoxz.foxden.common.ratelimiter.annotation.RateLimiter
+import com.github.alphafoxz.foxden.common.ratelimiter.enums.LimitType
 import com.github.alphafoxz.foxden.common.security.utils.LoginHelper
+import com.github.alphafoxz.foxden.common.social.config.properties.SocialProperties
+import com.github.alphafoxz.foxden.common.social.utils.SocialUtils
 import com.github.alphafoxz.foxden.common.sse.dto.SseMessageDto
 import com.github.alphafoxz.foxden.common.sse.utils.SseMessageUtils
 import com.github.alphafoxz.foxden.domain.system.bo.SysTenantBo
@@ -28,11 +30,16 @@ import com.github.alphafoxz.foxden.domain.system.service.SysConfigService
 import com.github.alphafoxz.foxden.domain.system.service.SysTenantService
 import com.github.alphafoxz.foxden.domain.system.service.extensions.queryList
 import jakarta.servlet.http.HttpServletRequest
+import me.zhyd.oauth.model.AuthResponse
+import me.zhyd.oauth.model.AuthUser
+import me.zhyd.oauth.utils.AuthStateUtils
 import org.slf4j.LoggerFactory
 import org.springframework.validation.annotation.Validated
 import org.springframework.web.bind.annotation.*
+import cn.dev33.satoken.stp.StpUtil
 import java.net.URI
-import java.util.Date
+import java.nio.charset.StandardCharsets
+import java.util.*
 import java.util.concurrent.ScheduledExecutorService
 import java.util.concurrent.TimeUnit
 
@@ -50,7 +57,9 @@ class AuthController(
     private val configService: SysConfigService,
     private val tenantService: SysTenantService,
     private val clientService: com.github.alphafoxz.foxden.domain.system.service.SysClientService,
-    private val scheduledExecutorService: ScheduledExecutorService
+    private val scheduledExecutorService: ScheduledExecutorService,
+    private val socialProperties: SocialProperties,
+    private val socialUserService: com.github.alphafoxz.foxden.domain.system.service.SysSocialService
 ) {
     private val log = LoggerFactory.getLogger(AuthController::class.java)
 
@@ -123,12 +132,79 @@ class AuthController(
     }
 
     /**
-     * 登录页面租户下拉框
+     * 获取跳转URL
      *
-     * @return 租户列表
+     * @param source 登录来源
+     * @param tenantId 租户ID
+     * @param domain 域名
+     * @return 结果
      */
-    // 开发环境禁用限流
-    // @RateLimiter(time = 60, count = 100, limitType = LimitType.IP)
+    @GetMapping("/binding/{source}")
+    fun authBinding(
+        @PathVariable("source") source: String,
+        @RequestParam tenantId: String,
+        @RequestParam domain: String
+    ): R<String> {
+        val obj = socialProperties.type?.get(source)
+        if (ObjectUtil.isNull(obj)) {
+            return R.fail("$source 平台账号暂不支持")
+        }
+        val authRequest = SocialUtils.getAuthRequest(source, socialProperties)
+        val map = mapOf(
+            "tenantId" to tenantId,
+            "domain" to domain,
+            "state" to AuthStateUtils.createState()
+        )
+        val authorizeUrl = authRequest.authorize(
+            Base64.encode(
+                JsonUtils.toJsonString(map)?.toByteArray(StandardCharsets.UTF_8)
+            )
+        )
+        return R.ok("操作成功", authorizeUrl)
+    }
+
+    /**
+     * 前端回调绑定授权(需要token)
+     *
+     * @param loginBody 请求体
+     * @return 结果
+     */
+    @PostMapping("/social/callback")
+    fun socialCallback(@RequestBody loginBody: SocialLoginBody): R<Void> {
+        // 校验token
+        StpUtil.checkLogin()
+        // 获取第三方登录信息
+        val response = SocialUtils.loginAuth(
+            loginBody.source!!,
+            loginBody.socialCode!!,
+            loginBody.socialState!!,
+            socialProperties
+        )
+        val authUserData = response.data
+        // 判断授权响应是否成功
+        if (!response.ok()) {
+            return R.fail(response.msg)
+        }
+        loginService.socialRegister(authUserData)
+        return R.ok()
+    }
+
+    /**
+     * 取消授权(需要token)
+     *
+     * @param socialId socialId
+     * @return 结果
+     */
+    @DeleteMapping(value = ["/unlock/{socialId}"])
+    fun unlockSocial(@PathVariable socialId: Long): R<Void> {
+        // 校验token
+        StpUtil.checkLogin()
+        val rows = socialUserService.deleteWithValidById(socialId)
+        return if (rows) R.ok() else R.fail("取消授权失败")
+    }
+
+
+    @RateLimiter(time = 60, count = 20, limitType = LimitType.IP)
     @GetMapping("/tenant/list")
     fun tenantList(request: HttpServletRequest): R<LoginTenantVo> {
         // 返回对象

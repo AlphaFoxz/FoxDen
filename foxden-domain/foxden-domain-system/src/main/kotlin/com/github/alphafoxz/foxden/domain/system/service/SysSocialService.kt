@@ -64,4 +64,12 @@ interface SysSocialService {
      * @param socialId 社会化关系ID
      */
     fun deleteSocialById(socialId: Long)
+
+    /**
+     * 校验并删除社会化关系
+     *
+     * @param socialId 社会化关系ID
+     * @return 是否删除成功
+     */
+    fun deleteWithValidById(socialId: Long): Boolean
 }

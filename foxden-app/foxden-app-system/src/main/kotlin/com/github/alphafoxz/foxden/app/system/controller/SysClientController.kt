@@ -13,7 +13,6 @@ import com.github.alphafoxz.foxden.common.web.core.BaseController
 import com.github.alphafoxz.foxden.domain.system.bo.SysClientBo
 import com.github.alphafoxz.foxden.domain.system.service.SysClientService
 import com.github.alphafoxz.foxden.domain.system.vo.SysClientVo
-import jakarta.validation.Valid
 import jakarta.validation.constraints.NotEmpty
 import jakarta.validation.constraints.NotNull
 import org.springframework.validation.annotation.Validated
@@ -37,8 +36,7 @@ class SysClientController(
     @SaCheckPermission("system:client:list")
     @GetMapping("/list")
     fun list(bo: SysClientBo, pageQuery: PageQuery): TableDataInfo<SysClientVo> {
-        val list = clientService.selectClientList(bo)
-        return TableDataInfo.build(list)
+        return clientService.selectClientList(bo, pageQuery)
     }
 
     /**
@@ -50,17 +48,6 @@ class SysClientController(
     @GetMapping("/{id}")
     fun getInfo(@NotNull(message = "主键不能为空") @PathVariable id: Long): R<SysClientVo> {
         return R.ok(clientService.selectClientById(id))
-    }
-
-    /**
-     * 根据客户端ID查询详情
-     *
-     * @param clientId 客户端ID
-     */
-    @SaCheckPermission("system:client:query")
-    @GetMapping("/clientId/{clientId}")
-    fun getInfoByClientId(@PathVariable clientId: String): R<SysClientVo> {
-        return R.ok(clientService.queryByClientId(clientId))
     }
 
     /**

@@ -58,9 +58,9 @@
 - [ ] | /auth/logout | POST | 退出登录 | ⚪ 等价
 - [ ] | /auth/register | POST | 用户注册 | ⚪ 等价
 - [ ] | /auth/tenant/list | GET | 获取租户列表 | ⚪ 等价
-- [ ] | /auth/binding/{source} | GET | 获取社交登录跳转URL | 🟢 新系统缺少
-- [ ] | /auth/social/callback | POST | 社交登录回调绑定 | 🟢 新系统缺少
-- [ ] | /auth/unlock/{socialId} | DELETE | 取消社交授权 | 🟢 新系统缺少
+- [x] | /auth/binding/{source} | GET | 获取社交登录跳转URL | ⚪ 等价
+- [x] | /auth/social/callback | POST | 社交登录回调绑定 | ⚪ 等价
+- [x] | /auth/unlock/{socialId} | DELETE | 取消社交授权 | ⚪ 等价
 
 **差异说明**: 新系统缺少3个社交登录相关接口，需要补充。
 
@@ -80,9 +80,9 @@
 
 **基础路径**: `/auth/code`
 
-- [ ] | /auth/code | GET | 生成验证码 | ⚪ 等价
-- [ ] | /resource/sms/code | GET | 短信验证码 | 🟢 新系统缺少
-- [ ] | /resource/email/code | GET | 邮箱验证码 | 🟢 新系统缺少
+- [x] | /auth/code | GET | 生成验证码 | ⚪ 等价
+- [x] | /resource/sms/code | GET | 短信验证码 | ⚪ 等价
+- [x] | /resource/email/code | GET | 邮箱验证码 | ⚪ 等价
 
 **差异说明**: 新系统缺少2个验证码接口（短信验证码和邮箱验证码）。
 
@@ -210,7 +210,7 @@
 
 **基础路径**: `/`
 
-- [ ] | / | GET | 首页提示 | ⚪ 等价
+- [x] | / | GET | 首页提示 | ⚪ 等价
 
 **差异说明**: 无差异。
 
@@ -220,8 +220,8 @@
 
 **基础路径**: `${sse.path}` (默认: `/sse`)
 
-- [ ] | ${sse.path} (默认: /sse) | GET | 建立SSE连接 | ⚪ 等价
-- [ ] | ${sse.path}/close | GET | 关闭SSE连接 | ⚪ 等价
+- [x] | ${sse.path} (默认: /sse) | GET | 建立SSE连接 | ⚪ 等价
+- [x] | ${sse.path}/close | GET | 关闭SSE连接 | ⚪ 等价
 
 **差异说明**: 无差异。
 
@@ -237,8 +237,7 @@
 - [ ] | /system/client/{id} | GET | 获取客户端管理详细信息 | ⚪ 等价
 - [ ] | /system/client/changeStatus | PUT | 修改客户端状态 | ⚪ 等价
 - [ ] | /system/client/export | POST | 导出客户端管理列表 | ⚪ 等价
-- [ ] | /system/client/list | GET | 查询客户端管理列表 | ⚪ 等价
-- [ ] | /system/client/clientId/{clientId} | GET | 根据客户端ID查询详情 | 🔴 新系统多余
+- [x] | /system/client/list | GET | 查询客户端管理列表 | ⚪ 等价
 
 **差异说明**: 新系统多了1个根据客户端ID查询详情的接口。
 

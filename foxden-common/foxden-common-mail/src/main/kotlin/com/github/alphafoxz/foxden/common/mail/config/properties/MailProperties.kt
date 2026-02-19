@@ -12,7 +12,7 @@ data class MailProperties(
     /**
      * 过滤开关
      */
-    var enabled: Boolean? = null,
+    var enabled: Boolean = false,
 
     /**
      * SMTP服务器域名

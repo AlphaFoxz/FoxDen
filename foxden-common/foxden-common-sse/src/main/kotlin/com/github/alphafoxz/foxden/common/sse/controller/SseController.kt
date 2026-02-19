@@ -5,6 +5,7 @@ import cn.dev33.satoken.stp.StpUtil
 import com.github.alphafoxz.foxden.common.core.domain.R
 import com.github.alphafoxz.foxden.common.security.utils.LoginHelper
 import com.github.alphafoxz.foxden.common.sse.core.SseEmitterManager
+import org.springframework.beans.factory.DisposableBean
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.http.MediaType
 import org.springframework.web.bind.annotation.GetMapping
@@ -20,7 +21,7 @@ import org.springframework.web.servlet.mvc.method.annotation.SseEmitter
 @ConditionalOnProperty(value = ["sse.enabled"], havingValue = "true")
 class SseController(
     private val sseEmitterManager: SseEmitterManager
-) {
+) : DisposableBean {
 
     /**
      * 建立 SSE 连接
@@ -45,5 +46,9 @@ class SseController(
         val userId = LoginHelper.getUserId()
         sseEmitterManager.disconnect(userId, tokenValue)
         return R.ok()
+    }
+
+    override fun destroy() {
+        // 销毁时不需要做什么 此方法避免无用操作报错
     }
 }

@@ -2,6 +2,8 @@ package com.github.alphafoxz.foxden.domain.system.service.impl
 
 import com.github.alphafoxz.foxden.common.core.constant.SystemConstants
 import com.github.alphafoxz.foxden.common.core.exception.ServiceException
+import com.github.alphafoxz.foxden.common.jimmer.core.page.PageQuery
+import com.github.alphafoxz.foxden.common.jimmer.core.page.TableDataInfo
 import com.github.alphafoxz.foxden.domain.system.bo.SysClientBo
 import com.github.alphafoxz.foxden.domain.system.entity.*
 import com.github.alphafoxz.foxden.domain.system.service.SysClientService
@@ -19,17 +21,21 @@ class SysClientServiceImpl(
     private val sqlClient: KSqlClient
 ) : SysClientService {
 
-    override fun selectClientList(bo: SysClientBo): List<SysClientVo> {
-        val clients = sqlClient.createQuery(SysClient::class) {
+    override fun selectClientList(bo: SysClientBo, pageQuery: PageQuery): TableDataInfo<SysClientVo> {
+        val pager = sqlClient.createQuery(SysClient::class) {
             where(table.delFlag eq "0")
             bo.id?.let { where(table.id eq it) }
             bo.clientId?.takeIf { it.isNotBlank() }?.let { where(table.clientId eq it) }
             bo.status?.takeIf { it.isNotBlank() }?.let { where(table.status eq it) }
             orderBy(table.id.asc())
             select(table)
-        }.execute()
+        }.fetchPage(
+            pageQuery.getPageNumOrDefault() - 1,
+            pageQuery.getPageSizeOrDefault()
+        )
 
-        return clients.map { entityToVo(it) }
+        val voList = pager.rows.map { entityToVo(it) }
+        return TableDataInfo(voList, pager.totalRowCount)
     }
 
     override fun selectClientById(id: Long): SysClientVo? {
