@@ -18,6 +18,15 @@ interface SysConfigService {
      * @param config 参数配置信息
      * @return 参数配置集合
      */
+    fun selectConfigList(config: SysConfigBo): List<SysConfigVo>
+
+    /**
+     * 查询参数配置分页列表
+     *
+     * @param config 参数配置信息
+     * @param pageQuery 分页参数
+     * @return 参数配置分页结果
+     */
     fun selectPageConfigList(config: SysConfigBo, pageQuery: PageQuery): TableDataInfo<SysConfigVo>
 
     /**

@@ -575,6 +575,8 @@ class SysUserServiceImpl(
             phonenumber = user.phonenumber
             sex = user.sex
             status = user.status
+            avatar = user.avatar
+            loginIp = user.loginIp
             remark = user.remark
             loginDate = user.loginDate?.toInstant()?.atZone(java.time.ZoneId.systemDefault())?.toLocalDateTime()
             createTime = user.createTime

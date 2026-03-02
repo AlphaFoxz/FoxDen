@@ -71,6 +71,7 @@ data class SysDeptVo(
     /**
      * 部门状态（0正常 1停用）
      */
+    @ExcelProperty(value = ["部门状态"])
     var status: String? = null,
 
     /**

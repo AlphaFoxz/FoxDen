@@ -1,5 +1,7 @@
 package com.github.alphafoxz.foxden.domain.system.vo
 
+import com.alibaba.excel.annotation.ExcelIgnoreUnannotated
+import com.alibaba.excel.annotation.ExcelProperty
 import com.fasterxml.jackson.annotation.JsonInclude
 
 /**
@@ -8,50 +10,60 @@ import com.fasterxml.jackson.annotation.JsonInclude
  * @author Lion Li
  */
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
+@ExcelIgnoreUnannotated
 data class SysPostVo(
     /**
      * 岗位序号
      */
+    @ExcelProperty(value = ["岗位序号"])
     var postId: Long? = null,
 
     /**
      * 部门ID
      */
+    @ExcelProperty(value = ["部门id"])
     var deptId: Long? = null,
 
     /**
      * 岗位编码
      */
+    @ExcelProperty(value = ["岗位编码"])
     var postCode: String? = null,
 
     /**
      * 岗位名称
      */
+    @ExcelProperty(value = ["岗位名称"])
     var postName: String? = null,
 
     /**
      * 岗位类别编码
      */
+    @ExcelProperty(value = ["类别编码"])
     var postCategory: String? = null,
 
     /**
      * 显示顺序
      */
+    @ExcelProperty(value = ["岗位排序"])
     var postSort: Int? = null,
 
     /**
      * 状态（0正常 1停用）
      */
+    @ExcelProperty(value = ["状态"])
     var status: String? = null,
 
     /**
      * 备注
      */
+    @ExcelProperty(value = ["备注"])
     var remark: String? = null,
 
     /**
      * 创建时间
      */
+    @ExcelProperty(value = ["创建时间"])
     var createTime: java.time.LocalDateTime? = null,
 
     /**

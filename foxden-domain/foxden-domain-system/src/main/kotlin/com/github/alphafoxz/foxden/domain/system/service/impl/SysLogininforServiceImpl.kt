@@ -129,6 +129,8 @@ class SysLogininforServiceImpl(
     private fun entityToVo(logininfor: SysLogininfor): SysLogininforVo {
         return SysLogininforVo(
             infoId = logininfor.id,
+            clientKey = logininfor.clientKey,
+            deviceType = logininfor.deviceType,
             userName = logininfor.userName,
             ipaddr = logininfor.ipaddr,
             loginLocation = logininfor.loginLocation,

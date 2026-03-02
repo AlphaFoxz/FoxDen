@@ -2,6 +2,7 @@ package com.github.alphafoxz.foxden.app.system.controller
 
 import cn.dev33.satoken.annotation.SaCheckPermission
 import com.github.alphafoxz.foxden.common.core.domain.R
+import com.github.alphafoxz.foxden.common.excel.utils.ExcelUtil
 import com.github.alphafoxz.foxden.common.idempotent.annotation.RepeatSubmit
 import com.github.alphafoxz.foxden.common.jimmer.core.page.PageQuery
 import com.github.alphafoxz.foxden.common.jimmer.core.page.TableDataInfo
@@ -12,6 +13,7 @@ import com.github.alphafoxz.foxden.domain.system.bo.SysConfigBo
 import com.github.alphafoxz.foxden.domain.system.service.SysConfigService
 import com.github.alphafoxz.foxden.domain.system.service.extensions.selectConfigById
 import com.github.alphafoxz.foxden.domain.system.vo.SysConfigVo
+import jakarta.servlet.http.HttpServletResponse
 import org.springframework.validation.annotation.Validated
 import org.springframework.web.bind.annotation.*
 
@@ -34,6 +36,17 @@ class SysConfigController(
     @GetMapping("/list")
     fun list(config: SysConfigBo, pageQuery: PageQuery): TableDataInfo<SysConfigVo> {
         return configService.selectPageConfigList(config, pageQuery)
+    }
+
+    /**
+     * 导出参数配置列表
+     */
+    @Log(title = "参数管理", businessType = BusinessType.EXPORT)
+    @SaCheckPermission("system:config:export")
+    @PostMapping("/export")
+    fun export(config: SysConfigBo, response: HttpServletResponse) {
+        val list = configService.selectConfigList(config)
+        ExcelUtil.exportExcel(list, "参数数据", SysConfigVo::class.java, response)
     }
 
     /**

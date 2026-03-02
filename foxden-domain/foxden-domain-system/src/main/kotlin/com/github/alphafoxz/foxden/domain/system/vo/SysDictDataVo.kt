@@ -1,5 +1,7 @@
 package com.github.alphafoxz.foxden.domain.system.vo
 
+import com.alibaba.excel.annotation.ExcelIgnoreUnannotated
+import com.alibaba.excel.annotation.ExcelProperty
 import com.fasterxml.jackson.annotation.JsonInclude
 
 /**
@@ -8,30 +10,36 @@ import com.fasterxml.jackson.annotation.JsonInclude
  * @author Lion Li
  */
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
+@ExcelIgnoreUnannotated
 data class SysDictDataVo(
     /**
      * 字典编码
      */
+    @ExcelProperty(value = ["字典编码"])
     var dictCode: Long? = null,
 
     /**
-     * 顺序
+     * 字典排序
      */
+    @ExcelProperty(value = ["字典排序"])
     var dictSort: Int? = null,
 
     /**
      * 字典标签
      */
+    @ExcelProperty(value = ["字典标签"])
     var dictLabel: String? = null,
 
     /**
-     * 键值
+     * 字典键值
      */
+    @ExcelProperty(value = ["字典键值"])
     var dictValue: String? = null,
 
     /**
      * 字典类型
      */
+    @ExcelProperty(value = ["字典类型"])
     var dictType: String? = null,
 
     /**
@@ -47,6 +55,7 @@ data class SysDictDataVo(
     /**
      * 是否默认（0是 1否）
      */
+    @ExcelProperty(value = ["是否默认"])
     var isDefault: String? = null,
 
     /**
@@ -57,10 +66,12 @@ data class SysDictDataVo(
     /**
      * 备注
      */
+    @ExcelProperty(value = ["备注"])
     var remark: String? = null,
 
     /**
      * 创建时间
      */
+    @ExcelProperty(value = ["创建时间"])
     var createTime: java.time.LocalDateTime? = null
 )

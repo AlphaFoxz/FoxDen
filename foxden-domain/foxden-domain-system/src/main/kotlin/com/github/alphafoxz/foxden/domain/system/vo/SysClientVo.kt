@@ -1,5 +1,7 @@
 package com.github.alphafoxz.foxden.domain.system.vo
 
+import com.alibaba.excel.annotation.ExcelIgnoreUnannotated
+import com.alibaba.excel.annotation.ExcelProperty
 import com.fasterxml.jackson.annotation.JsonInclude
 
 /**
@@ -8,20 +10,24 @@ import com.fasterxml.jackson.annotation.JsonInclude
  * @author Lion Li
  */
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
+@ExcelIgnoreUnannotated
 data class SysClientVo(
     /**
      * 客户端ID
      */
+    @ExcelProperty(value = ["id"])
     var id: Long? = null,
 
     /**
      * 客户端ID
      */
+    @ExcelProperty(value = ["客户端id"])
     var clientId: String? = null,
 
     /**
      * 客户端密钥
      */
+    @ExcelProperty(value = ["客户端key"])
     var clientKey: String? = null,
 
     /**
@@ -37,6 +43,7 @@ data class SysClientVo(
     /**
      * 授权类型
      */
+    @ExcelProperty(value = ["授权类型"])
     var grantType: String? = null,
 
     /**
@@ -52,6 +59,7 @@ data class SysClientVo(
     /**
      * 状态（0正常 1停用）
      */
+    @ExcelProperty(value = ["状态"])
     var status: String? = null,
 
     /**
@@ -62,11 +70,13 @@ data class SysClientVo(
     /**
      * Token 超时时间（秒）
      */
+    @ExcelProperty(value = ["token固定超时时间"])
     var timeout: Long? = null,
 
     /**
      * Token 有效期（秒）
      */
+    @ExcelProperty(value = ["token活跃超时时间"])
     var activeTimeout: Long? = null,
 
     /**

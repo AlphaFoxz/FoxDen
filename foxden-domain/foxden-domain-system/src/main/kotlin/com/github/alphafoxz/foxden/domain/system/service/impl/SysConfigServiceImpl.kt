@@ -28,6 +28,19 @@ class SysConfigServiceImpl(
     private val sqlClient: KSqlClient
 ) : SysConfigService {
 
+    override fun selectConfigList(config: SysConfigBo): List<SysConfigVo> {
+        val configs = sqlClient.createQuery(SysConfig::class) {
+            config.configId?.let { where(table.id eq it) }
+            config.configName?.takeIf { it.isNotBlank() }?.let { where(table.configName like "%${it}%") }
+            config.configKey?.takeIf { it.isNotBlank() }?.let { where(table.configKey like "%${it}%") }
+            config.configType?.takeIf { it.isNotBlank() }?.let { where(table.configType eq it) }
+            orderBy(table.id.asc())
+            select(table)
+        }.execute()
+
+        return configs.map { entityToVo(it) }
+    }
+
     override fun selectPageConfigList(config: SysConfigBo, pageQuery: PageQuery): TableDataInfo<SysConfigVo> {
         val configs = sqlClient.createQuery(SysConfig::class) {
             config.configId?.let { where(table.id eq it) }

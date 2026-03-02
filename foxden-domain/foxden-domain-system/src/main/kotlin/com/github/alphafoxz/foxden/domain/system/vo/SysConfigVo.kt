@@ -1,5 +1,7 @@
 package com.github.alphafoxz.foxden.domain.system.vo
 
+import com.alibaba.excel.annotation.ExcelIgnoreUnannotated
+import com.alibaba.excel.annotation.ExcelProperty
 import com.fasterxml.jackson.annotation.JsonInclude
 
 /**
@@ -8,39 +10,47 @@ import com.fasterxml.jackson.annotation.JsonInclude
  * @author Lion Li
  */
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
+@ExcelIgnoreUnannotated
 data class SysConfigVo(
     /**
      * 参数主键
      */
+    @ExcelProperty(value = ["参数主键"])
     var configId: Long? = null,
 
     /**
      * 参数名称
      */
+    @ExcelProperty(value = ["参数名称"])
     var configName: String? = null,
 
     /**
      * 参数键名
      */
+    @ExcelProperty(value = ["参数键名"])
     var configKey: String? = null,
 
     /**
      * 参数键值
      */
+    @ExcelProperty(value = ["参数键值"])
     var configValue: String? = null,
 
     /**
      * 系统内置（0是 1否）
      */
+    @ExcelProperty(value = ["系统内置"])
     var configType: String? = null,
 
     /**
      * 备注
      */
+    @ExcelProperty(value = ["备注"])
     var remark: String? = null,
 
     /**
      * 创建时间
      */
+    @ExcelProperty(value = ["创建时间"])
     var createTime: java.time.LocalDateTime? = null
 )
