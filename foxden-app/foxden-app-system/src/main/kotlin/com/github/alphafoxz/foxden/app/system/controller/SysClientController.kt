@@ -58,8 +58,8 @@ class SysClientController(
     @RepeatSubmit()
     @PostMapping
     fun add(@Validated(AddGroup::class) @RequestBody bo: SysClientBo): R<Void> {
-        if (!clientService.checkClientIdUnique(bo)) {
-            return R.fail("新增客户端'" + (bo.clientName ?: "") + "'失败，客户端ID已存在")
+        if (!clientService.checkClientKeyUnique(bo)) {
+            return R.fail("新增客户端'" + (bo.clientKey ?: "") + "'失败，客户端key已存在")
         }
         return toAjax(clientService.insertClient(bo))
     }
@@ -72,8 +72,8 @@ class SysClientController(
     @RepeatSubmit()
     @PutMapping
     fun edit(@Validated(EditGroup::class) @RequestBody bo: SysClientBo): R<Void> {
-        if (!clientService.checkClientIdUnique(bo)) {
-            return R.fail("修改客户端'" + (bo.clientName ?: "") + "'失败，客户端ID已存在")
+        if (!clientService.checkClientKeyUnique(bo)) {
+            return R.fail("修改客户端'" + (bo.clientKey ?: "") + "'失败，客户端key已存在")
         }
         return toAjax(clientService.updateClient(bo))
     }

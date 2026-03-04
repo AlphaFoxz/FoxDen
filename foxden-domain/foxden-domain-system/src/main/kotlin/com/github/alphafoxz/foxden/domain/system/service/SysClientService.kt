@@ -53,12 +53,12 @@ interface SysClientService {
     fun updateClient(bo: SysClientBo): Int
 
     /**
-     * 校验参数是否唯一
+     * 校验客户端key是否唯一
      *
      * @param bo 客户端管理信息
      * @return 结果
      */
-    fun checkClientIdUnique(bo: SysClientBo): Boolean
+    fun checkClientKeyUnique(bo: SysClientBo): Boolean
 
     /**
      * 删除客户端管理

@@ -140,10 +140,15 @@ data class SysUserExportVo(
     var userName: String? = null,
     @ExcelProperty(value = ["用户昵称"])
     var nickName: String? = null,
+    @ExcelProperty(value = ["用户类型"])
     var userType: String? = null,
+    @ExcelProperty(value = ["邮箱"])
     var email: String? = null,
+    @ExcelProperty(value = ["手机号码"])
     var phonenumber: String? = null,
+    @ExcelProperty(value = ["用户性别"])
     var sex: String? = null,
+    @ExcelProperty(value = ["帐号状态"])
     var status: String? = null,
     @ExcelProperty(value = ["部门名称"])
     var deptName: String? = null,

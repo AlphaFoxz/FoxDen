@@ -1,7 +1,9 @@
 package com.github.alphafoxz.foxden.domain.system.service.impl
 
+import cn.hutool.crypto.SecureUtil
 import com.github.alphafoxz.foxden.common.core.constant.SystemConstants
 import com.github.alphafoxz.foxden.common.core.exception.ServiceException
+import com.github.alphafoxz.foxden.common.core.utils.StringUtils
 import com.github.alphafoxz.foxden.common.jimmer.core.page.PageQuery
 import com.github.alphafoxz.foxden.common.jimmer.core.page.TableDataInfo
 import com.github.alphafoxz.foxden.domain.system.bo.SysClientBo
@@ -9,8 +11,10 @@ import com.github.alphafoxz.foxden.domain.system.entity.*
 import com.github.alphafoxz.foxden.domain.system.service.SysClientService
 import com.github.alphafoxz.foxden.domain.system.service.extensions.saveWithAutoId
 import com.github.alphafoxz.foxden.domain.system.vo.SysClientVo
-import org.babyfish.jimmer.sql.kt.*
-import org.babyfish.jimmer.sql.kt.ast.expression.*
+import org.babyfish.jimmer.sql.kt.KSqlClient
+import org.babyfish.jimmer.sql.kt.ast.expression.asc
+import org.babyfish.jimmer.sql.kt.ast.expression.eq
+import org.babyfish.jimmer.sql.kt.ast.expression.ne
 import org.springframework.stereotype.Service
 
 /**
@@ -54,11 +58,27 @@ class SysClientServiceImpl(
     }
 
     override fun insertClient(bo: SysClientBo): Int {
-        val newClient = com.github.alphafoxz.foxden.domain.system.entity.SysClientDraft.`$`.produce {
-            clientId = bo.clientId ?: throw ServiceException("客户端ID不能为空")
-            clientKey = bo.clientKey ?: throw ServiceException("客户端密钥不能为空")
-            grantType = bo.grantType
-            deviceType = bo.clientType // Map clientType to deviceType
+        val cliKey = bo.clientKey ?: throw ServiceException("客户端密钥不能为空")
+        val cliSecret = bo.clientSecret ?: throw ServiceException("客户端秘钥不能为空")
+
+        // 生成clientId：MD5(clientKey + clientSecret)
+        val generatedClientId = SecureUtil.md5(cliKey + cliSecret)
+
+        // 将grantTypeList转换为逗号分隔的字符串
+        val grantTypeStr = if (!bo.grantTypeList.isNullOrEmpty()) {
+            bo.grantTypeList!!.joinToString(StringUtils.SEPARATOR)
+        } else {
+            bo.grantType
+        }
+
+        val newClient = SysClientDraft.`$`.produce {
+            clientId = generatedClientId
+            clientKey = cliKey
+            clientSecret = cliSecret
+            grantType = grantTypeStr
+            deviceType = bo.clientType
+            activeTimeout = bo.activeTimeout
+            timeout = bo.timeout
             status = bo.status ?: SystemConstants.NORMAL
             delFlag = "0"
             createTime = java.time.LocalDateTime.now()
@@ -88,9 +108,9 @@ class SysClientServiceImpl(
         return rows
     }
 
-    override fun checkClientIdUnique(bo: SysClientBo): Boolean {
+    override fun checkClientKeyUnique(bo: SysClientBo): Boolean {
         val existing = sqlClient.createQuery(SysClient::class) {
-            where(table.clientId eq bo.clientId)
+            bo.clientKey?.takeIf { it.isNotBlank() }?.let { where(table.clientKey eq it) }
             where(table.delFlag eq "0")
             bo.id?.let { where(table.id ne it) }
             select(table)

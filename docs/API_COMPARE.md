@@ -532,7 +532,7 @@
 - [ ] | /system/user/authRole/{userId} | GET | 获取用户授权角色 | ⚪ 等价
 - [ ] | /system/user/changeStatus | PUT | 修改用户状态 | ⚪ 等价
 - [ ] | /system/user/deptTree | GET | 获取部门树列表 | ⚪ 等价
-- [ ] | /system/user/export | POST | 导出用户列表 | ⚪ 等价
+- [x] | /system/user/export | POST | 导出用户列表 | ⚪ 等价
 - [ ] | /system/user/getInfo | GET | 获取当前用户信息 | ⚪ 等价
 - [ ] | /system/user/importData | POST | 导入用户数据 | ⚪ 等价
 - [ ] | /system/user/importTemplate | POST | 下载用户导入模板 | ⚪ 等价

@@ -72,7 +72,21 @@ class SysUserServiceImpl(
             select(table)
         }.execute()
 
-        return users.mapNotNull { MapstructUtils.convert(it, SysUserExportVo::class.java) }
+        return users.map { entity ->
+            com.github.alphafoxz.foxden.domain.system.vo.SysUserExportVo(
+                userId = entity.id,
+                deptId = entity.deptId,
+                userName = entity.userName,
+                nickName = entity.nickName,
+                userType = entity.userType,
+                email = entity.email,
+                phonenumber = entity.phonenumber,
+                sex = entity.sex,
+                status = entity.status,
+                deptName = null, // 需要关联查询，这里暂时为 null
+                leader = null // 需要关联查询，这里暂时为 null
+            )
+        }
     }
 
     override fun selectAllocatedList(user: SysUserBo, pageQuery: PageQuery): TableDataInfo<SysUserVo> {

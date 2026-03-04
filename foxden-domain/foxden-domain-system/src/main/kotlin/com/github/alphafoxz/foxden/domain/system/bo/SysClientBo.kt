@@ -1,6 +1,7 @@
 package com.github.alphafoxz.foxden.domain.system.bo
 
 import jakarta.validation.constraints.NotBlank
+import jakarta.validation.constraints.NotEmpty
 import jakarta.validation.constraints.Size
 
 /**
@@ -15,18 +16,23 @@ data class SysClientBo(
     var id: Long? = null,
 
     /**
-     * 客户端ID
+     * 客户端id
      */
-    @get:NotBlank(message = "客户端ID不能为空")
-    @get:Size(min = 0, max = 64, message = "客户端ID长度不能超过{max}个字符")
     var clientId: String? = null,
 
     /**
-     * 客户端密钥
+     * 客户端key
      */
-    @get:NotBlank(message = "客户端密钥不能为空")
-    @get:Size(min = 0, max = 64, message = "客户端密钥长度不能超过{max}个字符")
+    @get:NotBlank(message = "客户端key不能为空")
+    @get:Size(min = 0, max = 64, message = "客户端key长度不能超过{max}个字符")
     var clientKey: String? = null,
+
+    /**
+     * 客户端秘钥
+     */
+    @get:NotBlank(message = "客户端秘钥不能为空")
+    @get:Size(min = 0, max = 64, message = "客户端秘钥长度不能超过{max}个字符")
+    var clientSecret: String? = null,
 
     /**
      * 客户端名称
@@ -44,7 +50,18 @@ data class SysClientBo(
     /**
      * 授权类型
      */
+    @get:NotEmpty(message = "授权类型不能为空")
+    var grantTypeList: List<String>? = null,
+
+    /**
+     * 授权类型（字符串，从 grantTypeList 转换）
+     */
     var grantType: String? = null,
+
+    /**
+     * 设备类型
+     */
+    var deviceType: String? = null,
 
     /**
      * 回调地址
@@ -55,6 +72,16 @@ data class SysClientBo(
      * 授权自动登录
      */
     var autoApprove: Boolean? = null,
+
+    /**
+     * token活跃超时时间
+     */
+    var activeTimeout: Long? = null,
+
+    /**
+     * token固定超时时间
+     */
+    var timeout: Long? = null,
 
     /**
      * 状态（0正常 1停用）
