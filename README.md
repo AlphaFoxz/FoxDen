@@ -7,7 +7,7 @@
 **A Modern Multi-Tenant SaaS System Built with Spring Boot, Kotlin, and Jimmer ORM**
 
 [![Kotlin](https://img.shields.io/badge/Kotlin-2.3.0-blue.svg?logo=kotlin)](https://kotlinlang.org)
-[![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.5.10-green.svg?logo=spring-boot)](https://spring.io/projects/spring-boot)
+[![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.5.11-green.svg?logo=spring-boot)](https://spring.io/projects/spring-boot)
 [![Jimmer](https://img.shields.io/badge/Jimmer-0.10.6-orange.svg)](https://babyfish-ct.github.io/jimmer-doc/)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
 
@@ -47,19 +47,19 @@ FoxDen is a comprehensive multi-tenant SaaS platform designed for building enter
 
 | Category | Technology | Version |
 |----------|-----------|---------|
-| **Language** | Kotlin | 2.3.0 |
-| **Framework** | Spring Boot | 3.5.10 |
-| **ORM** | Jimmer | 0.10.6 |
-| **Database** | PostgreSQL | - |
-| **Cache** | Redis (Redisson) | 3.52.0 |
-| **Security** | Sa-Token | 1.44.0 |
-| **API Docs** | SpringDoc OpenAPI | 2.8.15 |
-| **Excel** | EasyExcel | 4.0.3 |
-| **Distributed Lock** | Lock4j | 2.2.7 |
-| **Task Scheduling** | SnailJob | 1.9.0 |
-| **Workflow** | WarmFlow | 1.8.4 |
-| **Build** | Gradle (Kotlin DSL) | - |
-| **JDK** | Java | 21 |
+| **Language** | Kotlin | 2.3.0   |
+| **Framework** | Spring Boot | 3.5.11  |
+| **ORM** | Jimmer | 0.10.6  |
+| **Database** | PostgreSQL | -       |
+| **Cache** | Redis (Redisson) | 3.52.0  |
+| **Security** | Sa-Token | 1.44.0  |
+| **API Docs** | SpringDoc OpenAPI | 2.8.15  |
+| **Excel** | EasyExcel | 4.0.3   |
+| **Distributed Lock** | Lock4j | 2.2.7   |
+| **Task Scheduling** | SnailJob | 1.9.0   |
+| **Workflow** | WarmFlow | 1.8.4   |
+| **Build** | Gradle (Kotlin DSL) | -       |
+| **JDK** | Java | 21      |
 
 ---
 

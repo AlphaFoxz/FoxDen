@@ -4,6 +4,7 @@ import cn.dev33.satoken.annotation.SaCheckPermission
 import com.github.alphafoxz.foxden.common.core.domain.R
 import com.github.alphafoxz.foxden.common.core.validate.AddGroup
 import com.github.alphafoxz.foxden.common.core.validate.EditGroup
+import com.github.alphafoxz.foxden.common.excel.utils.ExcelUtil
 import com.github.alphafoxz.foxden.common.idempotent.annotation.RepeatSubmit
 import com.github.alphafoxz.foxden.common.jimmer.core.page.PageQuery
 import com.github.alphafoxz.foxden.common.jimmer.core.page.TableDataInfo
@@ -13,6 +14,7 @@ import com.github.alphafoxz.foxden.common.web.core.BaseController
 import com.github.alphafoxz.foxden.domain.system.bo.SysClientBo
 import com.github.alphafoxz.foxden.domain.system.service.SysClientService
 import com.github.alphafoxz.foxden.domain.system.vo.SysClientVo
+import jakarta.servlet.http.HttpServletResponse
 import jakarta.validation.constraints.NotEmpty
 import jakarta.validation.constraints.NotNull
 import org.springframework.validation.annotation.Validated
@@ -37,6 +39,17 @@ class SysClientController(
     @GetMapping("/list")
     fun list(bo: SysClientBo, pageQuery: PageQuery): TableDataInfo<SysClientVo> {
         return clientService.selectClientList(bo, pageQuery)
+    }
+
+    /**
+     * 导出客户端管理列表
+     */
+    @SaCheckPermission("system:client:export")
+    @Log(title = "客户端管理", businessType = BusinessType.EXPORT)
+    @PostMapping("/export")
+    fun export(bo: SysClientBo, response: HttpServletResponse) {
+        val list = clientService.selectClientList(bo)
+        ExcelUtil.exportExcel(list, "客户端管理", SysClientVo::class.java, response)
     }
 
     /**
@@ -101,7 +114,14 @@ class SysClientController(
     @RepeatSubmit()
     @PutMapping("/changeStatus")
     fun changeStatus(@RequestBody bo: SysClientBo): R<Void> {
-        // TODO: Implement status change when service method is available
-        return toAjax(clientService.updateClient(bo))
+        val clientId = bo.clientId
+        val status = bo.status
+        if (clientId.isNullOrBlank()) {
+            return R.fail("客户端ID不能为空")
+        }
+        if (status.isNullOrBlank()) {
+            return R.fail("状态不能为空")
+        }
+        return toAjax(clientService.updateClientStatus(clientId, status))
     }
 }

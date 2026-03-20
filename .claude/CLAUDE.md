@@ -122,7 +122,7 @@ foxden/
 ## Technology Stack
 
 - **Language**: Kotlin 2.3.0
-- **Framework**: Spring Boot 3.5.10
+- **Framework**: Spring Boot 3.5.11
 - **Build Tool**: Gradle (Kotlin DSL) with KSP
 - **Java Version**: 21
 - **ORM**: Jimmer 0.10.6 (Kotlin-first ORM with compiled validation)

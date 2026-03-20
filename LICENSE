@@ -220,6 +220,6 @@
    limitations under the License.
 
    This project incorporates code from RuoYi-Vue-Plus (copyright 2019 RuoYi-Vue-Plus)
-   which has been migrated and re-architected using Kotlin, Spring Boot 3.5.10,
+   which has been migrated and re-architected using Kotlin, Spring Boot 3.5.11,
    and Jimmer ORM. The original project was licensed under the MIT License.
 

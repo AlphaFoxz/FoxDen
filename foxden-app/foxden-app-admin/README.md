@@ -5,7 +5,7 @@ FoxDen 管理端应用，提供用户认证、授权、租户管理等功能。
 ## 技术栈
 
 - Kotlin 2.3.0
-- Spring Boot 3.5.10
+- Spring Boot 3.5.11
 - Jimmer 0.10.6 ORM
 - Sa-Token 1.44.0 (认证授权)
 - Redis (Redisson 3.35.0)

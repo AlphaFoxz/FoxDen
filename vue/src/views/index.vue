@@ -7,7 +7,7 @@
           FoxDen 是基于 Spring Boot、Kotlin 和 Jimmer ORM 构建的现代化多租户 SaaS 系统
           <br />
           * 前端开发框架 Vue3、TS、PrimeVue<br />
-          * 后端开发框架 Spring Boot 3.5.10<br />
+          * 后端开发框架 Spring Boot 3.5.11<br />
           * 开发语言 Kotlin 2.3.0<br />
           * ORM 框架 Jimmer 0.10.6<br />
           * 权限认证框架 Sa-Token 1.44.0<br />

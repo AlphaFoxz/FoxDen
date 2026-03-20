@@ -7,7 +7,7 @@
 基于 Spring Boot、Kotlin 和 Jimmer ORM 构建的现代化多租户 SaaS 系统
 
 [![Kotlin](https://img.shields.io/badge/Kotlin-2.3.0-blue.svg?logo=kotlin)](https://kotlinlang.org)
-[![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.5.10-green.svg?logo=spring-boot)](https://spring.io/projects/spring-boot)
+[![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.5.11-green.svg?logo=spring-boot)](https://spring.io/projects/spring-boot)
 [![Jimmer](https://img.shields.io/badge/Jimmer-0.10.6-orange.svg)](https://babyfish-ct.github.io/jimmer-doc/)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
 
@@ -45,21 +45,21 @@ FoxDen 是一个功能完备的多租户 SaaS 平台，采用现代 JVM 技术�
 
 ## 🛠️ 技术栈
 
-| 分类 | 技术 | 版本 |
-|------|------|------|
-| **开发语言** | Kotlin | 2.3.0 |
-| **框架** | Spring Boot | 3.5.10 |
+| 分类 | 技术 | 版本     |
+|------|------|--------|
+| **开发语言** | Kotlin | 2.3.0  |
+| **框架** | Spring Boot | 3.5.11 |
 | **ORM** | Jimmer | 0.10.6 |
-| **数据库** | PostgreSQL | - |
+| **数据库** | PostgreSQL | -      |
 | **缓存** | Redis (Redisson) | 3.52.0 |
 | **安全** | Sa-Token | 1.44.0 |
 | **API 文档** | SpringDoc OpenAPI | 2.8.15 |
-| **Excel** | EasyExcel | 4.0.3 |
-| **分布式锁** | Lock4j | 2.2.7 |
-| **任务调度** | SnailJob | 1.9.0 |
-| **工作流** | WarmFlow | 1.8.4 |
-| **构建工具** | Gradle (Kotlin DSL) | - |
-| **JDK** | Java | 21 |
+| **Excel** | EasyExcel | 4.0.3  |
+| **分布式锁** | Lock4j | 2.2.7  |
+| **任务调度** | SnailJob | 1.9.0  |
+| **工作流** | WarmFlow | 1.8.4  |
+| **构建工具** | Gradle (Kotlin DSL) | -      |
+| **JDK** | Java | 21     |
 
 ---
 

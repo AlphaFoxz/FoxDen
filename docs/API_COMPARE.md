@@ -231,12 +231,12 @@
 
 **基础路径**: `/system/client`
 
-- [ ] | /system/client | POST | 新增客户端管理 | ⚪ 等价
-- [ ] | /system/client | PUT | 修改客户端管理 | ⚪ 等价
-- [ ] | /system/client/{ids} | DELETE | 删除客户端管理 | ⚪ 等价
-- [ ] | /system/client/{id} | GET | 获取客户端管理详细信息 | ⚪ 等价
-- [ ] | /system/client/changeStatus | PUT | 修改客户端状态 | ⚪ 等价
-- [ ] | /system/client/export | POST | 导出客户端管理列表 | ⚪ 等价
+- [x] | /system/client | POST | 新增客户端管理 | ⚪ 等价
+- [x] | /system/client | PUT | 修改客户端管理 | ⚪ 等价
+- [x] | /system/client/{ids} | DELETE | 删除客户端管理 | ⚪ 等价
+- [x] | /system/client/{id} | GET | 获取客户端管理详细信息 | ⚪ 等价
+- [x] | /system/client/changeStatus | PUT | 修改客户端状态 | ⚪ 等价
+- [x] | /system/client/export | POST | 导出客户端管理列表 | ⚪ 等价
 - [x] | /system/client/list | GET | 查询客户端管理列表 | ⚪ 等价
 
 **差异说明**: 新系统多了1个根据客户端ID查询详情的接口。

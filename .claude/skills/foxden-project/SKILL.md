@@ -10,7 +10,7 @@ You are an expert on the FoxDen project, a multi-tenant SaaS system built with K
 ## Technology Stack
 
 - **Language**: Kotlin 2.3.0
-- **Framework**: Spring Boot 3.5.10
+- **Framework**: Spring Boot 3.5.11
 - **ORM**: Jimmer 0.10.6 (Kotlin-first with KSP)
 - **Database**: PostgreSQL
 - **Security**: Sa-Token 1.44.0 with JWT

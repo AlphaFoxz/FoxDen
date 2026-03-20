@@ -180,7 +180,7 @@ implementation("io.github.minliuhua:warm-flow:${property("version.warmflow")}")
 本模块依赖以下组件：
 
 - **Jimmer ORM** - Kotlin 优先的 ORM 框架
-- **Spring Boot 3.5.10** - 应用框架
+- **Spring Boot 3.5.11** - 应用框架
 - **Sa-Token** - 权限认证
 - **WarmFlow** (待集成) - 工作流引擎
 

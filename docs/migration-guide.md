@@ -6,15 +6,15 @@ FoxDen 是一个多租户 SaaS 系统，从若依（RuoYi）框架迁移至 Kotl
 
 ### 技术栈
 
-| 技术 | 版本 | 说明 |
-|------|------|------|
-| Kotlin | 2.3.0 | 主要开发语言 |
-| Gradle | Kotlin DSL | 构建工具 |
-| Jimmer | 0.10.6 | Kotlin 优先的 ORM 框架 |
-| Spring Boot | 3.5.10 | Web 框架 |
-| Database | PostgreSQL | 主数据库 |
+| 技术 | 版本              | 说明 |
+|------|-----------------|------|
+| Kotlin | 2.3.0           | 主要开发语言 |
+| Gradle | Kotlin DSL      | 构建工具 |
+| Jimmer | 0.10.6          | Kotlin 优先的 ORM 框架 |
+| Spring Boot | 3.5.11          | Web 框架 |
+| Database | PostgreSQL      | 主数据库 |
 | Redis | Redisson 3.35.0 | 缓存和分布式锁 |
-| Sa-Token | 1.44.0 | 认证授权框架 |
+| Sa-Token | 1.44.0          | 认证授权框架 |
 
 ---
 

@@ -1,0 +1,4 @@
+com.github.alphafoxz.foxden.common.web.config.WebBindingConfig
+com.github.alphafoxz.foxden.common.web.config.FilterConfig
+com.github.alphafoxz.foxden.common.web.config.CaptchaConfig
+com.github.alphafoxz.foxden.common.web.config.I18nConfig

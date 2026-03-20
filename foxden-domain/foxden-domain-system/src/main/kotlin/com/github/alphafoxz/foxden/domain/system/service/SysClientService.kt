@@ -21,6 +21,14 @@ interface SysClientService {
     fun selectClientList(bo: SysClientBo, pageQuery: PageQuery): TableDataInfo<SysClientVo>
 
     /**
+     * 查询客户端管理列表（不分页，用于导出）
+     *
+     * @param bo 客户端管理信息
+     * @return 客户端管理列表
+     */
+    fun selectClientList(bo: SysClientBo): List<SysClientVo>
+
+    /**
      * 查询客户端管理详情
      *
      * @param id 客户端管理主键
@@ -51,6 +59,15 @@ interface SysClientService {
      * @return 结果
      */
     fun updateClient(bo: SysClientBo): Int
+
+    /**
+     * 修改客户端状态
+     *
+     * @param clientId 客户端ID
+     * @param status 状态
+     * @return 结果
+     */
+    fun updateClientStatus(clientId: String, status: String): Int
 
     /**
      * 校验客户端key是否唯一

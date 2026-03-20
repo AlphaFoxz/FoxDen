@@ -19,48 +19,33 @@ data class SysClientVo(
     var id: Long? = null,
 
     /**
-     * 客户端ID
+     * 客户端id
      */
     @ExcelProperty(value = ["客户端id"])
     var clientId: String? = null,
 
     /**
-     * 客户端密钥
+     * 客户端key
      */
     @ExcelProperty(value = ["客户端key"])
     var clientKey: String? = null,
 
     /**
-     * 客户端名称
+     * 客户端秘钥
      */
-    var clientName: String? = null,
+    @ExcelProperty(value = ["客户端秘钥"])
+    var clientSecret: String? = null,
 
     /**
-     * 客户端类型
+     * 授权类型（列表格式，用于导出Excel）
      */
-    var clientType: String? = null,
+    @ExcelProperty(value = ["授权类型"], converter = com.github.alphafoxz.foxden.common.excel.convert.ExcelListConvert::class)
+    var grantTypeList: List<String>? = null,
 
     /**
-     * 授权类型
+     * 授权类型（字符串格式，用于存储，逗号分隔）
      */
-    @ExcelProperty(value = ["授权类型"])
     var grantType: String? = null,
-
-    /**
-     * 回调地址
-     */
-    var redirectUri: String? = null,
-
-    /**
-     * 授权自动登录
-     */
-    var autoApprove: Boolean? = null,
-
-    /**
-     * 状态（0正常 1停用）
-     */
-    @ExcelProperty(value = ["状态"])
-    var status: String? = null,
 
     /**
      * 设备类型
@@ -68,24 +53,20 @@ data class SysClientVo(
     var deviceType: String? = null,
 
     /**
-     * Token 超时时间（秒）
-     */
-    @ExcelProperty(value = ["token固定超时时间"])
-    var timeout: Long? = null,
-
-    /**
-     * Token 有效期（秒）
+     * token活跃超时时间（秒）
      */
     @ExcelProperty(value = ["token活跃超时时间"])
     var activeTimeout: Long? = null,
 
     /**
-     * 备注
+     * token固定超时时间（秒）
      */
-    var remark: String? = null,
+    @ExcelProperty(value = ["token固定超时时间"])
+    var timeout: Long? = null,
 
     /**
-     * 创建时间
+     * 状态（0正常 1停用）
      */
-    var createTime: java.time.LocalDateTime? = null
+    @ExcelProperty(value = ["状态"])
+    var status: String? = null
 )

@@ -6,6 +6,7 @@ import com.github.alphafoxz.foxden.common.core.exception.ServiceException
 import com.github.alphafoxz.foxden.common.core.utils.StringUtils
 import com.github.alphafoxz.foxden.common.jimmer.core.page.PageQuery
 import com.github.alphafoxz.foxden.common.jimmer.core.page.TableDataInfo
+import com.github.alphafoxz.foxden.common.jimmer.utils.AuditUtils
 import com.github.alphafoxz.foxden.domain.system.bo.SysClientBo
 import com.github.alphafoxz.foxden.domain.system.entity.*
 import com.github.alphafoxz.foxden.domain.system.service.SysClientService
@@ -30,6 +31,8 @@ class SysClientServiceImpl(
             where(table.delFlag eq "0")
             bo.id?.let { where(table.id eq it) }
             bo.clientId?.takeIf { it.isNotBlank() }?.let { where(table.clientId eq it) }
+            bo.clientKey?.takeIf { it.isNotBlank() }?.let { where(table.clientKey eq it) }
+            bo.clientSecret?.takeIf { it.isNotBlank() }?.let { where(table.clientSecret eq it) }
             bo.status?.takeIf { it.isNotBlank() }?.let { where(table.status eq it) }
             orderBy(table.id.asc())
             select(table)
@@ -40,6 +43,21 @@ class SysClientServiceImpl(
 
         val voList = pager.rows.map { entityToVo(it) }
         return TableDataInfo(voList, pager.totalRowCount)
+    }
+
+    override fun selectClientList(bo: SysClientBo): List<SysClientVo> {
+        val list = sqlClient.createQuery(SysClient::class) {
+            where(table.delFlag eq "0")
+            bo.id?.let { where(table.id eq it) }
+            bo.clientId?.takeIf { it.isNotBlank() }?.let { where(table.clientId eq it) }
+            bo.clientKey?.takeIf { it.isNotBlank() }?.let { where(table.clientKey eq it) }
+            bo.clientSecret?.takeIf { it.isNotBlank() }?.let { where(table.clientSecret eq it) }
+            bo.status?.takeIf { it.isNotBlank() }?.let { where(table.status eq it) }
+            orderBy(table.id.asc())
+            select(table)
+        }.execute()
+
+        return list.map { entityToVo(it) }
     }
 
     override fun selectClientById(id: Long): SysClientVo? {
@@ -58,30 +76,39 @@ class SysClientServiceImpl(
     }
 
     override fun insertClient(bo: SysClientBo): Int {
+        // 验证必填字段
         val cliKey = bo.clientKey ?: throw ServiceException("客户端密钥不能为空")
         val cliSecret = bo.clientSecret ?: throw ServiceException("客户端秘钥不能为空")
 
         // 生成clientId：MD5(clientKey + clientSecret)
         val generatedClientId = SecureUtil.md5(cliKey + cliSecret)
 
-        // 将grantTypeList转换为逗号分隔的字符串
-        val grantTypeStr = if (!bo.grantTypeList.isNullOrEmpty()) {
-            bo.grantTypeList!!.joinToString(StringUtils.SEPARATOR)
-        } else {
-            bo.grantType
-        }
+        // 将grantTypeList转换为逗号分隔的字符串（与老系统等价）
+        val grantTypeStr = bo.grantTypeList?.joinToString(StringUtils.SEPARATOR)
+
+        // 获取当前用户ID和部门ID用于审计字段（与老系统 InjectionMetaObjectHandler 逻辑等价）
+        val currentUserId = AuditUtils.getCurrentUserId()
+        val currentTime = AuditUtils.getCurrentTime()
+        val currentDeptId =
+            com.github.alphafoxz.foxden.common.security.utils.LoginHelper.getDeptId() ?: AuditUtils.DEFAULT_USER_ID
 
         val newClient = SysClientDraft.`$`.produce {
             clientId = generatedClientId
             clientKey = cliKey
             clientSecret = cliSecret
             grantType = grantTypeStr
-            deviceType = bo.clientType
+            deviceType = bo.deviceType
             activeTimeout = bo.activeTimeout
             timeout = bo.timeout
             status = bo.status ?: SystemConstants.NORMAL
             delFlag = "0"
-            createTime = java.time.LocalDateTime.now()
+
+            // 审计字段（与老系统 MyBatis-Plus 自动填充逻辑等价）
+            createBy = currentUserId
+            updateBy = currentUserId
+            createTime = currentTime
+            updateTime = currentTime
+            createDept = currentDeptId
         }
 
         val result = sqlClient.saveWithAutoId(newClient)
@@ -90,22 +117,39 @@ class SysClientServiceImpl(
 
     override fun updateClient(bo: SysClientBo): Int {
         val idVal = bo.id ?: return 0
-        val existing = sqlClient.findById(SysClient::class, idVal)
-            ?: throw ServiceException("客户端信息不存在")
 
-        // Use createUpdate instead of save to avoid upsert behavior
-        // and get accurate affected row count
+        // 获取当前用户ID和时间用于审计字段
+        val currentUserId = AuditUtils.getCurrentUserId()
+        val currentTime = AuditUtils.getCurrentTime()
+
+        // 使用 createUpdate 进行更新，避免 upsert 行为并获取准确的受影响行数
         val rows = sqlClient.createUpdate(SysClient::class) {
             where(table.id eq idVal)
             bo.clientId?.let { set(table.clientId, it) }
             bo.clientKey?.let { set(table.clientKey, it) }
+            bo.clientSecret?.let { set(table.clientSecret, it) }
             bo.grantType?.let { set(table.grantType, it) }
-            bo.clientType?.let { set(table.deviceType, it) } // Map clientType to deviceType
+            bo.deviceType?.let { set(table.deviceType, it) }
+            bo.activeTimeout?.let { set(table.activeTimeout, it) }
+            bo.timeout?.let { set(table.timeout, it) }
             bo.status?.let { set(table.status, it) }
-            set(table.updateTime, java.time.LocalDateTime.now())
+            set(table.updateBy, currentUserId)
+            set(table.updateTime, currentTime)
         }.execute()
 
         return rows
+    }
+
+    override fun updateClientStatus(clientId: String, status: String): Int {
+        val currentUserId = AuditUtils.getCurrentUserId()
+        val currentTime = AuditUtils.getCurrentTime()
+
+        return sqlClient.createUpdate(SysClient::class) {
+            where(table.clientId eq clientId)
+            set(table.status, status)
+            set(table.updateBy, currentUserId)
+            set(table.updateTime, currentTime)
+        }.execute()
     }
 
     override fun checkClientKeyUnique(bo: SysClientBo): Boolean {
@@ -129,23 +173,24 @@ class SysClientServiceImpl(
 
     /**
      * 实体转 VO
-     * Note: Entity is missing some fields that exist in BO/VO (clientName, clientType, redirectUri, autoApprove)
-     * These will need to be added to the entity in a future update
+     * 将 grantType 字符串（逗号分隔）转换为 grantTypeList 列表
      */
     private fun entityToVo(client: SysClient): SysClientVo {
+        val grantTypeList = client.grantType?.let {
+            StringUtils.splitList(it)
+        }
+
         return SysClientVo(
             id = client.id,
             clientId = client.clientId,
             clientKey = client.clientKey,
+            clientSecret = client.clientSecret,
             grantType = client.grantType,
+            grantTypeList = grantTypeList,
             status = client.status,
             deviceType = client.deviceType,
             activeTimeout = client.activeTimeout,
-            timeout = client.timeout,
-            remark = null,  // SysClient table doesn't have remark column
-            createTime = client.createTime
-            // Note: clientName, clientType, redirectUri, autoApprove don't exist in entity
-            // clientType field in VO maps to deviceType in entity
+            timeout = client.timeout
         )
     }
 }

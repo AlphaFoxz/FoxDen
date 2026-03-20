@@ -166,7 +166,7 @@ return if (result.isModified) 1 else 0
 ## Technology Stack
 
 - **Language**: Kotlin 2.3.0
-- **Framework**: Spring Boot 3.5.10
+- **Framework**: Spring Boot 3.5.11
 - **ORM**: Jimmer 0.10.6
 - **Build**: Gradle (Kotlin DSL) with KSP
 - **Database**: PostgreSQL
@@ -195,5 +195,5 @@ When adding new patterns or examples:
 This documentation is based on:
 - Jimmer: 0.10.6
 - PostgreSQL: Latest stable release
-- Spring Boot: 3.5.10
+- Spring Boot: 3.5.11
 - Kotlin: 2.3.0
