@@ -11,7 +11,6 @@ import com.github.alphafoxz.foxden.common.log.enums.BusinessType
 import com.github.alphafoxz.foxden.common.web.core.BaseController
 import com.github.alphafoxz.foxden.domain.system.bo.SysConfigBo
 import com.github.alphafoxz.foxden.domain.system.service.SysConfigService
-import com.github.alphafoxz.foxden.domain.system.service.extensions.selectConfigById
 import com.github.alphafoxz.foxden.domain.system.vo.SysConfigVo
 import jakarta.servlet.http.HttpServletResponse
 import org.springframework.validation.annotation.Validated
@@ -63,7 +62,7 @@ class SysConfigController(
      */
     @GetMapping("/configKey/{configKey}")
     fun getConfigKey(@PathVariable configKey: String): R<String> {
-        return R.ok(configService.selectConfigByKey(configKey))
+        return R.ok("操作成功", configService.selectConfigByKey(configKey))
     }
 
     /**

@@ -247,15 +247,15 @@
 
 **基础路径**: `/system/config`
 
-- [ ] | /system/config | POST | 新增参数配置 | ⚪ 等价
-- [ ] | /system/config | PUT | 修改参数配置 | ⚪ 等价
-- [ ] | /system/config/{configIds} | DELETE | 删除参数配置 | ⚪ 等价
-- [ ] | /system/config/{configId} | GET | 根据参数编号获取详细信息 | ⚪ 等价
-- [ ] | /system/config/configKey/{configKey} | GET | 根据参数键名查询参数值 | ⚪ 等价
-- [ ] | /system/config/export | POST | 导出参数配置列表 | 🟢 新系统缺少
-- [ ] | /system/config/list | GET | 获取参数配置列表 | ⚪ 等价
-- [ ] | /system/config/refreshCache | DELETE | 刷新参数缓存 | ⚪ 等价
-- [ ] | /system/config/updateByKey | PUT | 根据参数键名修改参数配置 | ⚪ 等价
+- [x] | /system/config | POST | 新增参数配置 | ⚪ 等价
+- [x] | /system/config | PUT | 修改参数配置 | ⚪ 等价
+- [x] | /system/config/{configIds} | DELETE | 删除参数配置 | ⚪ 等价
+- [x] | /system/config/{configId} | GET | 根据参数编号获取详细信息 | ⚪ 等价
+- [x] | /system/config/configKey/{configKey} | GET | 根据参数键名查询参数值 | ⚪ 等价
+- [x] | /system/config/export | POST | 导出参数配置列表 | 🟢 新系统缺少
+- [x] | /system/config/list | GET | 获取参数配置列表 | ⚪ 等价
+- [x] | /system/config/refreshCache | DELETE | 刷新参数缓存 | ⚪ 等价
+- [x] | /system/config/updateByKey | PUT | 根据参数键名修改参数配置 | ⚪ 等价
 
 **差异说明**: 新系统缺少 `export` 接口。
 

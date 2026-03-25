@@ -5,6 +5,7 @@ import com.github.alphafoxz.foxden.common.core.constant.SystemConstants
 import com.github.alphafoxz.foxden.common.core.exception.ServiceException
 import com.github.alphafoxz.foxden.common.jimmer.core.page.PageQuery
 import com.github.alphafoxz.foxden.common.jimmer.core.page.TableDataInfo
+import com.github.alphafoxz.foxden.common.jimmer.utils.AuditUtils
 import com.github.alphafoxz.foxden.common.redis.utils.CacheUtils
 import com.github.alphafoxz.foxden.domain.system.bo.SysConfigBo
 import com.github.alphafoxz.foxden.domain.system.entity.*
@@ -95,13 +96,25 @@ class SysConfigServiceImpl(
 
     @CachePut(cacheNames = [CacheNames.SYS_CONFIG], key = "#bo.configKey")
     override fun insertConfig(bo: SysConfigBo): String {
+        // 获取当前用户ID和部门ID用于审计字段（与老系统 InjectionMetaObjectHandler 逻辑等价）
+        val currentUserId = AuditUtils.getCurrentUserId()
+        val currentTime = AuditUtils.getCurrentTime()
+        val currentDeptId =
+            com.github.alphafoxz.foxden.common.security.utils.LoginHelper.getDeptId() ?: AuditUtils.DEFAULT_USER_ID
+
         val newConfig = com.github.alphafoxz.foxden.domain.system.entity.SysConfigDraft.`$`.produce {
             configName = bo.configName ?: throw ServiceException("参数名称不能为空")
             configKey = bo.configKey ?: throw ServiceException("参数键名不能为空")
             configValue = bo.configValue
             configType = bo.configType ?: SystemConstants.NO
             remark = bo.remark
-            createTime = java.time.LocalDateTime.now()
+
+            // 审计字段（与老系统 MyBatis-Plus 自动填充逻辑等价）
+            createBy = currentUserId
+            updateBy = currentUserId
+            createTime = currentTime
+            updateTime = currentTime
+            createDept = currentDeptId
         }
 
         val result = sqlClient.saveWithAutoId(newConfig)
@@ -114,6 +127,9 @@ class SysConfigServiceImpl(
     @CachePut(cacheNames = [CacheNames.SYS_CONFIG], key = "#bo.configKey")
     override fun updateConfig(bo: SysConfigBo): String {
         var row = 0
+        // 获取当前用户ID和时间用于审计字段
+        val currentUserId = AuditUtils.getCurrentUserId()
+        val currentTime = AuditUtils.getCurrentTime()
 
         // 路径1: 按 ID 更新
         if (bo.configId != null) {
@@ -130,7 +146,8 @@ class SysConfigServiceImpl(
                 bo.configValue?.let { set(table.configValue, it) }
                 bo.configType?.let { set(table.configType, it) }
                 bo.remark?.let { set(table.remark, it) }
-                set(table.updateTime, java.time.LocalDateTime.now())
+                set(table.updateBy, currentUserId)
+                set(table.updateTime, currentTime)
             }.execute()
         }
         // 路径2: 按 configKey 更新（当 configId 为 null 时）
@@ -144,7 +161,8 @@ class SysConfigServiceImpl(
                 bo.configValue?.let { set(table.configValue, it) }
                 bo.configType?.let { set(table.configType, it) }
                 bo.remark?.let { set(table.remark, it) }
-                set(table.updateTime, java.time.LocalDateTime.now())
+                set(table.updateBy, currentUserId)
+                set(table.updateTime, currentTime)
             }.execute()
         }
 
