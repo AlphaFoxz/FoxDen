@@ -15,18 +15,18 @@
 
 | 模块 | 老系统接口数 | 新系统接口数 | 等价接口 | 新系统缺少 | 新系统多余 |
 |------|-------------|-------------|---------|-----------|-----------|
-| AuthController | 7 | 4 | 4 | 3 | 0 |
+| AuthController | 7 | 7 | 7 | 0 | 0 |
 | CacheController | 1 | 1 | 1 | 0 | 0 |
-| CaptchaController | 3 | 1 | 1 | 2 | 0 |
+| CaptchaController | 3 | 3 | 3 | 0 | 0 |
 | FlwCategoryController | 7 | 7 | 7 | 0 | 0 |
-| FlwDefinitionController | 13 | 12 | 11 | 2 | 1 |
-| FlwInstanceController | 14 | 8 | 7 | 7 | 0 |
+| FlwDefinitionController | 13 | 10 | 10 | 3 | 0 |
+| FlwInstanceController | 18 | 8 | 8 | 10 | 0 |
 | FlwSpelController | 5 | 5 | 5 | 0 | 0 |
-| FlwTaskController | 16 | 18 | 15 | 6 | 7 |
+| FlwTaskController | 17 | 18 | 11 | 6 | 7 |
 | IndexController | 1 | 1 | 1 | 0 | 0 |
 | SseController | 2 | 2 | 2 | 0 | 0 |
 | SysClientController | 7 | 7 | 7 | 0 | 0 |
-| SysConfigController | 9 | 8 | 7 | 1 | 0 |
+| SysConfigController | 9 | 9 | 9 | 0 | 0 |
 | SysDeptController | 7 | 7 | 6 | 1 | 1 |
 | SysDictDataController | 7 | 8 | 7 | 0 | 1 |
 | SysDictTypeController | 8 | 8 | 8 | 0 | 0 |
@@ -38,13 +38,13 @@
 | SysOperLogController | 4 | 5 | 4 | 0 | 1 |
 | SysPostController | 8 | 8 | 8 | 0 | 0 |
 | SysProfileController | 4 | 4 | 4 | 0 | 0 |
-| SysRoleController | 14 | 14 | 14 | 0 | 0 |
+| SysRoleController | 15 | 15 | 15 | 0 | 0 |
 | SysSocialController | 1 | 1 | 1 | 0 | 0 |
-| SysTenantController | 11 | 11 | 11 | 0 | 0 |
+| SysTenantController | 12 | 12 | 12 | 0 | 0 |
 | SysTenantPackageController | 8 | 8 | 8 | 0 | 0 |
-| SysUserOnlineController | 5 | 2 | 2 | 3 | 0 |
-| SysUserController | 16 | 16 | 16 | 0 | 0 |
-| **总计** | **194** | **183** | **171** | **26** | **12** |
+| SysUserOnlineController | 4 | 2 | 2 | 2 | 0 |
+| SysUserController | 17 | 17 | 17 | 0 | 0 |
+| **总计** | **216** | **204** | **194** | **22** | **10** |
 
 ---
 
@@ -62,7 +62,7 @@
 - [x] | /auth/social/callback | POST | 社交登录回调绑定 | ⚪ 等价
 - [x] | /auth/unlock/{socialId} | DELETE | 取消社交授权 | ⚪ 等价
 
-**差异说明**: 新系统缺少3个社交登录相关接口，需要补充。
+**差异说明**: 无差异。
 
 ---
 
@@ -84,7 +84,7 @@
 - [x] | /resource/sms/code | GET | 短信验证码 | ⚪ 等价
 - [x] | /resource/email/code | GET | 邮箱验证码 | ⚪ 等价
 
-**差异说明**: 新系统缺少2个验证码接口（短信验证码和邮箱验证码）。
+**差异说明**: 无差异。
 
 ---
 
@@ -124,8 +124,8 @@
 
 
 **差异说明**:
-1. 新系统缺少 `/workflow/active/{id}`、`/workflow/importDef`、`/workflow/xmlString/{id}`、`/workflow/exportDef/{id}`
-2. 新系统的 `copy` 和 `export` 接口路径与老系统不同
+1. 新系统缺少3个接口：`active/{id}`、`importDef`、`xmlString/{id}`
+2. 另有3个接口（`exportDef/{id}`、`list`、`unPublishList`）函数签名与老系统不同
 
 ---
 
@@ -152,7 +152,7 @@
 - [ ] | /workflow/instance/pageByRunning | GET | 查询正在运行的流程实例分页列表 | ⚪ 等价
 - [ ] | /workflow/instance/updateVariable | PUT | 修改流程变量 | 🟢 新系统缺少
 
-**差异说明**: 新系统缺少7个接口，主要是流程实例的详细查询、变量管理和历史数据删除功能。
+**差异说明**: 新系统缺少10个接口，主要是流程实例的详细查询、变量管理、历史数据删除和流程状态操作功能。
 
 ---
 
@@ -239,7 +239,7 @@
 - [x] | /system/client/export | POST | 导出客户端管理列表 | ⚪ 等价
 - [x] | /system/client/list | GET | 查询客户端管理列表 | ⚪ 等价
 
-**差异说明**: 新系统多了1个根据客户端ID查询详情的接口。
+**差异说明**: 无差异。
 
 ---
 
@@ -252,12 +252,12 @@
 - [x] | /system/config/{configIds} | DELETE | 删除参数配置 | ⚪ 等价
 - [x] | /system/config/{configId} | GET | 根据参数编号获取详细信息 | ⚪ 等价
 - [x] | /system/config/configKey/{configKey} | GET | 根据参数键名查询参数值 | ⚪ 等价
-- [x] | /system/config/export | POST | 导出参数配置列表 | 🟢 新系统缺少
+- [x] | /system/config/export | POST | 导出参数配置列表 | ⚪ 等价
 - [x] | /system/config/list | GET | 获取参数配置列表 | ⚪ 等价
 - [x] | /system/config/refreshCache | DELETE | 刷新参数缓存 | ⚪ 等价
 - [x] | /system/config/updateByKey | PUT | 根据参数键名修改参数配置 | ⚪ 等价
 
-**差异说明**: 新系统缺少 `export` 接口。
+**差异说明**: 无差异。
 
 ---
 
@@ -515,7 +515,7 @@
 - [ ] | /monitor/online/list | GET | 获取在线用户列表 | ⚪ 等价
 - [ ] | /monitor/online/myself/{tokenId} | DELETE | 强退当前在线设备 | 🟢 新系统缺少
 
-**差异说明**: 新系统缺少2个接口：获取当前用户登录在线设备、强退当前在线设备。
+**差异说明**: 新系统缺少2个接口：`GET /monitor/online`（获取当前用户登录在线设备）、`DELETE /monitor/online/myself/{tokenId}`（强退当前在线设备）。
 
 ---
 
@@ -547,35 +547,27 @@
 
 ## 待办事项清单
 
-### 🟢 必须补充的接口（新系统缺少）
+### 🟢 必须补充的接口（新系统缺少，共22个）
 
-#### 高优先级（核心功能）
-- [ ] **AuthController**: 3个社交登录接口
-  - [ ] `GET /auth/binding/{source}` - 获取社交登录跳转URL
-  - [ ] `POST /auth/social/callback` - 社交登录回调绑定
-  - [ ] `DELETE /auth/unlock/{socialId}` - 取消社交授权
+#### 高优先级（核心功能 - 13个）
+- [ ] **FlwDefinitionController**: 3个接口
+  - [ ] `PUT /workflow/definition/active/{id}` - 激活/挂起流程定义
+  - [ ] `POST /workflow/definition/importDef` - 导入流程定义
+  - [ ] `GET /workflow/definition/xmlString/{id}` - 获取流程定义JSON字符串
 
-- [ ] **FlwDefinitionController**: 4个接口
-  - [ ] `PUT /workflow/active/{id}` - 激活/挂起流程定义
-  - [ ] `POST /workflow/importDef` - 导入流程定义
-  - [ ] `GET /workflow/xmlString/{id}` - 获取流程定义JSON字符串
-  - [ ] `POST /workflow/exportDef/{id}` - 导出流程定义
-
-- [ ] **FlwInstanceController**: 9个接口
+- [ ] **FlwInstanceController**: 10个接口
   - [ ] `GET /workflow/instance/{businessId}` - 根据业务id查询流程实例详细信息
   - [ ] `PUT /workflow/instance/active/{id}` - 激活/挂起流程实例
-  - [ ] `DELETE /workflow/instance/deleteByInstanceIds/{instanceIds}` - 根据实例ID删除流程实例（路径参数）
+  - [ ] `PUT /workflow/instance/cancelProcessApply` - 取消流程申请（PUT方式）
   - [ ] `DELETE /workflow/instance/deleteByBusinessIds/{businessIds}` - 根据业务ID删除流程实例（路径参数）
+  - [ ] `DELETE /workflow/instance/deleteByInstanceIds/{instanceIds}` - 根据实例ID删除流程实例（路径参数）
   - [ ] `DELETE /workflow/instance/deleteHisByInstanceIds/{instanceIds}` - 删除已完成流程实例
   - [ ] `GET /workflow/instance/flowHisTaskList/{businessId}` - 获取流程图，流程记录
   - [ ] `GET /workflow/instance/instanceVariable/{instanceId}` - 获取流程变量
   - [ ] `POST /workflow/instance/invalid` - 作废流程
   - [ ] `PUT /workflow/instance/updateVariable` - 修改流程变量
 
-#### 中优先级（工作流增强）
-- [ ] **SysConfigController**: 1个接口
-  - [ ] `POST /system/config/export` - 导出参数配置列表
-
+#### 中优先级（工作流增强 - 6个）
 - [ ] **FlwTaskController**: 6个接口
   - [ ] `GET /workflow/task/currentTaskAllUser/{taskId}` - 获取当前任务的所有办理人
   - [ ] `GET /workflow/task/getBackTaskNode/{taskId}/{nowNodeCode}` - 获取可驳回的前置节点
@@ -584,11 +576,7 @@
   - [ ] `PUT /workflow/task/updateAssignee/{userId}` - 修改任务办理人
   - [ ] `POST /workflow/task/urgeTask` - 催办任务
 
-#### 低优先级（辅助功能）
-- [ ] **CaptchaController**: 2个验证码接口
-  - [ ] `GET /resource/sms/code` - 短信验证码
-  - [ ] `GET /resource/email/code` - 邮箱验证码
-
+#### 低优先级（辅助功能 - 3个）
 - [ ] **SysDeptController**: 1个接口
   - [ ] `GET /system/dept/optionselect` - 获取部门选择框列表
 
@@ -596,7 +584,13 @@
   - [ ] `GET /monitor/online` - 获取当前用户登录在线设备
   - [ ] `DELETE /monitor/online/myself/{tokenId}` - 强退当前在线设备
 
-### 🔴 需要确认的接口（新系统多余）
+### ⚠️ 函数签名不同的接口（需确认兼容性）
+- [ ] **FlwDefinitionController**: 3个接口签名与老系统不同
+  - `POST /workflow/definition/exportDef/{id}` - 导出流程定义
+  - `GET /workflow/definition/list` - 查询流程定义分页列表
+  - `GET /workflow/definition/unPublishList` - 查询未发布的流程定义分页列表
+
+### 🔴 需要确认的接口（新系统多余，共10个）
 
 - [ ] **FlwTaskController**: 7个拆分出来的独立接口 - 前端不调用，建议删除或保留作为内部实现
   - `addSignature` - 加签
@@ -606,7 +600,6 @@
   - `isTaskEnd/{instanceId}` - 判断流程是否已结束
   - `reductionSignature` - 减签
   - `transferTask` - 转办任务
-- [ ] **SysClientController**: 1个根据客户端ID查询详情接口
 - [ ] **SysDeptController**: 1个获取部门下拉树列表接口（与 optionselect 的关系）
 - [ ] **SysDictDataController**: 1个根据字典类型和键值查询标签接口
 - [ ] **SysOperLogController**: 1个根据操作编号获取详细信息接口
@@ -622,6 +615,6 @@
 
 ---
 
-> **最后更新**: 2025-02-15
+> **最后更新**: 2026-04-09
 > **责任人**: 待分配
 > **完成目标**: 第一阶段迁移完成前，保证新系统和老系统的接口完全等价

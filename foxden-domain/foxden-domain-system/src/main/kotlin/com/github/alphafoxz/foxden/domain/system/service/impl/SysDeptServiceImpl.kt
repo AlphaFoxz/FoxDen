@@ -16,7 +16,9 @@ import org.babyfish.jimmer.sql.kt.ast.expression.asc
 import org.babyfish.jimmer.sql.kt.ast.expression.eq
 import org.babyfish.jimmer.sql.kt.ast.expression.like
 import org.babyfish.jimmer.sql.kt.ast.expression.ne
+import org.springframework.cache.annotation.CacheEvict
 import org.springframework.cache.annotation.Cacheable
+import org.springframework.cache.annotation.Caching
 import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.stereotype.Service
 
@@ -117,6 +119,7 @@ class SysDeptServiceImpl(
         // TODO: 实现数据权限检查
     }
 
+    @CacheEvict(cacheNames = [CacheNames.SYS_DEPT_AND_CHILD], allEntries = true)
     override fun insertDept(bo: SysDeptBo): Int {
         val newDept = com.github.alphafoxz.foxden.domain.system.entity.SysDeptDraft.`$`.produce {
             parentId = bo.parentId
@@ -135,6 +138,10 @@ class SysDeptServiceImpl(
         return if (result.isModified) 1 else 0
     }
 
+    @Caching(evict = [
+        CacheEvict(cacheNames = [CacheNames.SYS_DEPT], key = "#bo.deptId"),
+        CacheEvict(cacheNames = [CacheNames.SYS_DEPT_AND_CHILD], allEntries = true)
+    ])
     override fun updateDept(bo: SysDeptBo): Int {
         val deptIdVal = bo.deptId ?: return 0
 
@@ -153,6 +160,10 @@ class SysDeptServiceImpl(
         return result
     }
 
+    @Caching(evict = [
+        CacheEvict(cacheNames = [CacheNames.SYS_DEPT], key = "#deptId"),
+        CacheEvict(cacheNames = [CacheNames.SYS_DEPT_AND_CHILD], key = "#deptId")
+    ])
     override fun deleteDeptById(deptId: Long): Int {
         val result = sqlClient.deleteById(SysDept::class, deptId)
         return result.totalAffectedRowCount
