@@ -1,7 +1,6 @@
 package com.github.alphafoxz.foxden.app.system.controller
 
 import cn.dev33.satoken.annotation.SaCheckPermission
-import cn.hutool.core.lang.tree.Tree
 import cn.hutool.core.util.StrUtil
 import com.github.alphafoxz.foxden.common.core.constant.SystemConstants
 import com.github.alphafoxz.foxden.common.core.domain.R
@@ -67,15 +66,6 @@ class SysDeptController(
     }
 
     /**
-     * 获取部门下拉树列表
-     */
-    @GetMapping("/treeselect")
-    fun treeselect(dept: SysDeptBo): R<List<Tree<Long>>> {
-        val depts = deptService.selectDeptList(dept)
-        return R.ok(deptService.buildDeptTreeSelect(depts))
-    }
-
-    /**
      * 新增部门
      */
     @SaCheckPermission("system:dept:add")
@@ -133,5 +123,16 @@ class SysDeptController(
         }
         deptService.checkDeptDataScope(deptId)
         return toAjax(deptService.deleteDeptById(deptId))
+    }
+
+    /**
+     * 获取部门选择框列表
+     *
+     * @param deptIds 部门ID串
+     */
+    @SaCheckPermission("system:dept:query")
+    @GetMapping("/optionselect")
+    fun optionselect(@RequestParam(required = false) deptIds: Array<Long>?): R<List<SysDeptVo>> {
+        return R.ok(deptService.selectDeptByIds(deptIds?.toList()))
     }
 }

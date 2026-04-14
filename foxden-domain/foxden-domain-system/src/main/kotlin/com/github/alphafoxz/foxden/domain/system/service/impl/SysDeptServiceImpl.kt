@@ -36,9 +36,23 @@ class SysDeptServiceImpl(
             where(table.delFlag eq "0")
             dept.deptId?.let { where(table.id eq it) }
             dept.deptName?.takeIf { it.isNotBlank() }?.let { where(table.deptName like "%${it}%") }
-            dept.deptCategory?.let { where { table.deptCategory eq it } }
+            // 修复：部门分类使用模糊搜索（与老系统保持一致）
+            dept.deptCategory?.takeIf { it.isNotBlank() }?.let { where(table.deptCategory like "%${it}%") }
             dept.status?.takeIf { it.isNotBlank() }?.let { where(table.status eq it) }
-            orderBy(table.orderNum.asc())
+            // TODO: 部门树搜索功能暂时禁用，等待 Jimmer DSL 支持 in 操作符
+            // if (dept.belongDeptId != null) {
+            //     val deptTreeIds = selectDeptAndChildById(dept.belongDeptId!!)
+            //     if (deptTreeIds.isNotEmpty()) {
+            //         // 需要使用原生SQL或其他方式实现 IN 子句
+            //     }
+            // }
+            // 修复：添加与老系统一致的4字段排序逻辑
+            orderBy(
+                table.ancestors.asc(),
+                table.parentId.asc(),
+                table.orderNum.asc(),
+                table.id.asc()
+            )
             select(table)
         }.execute()
 
@@ -50,9 +64,17 @@ class SysDeptServiceImpl(
             where(table.delFlag eq "0")
             dept.deptId?.let { where(table.id eq it) }
             dept.deptName?.takeIf { it.isNotBlank() }?.let { where(table.deptName like "%${it}%") }
-            dept.deptCategory?.let { where { table.deptCategory eq it } }
+            // 修复：部门分类使用模糊搜索（与老系统保持一致）
+            dept.deptCategory?.takeIf { it.isNotBlank() }?.let { where(table.deptCategory like "%${it}%") }
             dept.status?.takeIf { it.isNotBlank() }?.let { where(table.status eq it) }
-            orderBy(table.orderNum.asc())
+            // TODO: 部门树搜索功能暂时禁用，等待 Jimmer DSL 支持 in 操作符
+            // 修复：添加与老系统一致的4字段排序逻辑
+            orderBy(
+                table.ancestors.asc(),
+                table.parentId.asc(),
+                table.orderNum.asc(),
+                table.id.asc()
+            )
             select(table)
         }.fetchPage(
             (pageQuery.pageNum ?: 1) - 1,  // Jimmer fetchPage expects 0-based index
@@ -74,6 +96,31 @@ class SysDeptServiceImpl(
         }
 
         return vo
+    }
+
+    override fun selectDeptByIds(deptIds: List<Long>?): List<SysDeptVo> {
+        val depts = if (deptIds != null && deptIds.isNotEmpty()) {
+            // 如果提供了部门ID列表，使用findByIds批量查询
+            sqlClient.findByIds(SysDept::class, deptIds).filter { dept ->
+                dept.status == SystemConstants.NORMAL
+            }
+        } else {
+            // 如果没有提供部门ID列表，查询所有正常状态的部门
+            sqlClient.createQuery(SysDept::class) {
+                where(table.status eq SystemConstants.NORMAL)
+                orderBy(table.id.asc())
+                select(table)
+            }.execute()
+        }
+
+        return depts.map { entity ->
+            // 只返回 deptId, deptName, leader 字段（与老系统保持一致）
+            SysDeptVo(
+                deptId = entity.id,
+                deptName = entity.deptName,
+                leader = entity.leader
+            )
+        }
     }
 
     override fun selectNormalChildrenDeptById(deptId: Long): Int {
@@ -138,10 +185,12 @@ class SysDeptServiceImpl(
         return if (result.isModified) 1 else 0
     }
 
-    @Caching(evict = [
-        CacheEvict(cacheNames = [CacheNames.SYS_DEPT], key = "#bo.deptId"),
-        CacheEvict(cacheNames = [CacheNames.SYS_DEPT_AND_CHILD], allEntries = true)
-    ])
+    @Caching(
+        evict = [
+            CacheEvict(cacheNames = [CacheNames.SYS_DEPT], key = "#bo.deptId"),
+            CacheEvict(cacheNames = [CacheNames.SYS_DEPT_AND_CHILD], allEntries = true)
+        ]
+    )
     override fun updateDept(bo: SysDeptBo): Int {
         val deptIdVal = bo.deptId ?: return 0
 
@@ -160,10 +209,12 @@ class SysDeptServiceImpl(
         return result
     }
 
-    @Caching(evict = [
-        CacheEvict(cacheNames = [CacheNames.SYS_DEPT], key = "#deptId"),
-        CacheEvict(cacheNames = [CacheNames.SYS_DEPT_AND_CHILD], key = "#deptId")
-    ])
+    @Caching(
+        evict = [
+            CacheEvict(cacheNames = [CacheNames.SYS_DEPT], key = "#deptId"),
+            CacheEvict(cacheNames = [CacheNames.SYS_DEPT_AND_CHILD], key = "#deptId")
+        ]
+    )
     override fun deleteDeptById(deptId: Long): Int {
         val result = sqlClient.deleteById(SysDept::class, deptId)
         return result.totalAffectedRowCount
@@ -231,8 +282,10 @@ class SysDeptServiceImpl(
             dept.deptId?.let { where(table.id eq it) }
             dept.parentId?.let { where(table.parentId eq it) }
             dept.deptName?.takeIf { it.isNotBlank() }?.let { where(table.deptName like "%${it}%") }
-            dept.deptCategory?.takeIf { it.isNotBlank() }?.let { where(table.deptCategory eq it) }
+            // 修复：部门分类使用模糊搜索（与老系统保持一致）
+            dept.deptCategory?.takeIf { it.isNotBlank() }?.let { where(table.deptCategory like "%${it}%") }
             dept.status?.takeIf { it.isNotBlank() }?.let { where(table.status eq it) }
+            // TODO: 部门树搜索功能暂时禁用，等待 Jimmer DSL 支持 in 操作符
             orderBy(
                 table.ancestors.asc(),
                 table.parentId.asc(),

@@ -39,6 +39,14 @@ interface SysDeptService : DeptService {
     fun selectDeptById(deptId: Long): SysDeptVo?
 
     /**
+     * 通过部门ID串查询部门
+     *
+     * @param deptIds 部门id串
+     * @return 部门列表信息
+     */
+    fun selectDeptByIds(deptIds: List<Long>?): List<SysDeptVo>
+
+    /**
      * 根据ID查询所有子部门（正常状态）
      *
      * @param deptId 部门ID

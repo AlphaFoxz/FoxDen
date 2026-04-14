@@ -17,6 +17,7 @@ import com.github.alphafoxz.foxden.domain.system.service.extensions.saveWithAuto
 import com.github.alphafoxz.foxden.domain.system.vo.SysTenantVo
 import com.github.alphafoxz.foxden.domain.tenant.entity.SysTenantPackage
 import org.babyfish.jimmer.sql.kt.KSqlClient
+import org.springframework.cache.annotation.CacheEvict
 import org.springframework.cache.annotation.Cacheable
 import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.stereotype.Service
@@ -432,6 +433,7 @@ class SysTenantServiceImpl(
         return jdbcTemplate.update(sql, *values.toTypedArray())
     }
 
+    @CacheEvict(cacheNames = [CacheNames.SYS_TENANT], key = "#tenantId")
     override fun updateTenantStatus(tenantId: String, status: String): Int {
         return jdbcTemplate.update(
             "UPDATE sys_tenant SET status = ?, update_time = ? WHERE tenant_id = ?",
@@ -452,6 +454,7 @@ class SysTenantServiceImpl(
         )
     }
 
+    @CacheEvict(cacheNames = [CacheNames.SYS_TENANT], allEntries = true)
     override fun deleteWithValidByIds(ids: Collection<Long>, isValid: Boolean): Boolean {
         if (isValid) {
             // 校验是否包含超管租户（id为1）

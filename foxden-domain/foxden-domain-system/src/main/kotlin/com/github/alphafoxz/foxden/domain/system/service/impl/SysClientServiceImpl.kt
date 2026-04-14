@@ -1,6 +1,7 @@
 package com.github.alphafoxz.foxden.domain.system.service.impl
 
 import cn.hutool.crypto.SecureUtil
+import com.github.alphafoxz.foxden.common.core.constant.CacheNames
 import com.github.alphafoxz.foxden.common.core.constant.SystemConstants
 import com.github.alphafoxz.foxden.common.core.exception.ServiceException
 import com.github.alphafoxz.foxden.common.core.utils.StringUtils
@@ -16,6 +17,8 @@ import org.babyfish.jimmer.sql.kt.KSqlClient
 import org.babyfish.jimmer.sql.kt.ast.expression.asc
 import org.babyfish.jimmer.sql.kt.ast.expression.eq
 import org.babyfish.jimmer.sql.kt.ast.expression.ne
+import org.springframework.cache.annotation.CacheEvict
+import org.springframework.cache.annotation.Cacheable
 import org.springframework.stereotype.Service
 
 /**
@@ -65,6 +68,7 @@ class SysClientServiceImpl(
         return entityToVo(client)
     }
 
+    @Cacheable(cacheNames = [CacheNames.SYS_CLIENT], key = "#clientId")
     override fun queryByClientId(clientId: String): SysClientVo? {
         val client = sqlClient.createQuery(SysClient::class) {
             where(table.clientId eq clientId)
@@ -115,6 +119,7 @@ class SysClientServiceImpl(
         return if (result.isModified) 1 else 0
     }
 
+    @CacheEvict(cacheNames = [CacheNames.SYS_CLIENT], key = "#bo.clientId")
     override fun updateClient(bo: SysClientBo): Int {
         val idVal = bo.id ?: return 0
 
@@ -163,6 +168,7 @@ class SysClientServiceImpl(
         return existing == null || existing.id == bo.id
     }
 
+    @CacheEvict(cacheNames = [CacheNames.SYS_CLIENT], key = "#id")
     override fun deleteClientById(id: Long) {
         val existing = sqlClient.findById(SysClient::class, id) ?: return
         val updated = com.github.alphafoxz.foxden.domain.system.entity.SysClientDraft.`$`.produce(existing) {

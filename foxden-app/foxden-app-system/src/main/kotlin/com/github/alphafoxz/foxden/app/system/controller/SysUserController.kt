@@ -268,7 +268,7 @@ class SysUserController(
     /**
      * 根据用户ID串批量获取用户基础信息
      */
-    @SaCheckPermission("system:user:list")
+    @SaCheckPermission("system:user:query")
     @GetMapping("/optionselect")
     fun optionselect(
         @RequestParam(required = false) userIds: Array<Long>?,
@@ -296,7 +296,6 @@ class SysUserController(
     /**
      * 下载用户导入模板
      */
-    @SaCheckPermission("system:user:import")
     @PostMapping("/importTemplate")
     fun importTemplate(response: HttpServletResponse) {
         ExcelUtil.exportExcel(

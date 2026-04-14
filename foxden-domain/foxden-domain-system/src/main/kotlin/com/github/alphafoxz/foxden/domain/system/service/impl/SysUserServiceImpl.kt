@@ -1,11 +1,11 @@
 package com.github.alphafoxz.foxden.domain.system.service.impl
 
+import com.github.alphafoxz.foxden.common.core.constant.CacheNames
 import com.github.alphafoxz.foxden.common.core.constant.SystemConstants
 import com.github.alphafoxz.foxden.common.core.domain.dto.UserDTO
 import com.github.alphafoxz.foxden.common.core.enums.UserType
 import com.github.alphafoxz.foxden.common.core.exception.ServiceException
 import com.github.alphafoxz.foxden.common.core.service.UserService
-import com.github.alphafoxz.foxden.common.core.utils.MapstructUtils
 import com.github.alphafoxz.foxden.common.jimmer.core.page.PageQuery
 import com.github.alphafoxz.foxden.common.jimmer.core.page.TableDataInfo
 import com.github.alphafoxz.foxden.common.security.utils.LoginHelper
@@ -21,6 +21,8 @@ import org.babyfish.jimmer.sql.kt.ast.expression.asc
 import org.babyfish.jimmer.sql.kt.ast.expression.eq
 import org.babyfish.jimmer.sql.kt.ast.expression.like
 import org.babyfish.jimmer.sql.kt.ast.expression.ne
+import org.springframework.cache.annotation.CacheEvict
+import org.springframework.cache.annotation.Cacheable
 import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.stereotype.Service
 import java.time.LocalDateTime
@@ -435,6 +437,7 @@ class SysUserServiceImpl(
         return result.isModified
     }
 
+    @CacheEvict(cacheNames = [CacheNames.SYS_NICKNAME], key = "#user.userId")
     override fun updateUser(user: SysUserBo): Int {
         val userIdVal = user.userId ?: return 0
 
@@ -516,6 +519,7 @@ class SysUserServiceImpl(
         return result
     }
 
+    @CacheEvict(cacheNames = [CacheNames.SYS_NICKNAME], key = "#user.userId")
     override fun updateUserProfile(user: SysUserBo): Int {
         val userIdVal = user.userId ?: return 0
 
@@ -667,6 +671,7 @@ class SysUserServiceImpl(
      * @param userId 用户ID
      * @return 用户账户
      */
+    @Cacheable(cacheNames = [CacheNames.SYS_USER_NAME], key = "#userId")
     override fun selectUserNameById(userId: Long): String? {
         val user = sqlClient.createQuery(SysUser::class) {
             where(table.id eq userId)
@@ -681,6 +686,7 @@ class SysUserServiceImpl(
      * @param userId 用户ID
      * @return 用户昵称
      */
+    @Cacheable(cacheNames = [CacheNames.SYS_NICKNAME], key = "#userId")
     override fun selectNicknameById(userId: Long): String? {
         val user = sqlClient.createQuery(SysUser::class) {
             where(table.id eq userId)

@@ -112,7 +112,6 @@ class SysDictTypeController(
     /**
      * 获取字典选择框列表
      */
-    @SaCheckPermission("system:dict:query")
     @GetMapping("/optionselect")
     fun optionselect(): R<List<SysDictTypeVo>> {
         return R.ok(dictTypeService.selectDictTypeAll())

@@ -271,8 +271,7 @@
 - [ ] | /system/dept/{deptId} | GET | 根据部门编号获取详细信息 | ⚪ 等价
 - [ ] | /system/dept/list | GET | 获取部门列表 | ⚪ 等价
 - [ ] | /system/dept/list/exclude/{deptId} | GET | 查询部门列表（排除节点） | ⚪ 等价
-- [ ] | /system/dept/optionselect | GET | 获取部门选择框列表 | 🟢 新系统缺少
-- [ ] | /system/dept/treeselect | GET | 获取部门下拉树列表 | 🔴 新系统多余
+- [x] | /system/dept/optionselect | GET | 获取部门选择框列表 | ⚪ 等价
 
 **差异说明**:
 1. 新系统缺少 `optionselect` 接口
